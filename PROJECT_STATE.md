@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `622769d`
+HEAD: `c0e62eb`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001 COMMITTED; TVE-IMP-002 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001 + TVE-IMP-002 COMMITTED; TVE-IMP-003 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -78,21 +78,19 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - TVE-PLAN-003 Traceability: PASS — `docs/plan/TRACEABILITY_PLAN_V1.md`
 - TVE-PLAN-004 Production Task Queue: PASS — `tasks/TASK_QUEUE.md`
 
-## Completed production task
-`TVE-IMP-001 — Tang metadata sidecar foundation` — COMMITTED `622769d`
+## Completed production tasks
+- `TVE-IMP-001 — Tang metadata sidecar foundation` — COMMITTED `622769d`
+- `TVE-IMP-002 — Bounded project/chapter/range/transcript read model` — COMMITTED `c0e62eb`
 
 ## Active production task
-`TVE-IMP-002 — Bounded project/chapter/range/transcript read model`
+`TVE-IMP-003 — MCP bounded tool exposure and operator contract`
 
 Acceptance summary:
-- versioned `<project>.tang.json` beside saved `.aive`;
-- binds to core project identity/revision;
-- rebuildable/non-authoritative;
-- stale/malformed metadata fails safe;
-- sidecar loss never corrupts project;
-- save/load/restart behavior proven;
-- no shadow timeline;
-- evidence + review required.
+- MCP exposes the bounded core read surfaces without bypassing shared RPC validation;
+- operator guidance prefers `project_overview → search/locate → inspect_range/inspect_chapter → get_transcript_window`;
+- ordinary long-form reasoning does not teach full `get_state` / full transcript as the default path;
+- revision/stale markers remain visible to the AI;
+- evidence + review + commit required before IMP-004.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -111,5 +109,13 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - `git diff --check` on tracked engine diff: PASS / exit 0.
 - Commit: PASS — `622769d`.
 
+## Latest TVE-IMP-002 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-002.md`.
+- Final core build: PASS / exit 0.
+- Dedicated 30m/300-clip bounded-read smoke: PASS / exit 0.
+- Root typecheck (core + MCP + desktop): PASS / exit 0.
+- `git diff --check`: PASS / exit 0.
+- Commit: PASS — `c0e62eb`.
+
 ## NEXT_EXACT_ACTION
-Analyze current core read surfaces and frozen MCP-context evidence for `TVE-IMP-002`; implement only the bounded derived read model after ANALYZE/PLAN, target ordinary responses <=64 KiB, include revision/stale markers, then run dedicated bounded-read smoke + core build/root typecheck, record evidence, verify/review/commit before claiming IMP-003.
+Analyze `packages/mcp/src/index.ts`, `packages/mcp/src/guide.ts`, and generic core-client/method registration for `TVE-IMP-003`. Plan the smallest MCP exposure/operator-contract change that surfaces the already-committed bounded reads without duplicating core logic. Do not start IMP-004 until IMP-003 reaches its verified/committed boundary.

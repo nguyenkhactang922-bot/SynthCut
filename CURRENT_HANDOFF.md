@@ -2,30 +2,32 @@
 
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
-- ACTIVE_TASK: `TVE-IMP-002`
+- ACTIVE_TASK: `TVE-IMP-003`
 - STATUS: `ACTIVE / CLAIMED`
-- CURRENT_STAGE: `BUILD & VERIFY — TVE-IMP-001 COMMITTED at 622769d; TVE-IMP-002 CLAIMED for ANALYZE/PLAN`
+- CURRENT_STAGE: `BUILD & VERIFY — ANALYZE/PLAN for MCP bounded tool exposure and operator contract`
 - BRANCH: `chatgpt/ai-video-editor-design`
-- HEAD: `622769d`
-- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-001 COMMIT PASS` — commit `622769d` contains only Tang sidecar source, dedicated smoke, and implementation evidence. Final hardened smoke/build/typecheck/diff-check remain PASS and must not be rerun unless source changes.
+- HEAD: `c0e62eb`
+- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-002 COMMIT PASS` — commit `c0e62eb` contains only bounded read-model source, dedicated runtime smoke, and implementation evidence. Final core build, bounded-read smoke, root typecheck, and diff-check are PASS and must not be rerun unless IMP-002 source changes.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE`
-- LATEST_LOG: `docs/evidence/implementation/TVE-IMP-001.md`
-- LAST_EXIT_CODE: `0 for final smoke, core build, root typecheck and diff-check`
+- LATEST_LOG: `docs/evidence/implementation/TVE-IMP-002.md`
+- LAST_EXIT_CODE: `0 for final core build, bounded-read smoke, root typecheck, diff-check and commit`
 - ARTIFACTS:
-  - `packages/core/src/tang/metadata.ts`
+  - `packages/core/src/tang/read-model.ts`
   - `packages/core/src/engine.ts`
-  - `packages/core/scripts/smoke-tang-metadata.ts`
-  - `docs/evidence/implementation/TVE-IMP-001.md`
+  - `packages/core/src/rpc.ts`
+  - `packages/core/scripts/smoke-tang-read-model.ts`
+  - `docs/evidence/implementation/TVE-IMP-002.md`
 - BLOCKERS:
-  - `NONE` for TVE-IMP-002 CLAIM/ANALYZE/PLAN.
-- NEXT_EXACT_ACTION: Analyze current `packages/core/src/engine.ts`, `packages/core/src/rpc.ts`, project/transcript summary surfaces, and frozen MCP-context evidence for `TVE-IMP-002`. Design the smallest bounded read-model implementation (`project_overview`, chapter/index refs, range inspection, transcript-window queries) with ordinary payload target <=64 KiB and stale/revision markers. Do not start IMP-003 until IMP-002 passes its own test/evidence/verify/commit boundary.
+  - `NONE` for IMP-003 ANALYZE/PLAN.
+- NEXT_EXACT_ACTION: Analyze `packages/mcp/src/index.ts`, `packages/mcp/src/guide.ts`, and generic core-client/method registration. Plan the smallest IMP-003 change that exposes/teaches the already-committed bounded read surfaces through the existing shared RPC/MCP transport without duplicating read-model logic. Then implement/test/evidence/verify/commit IMP-003 only. Do not claim IMP-004 until IMP-003 commits.
 - DO_NOT_REPEAT:
   - DISCOVER / DEFINE / RESEARCH;
   - all completed DESIGN audits/spikes and `TVE-FRZ-001`;
   - TVE-PLAN-001..004;
-  - TVE-IMP-001 CLAIM/ANALYZE/PLAN/CODE/TEST/EVIDENCE/VERIFY/REVIEW/COMMIT;
+  - all TVE-IMP-001 stages/commit;
+  - all TVE-IMP-002 stages/commit;
   - expensive long-form/Whisper POC evidence already PASS.
 
 ## Lifecycle law
@@ -33,4 +35,4 @@ All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20 ten-
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true` because DESIGN is FROZEN and PLAN IMPLEMENTATION is PASS.
-Authorization remains dependency/task scoped. Current claim: `TVE-IMP-002`.
+Authorization remains dependency/task scoped. Current claim: `TVE-IMP-003`.

@@ -69,7 +69,7 @@ Phase 5 exit rule: production implementation may begin only after post-update ve
 Canonical per-task lifecycle:
 `CLAIM → ANALYZE → PLAN → CODE → TEST → EVIDENCE → VERIFY → COMMIT → PR (if available) → REVIEW → MERGE → MAIN VERIFIED → NEXT TASK`
 
-Git note: `user.name` / `user.email` are currently unset. Do not invent identity. This blocks COMMIT when reached; it does not authorize skipping commit or falsely marking MAIN VERIFIED.
+Git note: repo-local identity is configured as `nguyenkhactang922-bot <nguyenkhactang813@gmail.com>`. Keep task-scoped commits and never mix unrelated WIP.
 
 ## TVE-IMP-001 — Tang metadata sidecar foundation
 Status: DONE / COMMITTED — `622769d`
@@ -79,13 +79,13 @@ Primary candidate files: new `packages/core/src/tang/metadata.ts`, narrow `packa
 Completion requires: task acceptance + tests + evidence + review + commit when Git identity is available.
 
 ## TVE-IMP-002 — Bounded project/chapter/range/transcript read model
-Status: ACTIVE / CLAIMED — BUILD & VERIFY ANALYZE/PLAN
+Status: DONE / COMMITTED — `c0e62eb`
 Dependencies: IMP-001 committed at `622769d`
 Primary candidate files: new `packages/core/src/tang/read-model.ts`, `packages/core/src/rpc.ts`, narrow engine accessors.
 
 ## TVE-IMP-003 — MCP bounded tool exposure and operator contract
-Status: BLOCKED by TVE-IMP-002
-Dependencies: IMP-002 verified
+Status: ACTIVE / CLAIMED — BUILD & VERIFY ANALYZE/PLAN
+Dependencies: IMP-002 committed at `c0e62eb`
 Primary candidate files: `packages/mcp/src/index.ts`, `packages/mcp/src/guide.ts`.
 
 ## TVE-IMP-004 — EditPlan, revision guard and dry-run
@@ -150,6 +150,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-002 — Bounded project/chapter/range/transcript read model` — ACTIVE / CLAIMED.
+`TVE-IMP-003 — MCP bounded tool exposure and operator contract` — ACTIVE / CLAIMED.
 
-Do not claim IMP-003 until IMP-002 reaches its verified/committed boundary. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/` or dataset scratch files.
+Do not claim IMP-004 until IMP-003 reaches its verified/committed boundary. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/` or dataset scratch files.
