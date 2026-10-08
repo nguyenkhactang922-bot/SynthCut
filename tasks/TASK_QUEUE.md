@@ -89,14 +89,14 @@ Dependencies: IMP-002 committed at `c0e62eb`
 Primary candidate files: `packages/mcp/src/index.ts`, `packages/mcp/src/guide.ts`.
 
 ## TVE-IMP-004 — EditPlan, revision guard and dry-run
-Status: ACTIVE / CLAIMED — BUILD & VERIFY ANALYZE/PLAN
+Status: DONE / COMMITTED — `3ab9518`
 Dependencies: IMP-003 committed at `68adf99`; IMP-001 semantic dependency satisfied
 Primary candidate files: new `packages/core/src/tang/edit-plan.ts`, `packages/core/src/rpc.ts`, narrow `engine.ts` hooks.
 Core-lane ordering: execute after IMP-003 has completed its core-read dependency path to reduce shared-file conflict, even though semantic dependency is IMP-001.
 
 ## TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback
-Status: BLOCKED by TVE-IMP-004
-Dependencies: IMP-004 verified
+Status: ACTIVE / CLAIMED — BUILD & VERIFY ANALYZE/PLAN
+Dependencies: IMP-004 committed at `3ab9518`
 Primary candidate files: new `packages/core/src/tang/batch.ts`, `engine.ts`, `rpc.ts`.
 
 ## TVE-IMP-006 — Bounded long-form preview/export execution
@@ -150,6 +150,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-004 — EditPlan, revision guard and dry-run` — ACTIVE / CLAIMED.
+`TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback` — ACTIVE / CLAIMED.
 
-Do not claim IMP-005 until IMP-004 reaches its verified/committed boundary. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/` or dataset scratch files.
+Do not claim IMP-006 until IMP-005 reaches its verified/committed boundary. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/` or dataset scratch files.

@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `68adf99`
+HEAD: `3ab9518`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..003 COMMITTED; TVE-IMP-004 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..004 COMMITTED; TVE-IMP-005 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -82,16 +82,17 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-001 — Tang metadata sidecar foundation` — COMMITTED `622769d`
 - `TVE-IMP-002 — Bounded project/chapter/range/transcript read model` — COMMITTED `c0e62eb`
 - `TVE-IMP-003 — MCP bounded tool exposure and operator contract` — COMMITTED `68adf99`
+- `TVE-IMP-004 — EditPlan, revision guard and dry-run` — COMMITTED `3ab9518`
 
 ## Active production task
-`TVE-IMP-004 — EditPlan, revision guard and dry-run`
+`TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback`
 
 Acceptance summary:
-- EditPlan binds to projectId + basedOnRevision and fails closed on stale revision;
-- ordered operations/scope/rationale/evidence refs are validated before mutation;
-- dry-run is deterministic and produces affected IDs/ranges without mutating project state or revision;
-- invalid refs/ranges fail before mutation;
-- evidence + review + commit required before IMP-005.
+- consume a verified current EditPlan;
+- create a durable pre-batch `.aive` checkpoint before mutation;
+- execute ordered validated operations with an append-only audit/result record;
+- stop on failure and restore/recover to normalized pre-batch state according to frozen policy;
+- stale plan rejection remains fail-closed; no ACID claim.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -126,5 +127,13 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - `git diff --check`: PASS / exit 0.
 - Commit: PASS — `68adf99`.
 
+## Latest TVE-IMP-004 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-004.md`.
+- Core build: PASS / exit 0.
+- Dedicated EditPlan dry-run smoke: PASS / exit 0 with marker `TVE-IMP-004 EDIT PLAN DRY RUN SMOKE PASSED`.
+- Root typecheck: PASS / exit 0.
+- Diff review/check: PASS; `rpc.ts` logical diff limited to +28 lines after EOL cleanup.
+- Commit: PASS — `3ab9518`.
+
 ## NEXT_EXACT_ACTION
-Analyze frozen D-008 EditPlan envelope and current core revision/mutation validation for `TVE-IMP-004`; implement only validated/dry-runnable EditPlan after ANALYZE/PLAN, with stale revision and invalid refs producing zero mutation. Do not start IMP-005 until IMP-004 reaches its verified/committed boundary.
+Analyze frozen SAFE-BATCH/D-008 evidence and existing save/load/recovery/mutation plumbing for `TVE-IMP-005`; implement the smallest checkpoint-backed coherent batch/audit/rollback layer on top of committed EditPlan. Do not start IMP-006 until IMP-005 reaches its verified/committed boundary.
