@@ -27,6 +27,8 @@ const MAX_PPS = 480;
 const GUTTER_W = 138;
 const RULER_H = 26;
 const SNAP_PX = 7;
+/** Keep a small offscreen time buffer so fast pan/zoom does not expose blank edges. */
+const VIRTUAL_BUFFER_SEC = 12;
 const VIDEO_H = 60;
 const AUDIO_H = 48;
 /** Height of a dedicated element lane (text / graphics / captions) below the tracks. */
@@ -137,6 +139,7 @@ export function Timeline(props: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const laneEls = useRef(new Map<number, HTMLElement>());
   const [viewW, setViewW] = useState(800);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const [pps, setPps] = useState(56);
   const pxPerFrame = pps / fps;
   const scrubbing = useRef(false);
@@ -183,6 +186,22 @@ export function Timeline(props: Props) {
     ro.observe(el);
     setViewW(el.clientWidth);
     return () => ro.disconnect();
+  }, []);
+
+  // Horizontal viewport position drives clip/element culling. rAF-throttle scroll
+  // updates so fast trackpad pans cannot force more than one React update/frame.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let raf = 0;
+    const sync = () => { raf = 0; setScrollLeft(el.scrollLeft); };
+    const onScroll = () => { if (raf === 0) raf = requestAnimationFrame(sync); };
+    setScrollLeft(el.scrollLeft);
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (raf !== 0) cancelAnimationFrame(raf);
+    };
   }, []);
 
   const fit = useCallback(() => {
@@ -237,6 +256,8 @@ export function Timeline(props: Props) {
   }, []);
 
   const contentW = Math.max(viewW - GUTTER_W, total * pps + 64);
+  const visibleStartSec = Math.max(0, scrollLeft / Math.max(pps, 1e-6) - VIRTUAL_BUFFER_SEC);
+  const visibleEndSec = (scrollLeft + viewW) / Math.max(pps, 1e-6) + VIRTUAL_BUFFER_SEC;
 
   const frameFromClientX = useCallback(
     (clientX: number) => {
@@ -398,9 +419,11 @@ export function Timeline(props: Props) {
     if (total <= 0) return [{ t: 0, x: 0 }];
     const step = tickInterval(pps);
     const out: { t: number; x: number }[] = [];
-    for (let t = 0; t <= total + 0.001; t += step) out.push({ t, x: t * pps });
+    const start = Math.max(0, Math.floor(visibleStartSec / step) * step);
+    const end = Math.min(total, visibleEndSec);
+    for (let t = start; t <= end + 0.001; t += step) out.push({ t, x: t * pps });
     return out;
-  }, [total, pps]);
+  }, [total, pps, visibleStartSec, visibleEndSec]);
 
   return (
     <section className="tl" style={{ height } as CSSProperties}>
@@ -483,14 +506,18 @@ export function Timeline(props: Props) {
             </div>
 
             {rows.map((t) => {
-              const segs = laneSegs.get(t.index) ?? [];
+              const allSegs = laneSegs.get(t.index) ?? [];
+              const segs = allSegs.filter((seg) =>
+                seg.clip.id === selectedClip || seg.clip.id === drag?.clipId ||
+                (seg.start < visibleEndSec && seg.end > visibleStartSec),
+              );
               const h = trackHeight(t);
               return (
                 <div key={t.id} className={`tl-lane ${t.kind} ${t.locked ? "locked" : ""}`} style={{ height: h } as CSSProperties}
                   ref={(el) => { if (el) laneEls.current.set(t.index, el); else laneEls.current.delete(t.index); }}
                   onPointerDown={(e) => { if (e.target === e.currentTarget) onScrubDown(e); }}
                   onPointerMove={onScrubMove} onPointerUp={onScrubUp}>
-                  {segs.length === 0 && t.kind === "video" && t.index === Math.min(...rows.filter((r) => r.kind === "video").map((r) => r.index)) && (
+                  {allSegs.length === 0 && t.kind === "video" && t.index === Math.min(...rows.filter((r) => r.kind === "video").map((r) => r.index)) && (
                     <div className="tl-empty"><Scissors size={15} /><span>Add clips from the library, or let your AI client build the edit.</span></div>
                   )}
                   {segs.map((seg) => (
@@ -513,17 +540,17 @@ export function Timeline(props: Props) {
 
             {elLanes.text.length > 0 && (
               <div className="tl-ellane text" style={{ height: ELEM_LANE_H, width: total * pps } as CSSProperties}>
-                {elLanes.text.map((b) => <LaneElementBar key={`t-${b.clipId}-${b.ref}`} kind="text" bar={b} pps={pps} fps={fps} onCommit={onSetElementWindow} />)}
+                {elLanes.text.filter((b) => b.absS / fps < visibleEndSec && b.absE / fps > visibleStartSec).map((b) => <LaneElementBar key={`t-${b.clipId}-${b.ref}`} kind="text" bar={b} pps={pps} fps={fps} onCommit={onSetElementWindow} />)}
               </div>
             )}
             {elLanes.gfx.length > 0 && (
               <div className="tl-ellane gfx" style={{ height: ELEM_LANE_H, width: total * pps } as CSSProperties}>
-                {elLanes.gfx.map((b) => <LaneElementBar key={`g-${b.clipId}-${b.ref}`} kind="gfx" bar={b} pps={pps} fps={fps} onCommit={onSetElementWindow} />)}
+                {elLanes.gfx.filter((b) => b.absS / fps < visibleEndSec && b.absE / fps > visibleStartSec).map((b) => <LaneElementBar key={`g-${b.clipId}-${b.ref}`} kind="gfx" bar={b} pps={pps} fps={fps} onCommit={onSetElementWindow} />)}
               </div>
             )}
             {elLanes.cap.length > 0 && (
               <div className="tl-ellane cap" style={{ height: ELEM_LANE_H, width: total * pps } as CSSProperties}>
-                {elLanes.cap.map((b) => <LaneElementBar key={`c-${b.clipId}-${b.ref}`} kind="cap" bar={b} pps={pps} fps={fps} onCommit={onSetElementWindow} />)}
+                {elLanes.cap.filter((b) => b.absS / fps < visibleEndSec && b.absE / fps > visibleStartSec).map((b) => <LaneElementBar key={`c-${b.clipId}-${b.ref}`} kind="cap" bar={b} pps={pps} fps={fps} onCommit={onSetElementWindow} />)}
               </div>
             )}
 
