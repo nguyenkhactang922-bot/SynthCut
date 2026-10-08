@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `3ab9518`
+HEAD: `7741f69`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..004 COMMITTED; TVE-IMP-005 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..007 COMMITTED; TVE-IMP-008 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -18,7 +18,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - RESEARCH: PASS
 - DESIGN: FROZEN — `TVE-FRZ-001 PASS`
 - PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — first production task claimed
+- BUILD & VERIFY: ACTIVE — `TVE-IMP-008` claimed after `TVE-IMP-007` verified/committed
 - RELEASE & OPERATE: LOCKED until MAIN VERIFIED
 - LEARN: FUTURE
 
@@ -83,16 +83,20 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-002 — Bounded project/chapter/range/transcript read model` — COMMITTED `c0e62eb`
 - `TVE-IMP-003 — MCP bounded tool exposure and operator contract` — COMMITTED `68adf99`
 - `TVE-IMP-004 — EditPlan, revision guard and dry-run` — COMMITTED `3ab9518`
+- `TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback` — COMMITTED `840bacd`
+- `TVE-IMP-006 — Bounded long-form preview/export execution` — COMMITTED `52039c5`
+- `TVE-IMP-007 — 300-clip timeline viewport culling/virtualization` — COMMITTED `7741f69`
 
 ## Active production task
-`TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback`
+`TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver`
 
 Acceptance summary:
-- consume a verified current EditPlan;
-- create a durable pre-batch `.aive` checkpoint before mutation;
-- execute ordered validated operations with an append-only audit/result record;
-- stop on failure and restore/recover to normalized pre-batch state according to frozen policy;
-- stale plan rejection remains fail-closed; no ACID claim.
+- Vietnamese requests select multilingual `large-v3-turbo` with explicit `language=vi`; never a `.en` model;
+- `small` is not the edit-grade Vietnamese default;
+- transcript-cut resolver enforces >=120 ms safe gap on each side; insufficient gap returns NOOP/review-needed rather than forcing a cut;
+- frozen 20-sample cut fixture reproduces 13 safe cut / 7 safe no-op or equivalent fail-closed resolution;
+- retained VI-STT benchmark contract stays within frozen metrics;
+- rendered preview/audio QA remains required evidence.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -135,5 +139,39 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Diff review/check: PASS; `rpc.ts` logical diff limited to +28 lines after EOL cleanup.
 - Commit: PASS — `3ab9518`.
 
+## Latest TVE-IMP-005 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-005.md`.
+- Core build: PASS / exit 0.
+- Dedicated coherent-batch smoke: PASS / exit 0 with marker `TVE-IMP-005 COHERENT BATCH SMOKE PASSED`.
+- Verified stale-plan zero mutation/no batch artifact; forced mid-batch runtime failure rollback; durable checkpoint/audit/result; successful batch; save/restart; explicit recovery after restart; recovered save/reopen.
+- Root typecheck: PASS / exit 0.
+- EditPlan sync allowlist audit: PASS — 51 allowlisted methods, 0 async, 0 missing handlers.
+- Cached diff review/check: PASS; task commit scope 5 files, +951/-1.
+- Commit: PASS — `840bacd`.
+
+## Latest TVE-IMP-006 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-006.md`.
+- Independent VERIFY found and repaired the continuous-transition command-growth edge case before task closure.
+- Repaired-source core build: PASS / exit 0.
+- Root typecheck: PASS / exit 0.
+- Cache regression smoke: PASS / exit 0.
+- Export regression smoke: PASS / exit 0 for H.264/H.265 and WebM/VP9 fallback.
+- Dedicated 310-clip/1800s production smoke: PASS with marker `TVE_IMP_006_RESULT`.
+- Transition command bound: 2 inputs / 1112 chars; preview max 3 / 1601; final max 3 / 1615.
+- Cache reuse: 299/300 = 99.6667%; remote frame 0 renders + 1 hit.
+- 20-cycle RSS ratio: 1.04818x; cancel clean; final exact 1800s 1920x1080 30fps H.264+AAC.
+- `git diff --check`: PASS.
+- Commit: PASS — `52039c5`.
+
+## Latest TVE-IMP-007 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-007.md`.
+- Desktop typecheck: PASS / exit 0 after final production repair.
+- Renderer production build: PASS / exit 0 after final production repair.
+- Final clean 300-clip Electron acceptance: PASS / exit 0.
+- First paint 185 ms; authoritative clips 300; rendered clip/element DOM 6 initial / 10 max.
+- Interaction p95 6.2 ms; drag reflection 6.2 ms; 0 long tasks; visible/offscreen selection 1/1; renderer crash=false.
+- Focused diff/check/review: PASS.
+- Commit: PASS — `7741f69`.
+
 ## NEXT_EXACT_ACTION
-Analyze frozen SAFE-BATCH/D-008 evidence and existing save/load/recovery/mutation plumbing for `TVE-IMP-005`; implement the smallest checkpoint-backed coherent batch/audit/rollback layer on top of committed EditPlan. Do not start IMP-006 until IMP-005 reaches its verified/committed boundary.
+Analyze only `TVE-IMP-008`: read frozen AC-18/VI-STT evidence and current production Whisper/transcript-edit paths; PLAN the minimal multilingual `large-v3-turbo` + explicit `vi` policy and >=120 ms fail-closed cut resolver. Reuse frozen fixtures and do not rerun the DESIGN model benchmark.

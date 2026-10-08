@@ -2,35 +2,35 @@
 
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
-- ACTIVE_TASK: `TVE-IMP-005`
-- STATUS: `ACTIVE / CLAIMED`
-- CURRENT_STAGE: `BUILD & VERIFY — ANALYZE/PLAN: checkpoint-backed coherent batch/audit/rollback`
+- ACTIVE_TASK: `TVE-IMP-008`
+- STATUS: `CLAIMED`
+- CURRENT_STAGE: `BUILD & VERIFY — ANALYZE: Vietnamese STT policy + fail-closed transcript-cut resolver`
 - BRANCH: `chatgpt/ai-video-editor-design`
-- HEAD: `3ab9518`
-- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-004 PASS / VERIFIED / COMMITTED` — commit `3ab9518`; core build PASS, dedicated EditPlan dry-run smoke PASS with zero-mutation rejection cases, root typecheck PASS, diff review/check PASS.
+- HEAD: `7741f69`
+- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-007 PASS / COMMITTED 7741f69` — real production Timeline with 300 authoritative clips renders bounded visible DOM (6 initial / 10 max), final clean Electron acceptance first paint 185 ms, interaction p95 6.2 ms, drag reflection 6.2 ms, 0 long tasks, selection survives offscreen culling, renderer crash=false. Desktop typecheck/build and diff review PASS. Evidence: `docs/evidence/implementation/TVE-IMP-007.md`.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE`
-- LATEST_LOG: `docs/evidence/implementation/TVE-IMP-004.md`
-- LAST_EXIT_CODE: `0 for IMP-004 build + smoke + root typecheck + commit`
+- LATEST_LOG: `NONE — IMP-007 clean acceptance completed PASS / exit 0`
+- LAST_EXIT_CODE: `0 — IMP-007 runtime acceptance PASS; task commit 7741f69 verified`
 - ARTIFACTS:
-  - `packages/core/src/tang/edit-plan.ts`
-  - `packages/core/src/rpc.ts`
-  - `packages/core/scripts/smoke-edit-plan.ts`
-  - `docs/evidence/implementation/TVE-IMP-004.md`
+  - `docs/evidence/implementation/TVE-IMP-007.md`
+  - commit `7741f69`
+  - frozen VI-STT evidence `docs/evidence/spikes/TVE-SPIKE-VI-STT.md` for current task input
 - BLOCKERS:
-  - `NONE` for IMP-005 ANALYZE/PLAN.
-- NEXT_EXACT_ACTION: Analyze frozen D-008/SAFE-BATCH evidence plus current `.aive` save/load/recovery and mutation/RPC plumbing. Plan the smallest production checkpoint-backed coherent batch layer that consumes a current EditPlan, creates a durable pre-batch checkpoint before mutation, records ordered audit/result data, stops on failure, and restores/recover-normalizes state without claiming ACID. Do not start IMP-006 until IMP-005 reaches verified/committed boundary.
+  - `NONE`.
+- NEXT_EXACT_ACTION: Analyze `TVE-IMP-008` only. Read the frozen AC-18/VI-STT policy and current production Whisper setup/transcription + transcript-edit/cut RPC/helpers. Identify the smallest production path that forces Vietnamese requests to multilingual `large-v3-turbo` + explicit `language=vi`, never `.en`, and implements the >=120 ms per-side fail-closed cut resolver where insufficient gap returns NOOP/review-needed. Reuse frozen benchmark/cut fixtures; do not rerun the DESIGN VI-STT model benchmark. PLAN before source mutation.
 - DO_NOT_REPEAT:
   - DISCOVER / DEFINE / RESEARCH;
-  - completed DESIGN audits/spikes and `TVE-FRZ-001`;
-  - TVE-PLAN-001..004;
-  - TVE-IMP-001..004 stages/commits;
-  - expensive long-form/Whisper POC evidence already PASS.
+  - completed DESIGN audits/spikes including `TVE-SPIKE-VI-STT` and `TVE-SPIKE-UI-300`;
+  - `TVE-FRZ-001` and TVE-PLAN-001..004;
+  - TVE-IMP-001..007 stages/commits;
+  - IMP-007 performance harness unless its production source becomes stale from a later task;
+  - `.spike-temp/`, `.tmp/`, dataset scratch and unrelated `packages/skill-installer/bin/synthcut.mjs` WIP.
 
 ## Lifecycle law
 All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20 ten-field contract.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true` because DESIGN is FROZEN and PLAN IMPLEMENTATION is PASS.
-Authorization remains dependency/task scoped. Current claim: `TVE-IMP-005`.
+Authorization remains dependency/task scoped. Current claim: `TVE-IMP-008`.

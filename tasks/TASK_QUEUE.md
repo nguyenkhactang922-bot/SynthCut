@@ -95,24 +95,26 @@ Primary candidate files: new `packages/core/src/tang/edit-plan.ts`, `packages/co
 Core-lane ordering: execute after IMP-003 has completed its core-read dependency path to reduce shared-file conflict, even though semantic dependency is IMP-001.
 
 ## TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback
-Status: ACTIVE / CLAIMED — BUILD & VERIFY ANALYZE/PLAN
+Status: DONE / COMMITTED — `840bacd`
 Dependencies: IMP-004 committed at `3ab9518`
 Primary candidate files: new `packages/core/src/tang/batch.ts`, `engine.ts`, `rpc.ts`.
 
 ## TVE-IMP-006 — Bounded long-form preview/export execution
-Status: BLOCKED by TVE-IMP-005
-Dependencies: IMP-005 verified (shared-core serialization)
+Status: DONE / COMMITTED — `52039c5`
+Evidence: `docs/evidence/implementation/TVE-IMP-006.md`
+Dependencies: IMP-005 committed at `840bacd` (shared-core serialization)
 Primary candidate files: `packages/core/src/engine.ts`, `packages/core/src/ffmpeg/`, `packages/core/src/jobs.ts` only where needed.
 
 ## TVE-IMP-007 — 300-clip viewport culling/virtualization
-Status: QUEUED INDEPENDENT LANE, but do not claim concurrently if current execution cannot safely isolate commands/files
+Status: DONE / COMMITTED — `7741f69`
+Evidence: `docs/evidence/implementation/TVE-IMP-007.md`
 Dependencies: FROZEN DESIGN
 Primary candidate files: `apps/desktop/src/timeline.tsx`, optional styles/helpers.
 Convergence: must be verified before E2E.
 
 ## TVE-IMP-008 — Vietnamese STT + fail-closed transcript-cut policy
-Status: BLOCKED by TVE-IMP-006 for core-lane ordering
-Dependencies: IMP-006 verified
+Status: ACTIVE / CLAIMED — dependency satisfied by TVE-IMP-006 commit `52039c5`; serialized lane released by TVE-IMP-007 commit `7741f69`
+Dependencies: IMP-006 verified/committed
 Primary candidate files: `packages/core/src/whisper/transcribe.ts`, transcript edit RPC/helpers, policy helper.
 Frozen policy: multilingual `large-v3-turbo`, explicit `vi`, >=120 ms guard each side, insufficient gap = NOOP/review-needed.
 
@@ -150,6 +152,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback` — ACTIVE / CLAIMED.
+`TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver` — ACTIVE / CLAIMED.
 
-Do not claim IMP-006 until IMP-005 reaches its verified/committed boundary. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/` or dataset scratch files.
+Analyze and implement only IMP-008 according to the frozen AC-18/VI-STT policy. Do not rerun the DESIGN model benchmark. Keep IMP-009 unclaimed while serialized execution owns IMP-008. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
