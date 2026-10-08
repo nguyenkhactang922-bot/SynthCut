@@ -4,12 +4,10 @@ import type { Canvas, ResolvedRenderClip } from "../types.js";
 import type { RenderProfile } from "./graph.js";
 
 /**
- * Segment planning for the PREVIEW render cache. The timeline is cut at every
- * "edit boundary" (any clip start/end across tracks), then greedily merged into
- * segments of ~2–10 s. Each segment renders VIDEO-ONLY into an MPEG-TS file
- * keyed by a content hash of everything that affects its pixels, so an edit at
- * the tail of a long timeline re-renders only the tail segments; the preview is
- * assembled by lossless concat + ONE cheap full-timeline audio pass.
+ * Segment planning for bounded preview/export caches. The timeline is cut at
+ * every edit boundary (clip start/end across tracks), then greedily merged into
+ * ~2–10 s windows. Video and PCM-audio segment artifacts are keyed from the
+ * intersecting dependencies so local edits can preserve unrelated cache units.
  */
 
 /** Bump when the render pipeline changes in a way that invalidates cached pixels. */
@@ -91,8 +89,18 @@ export function segmentKey(
   profile: RenderProfile,
   mtimes: Record<string, number>,
   hwEncoder: string | null | undefined,
+  variant?: unknown,
+  dependencyMode: "visual" | "audio" = "visual",
 ): string {
-  const deps = clipsIntersecting(clips, seg).map((c) => ({
+  const dependencyClips = dependencyMode === "audio"
+    ? clips.filter((c) => {
+        if (!c.hasAudio || c.muted) return false;
+        const shift = c.audioOffset ?? 0;
+        const start = c.startSec + shift;
+        return start < seg.end && start + c.outDuration > seg.start;
+      })
+    : clipsIntersecting(clips, seg);
+  const deps = dependencyClips.map((c) => ({
     ...c,
     startSec: Number((c.startSec - seg.start).toFixed(6)),
     mtime: mtimes[c.path] ?? -1,
@@ -107,6 +115,8 @@ export function segmentKey(
     crf: profile.crf,
     preset: profile.preset,
     enc: hwEncoder ?? "sw",
+    variant: variant ?? null,
+    dependencyMode,
     deps,
   });
   return createHash("sha1").update(payload).digest("hex");

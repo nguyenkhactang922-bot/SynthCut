@@ -43,11 +43,13 @@ import {
   type Transform,
 } from "./keyframes.js";
 import {
+  buildFinalMuxCommand,
   buildRenderCommand,
   buildThumbnailCommand,
   previewCanvas,
   EXPORT_PROFILE,
   PREVIEW_PROFILE,
+  type RenderProfile,
   type ResolvedMusic,
 } from "./ffmpeg/graph.js";
 import {
@@ -2565,7 +2567,22 @@ export class EditorEngine extends EventEmitter {
    * Render-cache instrumentation (read by smoke-cache): how many segments were
    * re-encoded vs served from cache, and how often the single-pass path ran.
    */
-  readonly renderStats = { segmentRenders: 0, segmentCacheHits: 0, singlePassRenders: 0 };
+  readonly renderStats = {
+    segmentRenders: 0,
+    segmentCacheHits: 0,
+    audioSegmentRenders: 0,
+    audioSegmentCacheHits: 0,
+    singlePassRenders: 0,
+    maxSegmentInputs: 0,
+    maxSegmentCommandChars: 0,
+  };
+
+  private recordBoundedCommand(args: string[]): void {
+    const inputCount = args.filter((arg) => arg === "-i").length;
+    const approxChars = args.reduce((total, arg) => total + arg.length + 3, 0);
+    this.renderStats.maxSegmentInputs = Math.max(this.renderStats.maxSegmentInputs, inputCount);
+    this.renderStats.maxSegmentCommandChars = Math.max(this.renderStats.maxSegmentCommandChars, approxChars);
+  }
 
   /** Full timeline extent in seconds (video + slipped audio), same math as graph.ts. */
   private fullTimelineSeconds(staged: ResolvedRenderClip[]): number {
@@ -2578,11 +2595,7 @@ export class EditorEngine extends EventEmitter {
     return Math.max(total, 1 / this.project.fps);
   }
 
-  /**
-   * Ensure one planned segment exists in the cache (render it if missing).
-   * Returns its path. Cache entries are video-only MPEG-TS at the preview
-   * canvas/profile; `hw` is the hardware encoder to try (falls back to sw).
-   */
+  /** Ensure one preview video segment exists in the cache. */
   private async ensureSegmentRendered(
     staged: ResolvedRenderClip[],
     cwd: string,
@@ -2594,11 +2607,10 @@ export class EditorEngine extends EventEmitter {
   ): Promise<string> {
     const dir = join(this.dataDir, "cache", "segments");
     await mkdir(dir, { recursive: true });
-    const key = segmentKey(staged, seg, canvas, PREVIEW_PROFILE, mtimes, hw);
+    const key = segmentKey(staged, seg, canvas, PREVIEW_PROFILE, mtimes, hw, { kind: "preview-video" });
     const path = join(dir, `${key}.ts`);
     if (await fileExists(path)) {
       this.renderStats.segmentCacheHits += 1;
-      // Touch for the GC's LRU ordering.
       const now = new Date();
       await utimes(path, now, now).catch(() => {});
       return path;
@@ -2612,74 +2624,230 @@ export class EditorEngine extends EventEmitter {
         hwEncoder: enc,
       });
     try {
-      await runFfmpeg(render(hw).args, { cwd, signal });
+      const primary = render(hw);
+      this.recordBoundedCommand(primary.args);
+      try {
+        await runFfmpeg(primary.args, { cwd, signal, totalDuration: primary.totalDuration });
+      } catch (err) {
+        if (signal?.aborted || !hw) throw err;
+        const fallback = render(null);
+        this.recordBoundedCommand(fallback.args);
+        await runFfmpeg(fallback.args, { cwd, signal, totalDuration: fallback.totalDuration });
+      }
+      await rename(tmp, path);
+      this.renderStats.segmentRenders += 1;
+      return path;
     } catch (err) {
-      if (signal?.aborted || !hw) throw err;
-      // A listed hardware encoder can still fail at runtime — retry software.
-      await runFfmpeg(render(null).args, { cwd, signal });
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
     }
-    await rename(tmp, path);
-    this.renderStats.segmentRenders += 1;
-    return path;
   }
 
-  /** Segment-cached preview: render only missing segments, concat, one audio pass. */
+  /** Ensure one full-resolution export video segment exists in its settings-aware cache. */
+  private async ensureExportVideoSegmentRendered(
+    staged: ResolvedRenderClip[],
+    cwd: string,
+    canvas: Canvas,
+    seg: PlannedSegment,
+    mtimes: Record<string, number>,
+    settings: ExportSettings | undefined,
+    hw: string | null,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const dir = join(this.dataDir, "cache", "export-segments");
+    await mkdir(dir, { recursive: true });
+    const key = segmentKey(staged, seg, canvas, EXPORT_PROFILE, mtimes, hw, { kind: "export-video", settings });
+    const path = join(dir, `${key}-v.ts`);
+    if (await fileExists(path)) {
+      this.renderStats.segmentCacheHits += 1;
+      const now = new Date();
+      await utimes(path, now, now).catch(() => {});
+      return path;
+    }
+    const tmp = `${path}.tmp-${process.pid}`;
+    const render = (enc: string | null) =>
+      buildRenderCommand(staged, canvas, tmp, EXPORT_PROFILE, undefined, settings, {
+        window: seg,
+        videoOnly: true,
+        mpegts: true,
+        hwEncoder: enc,
+      });
+    try {
+      const primary = render(hw);
+      this.recordBoundedCommand(primary.args);
+      try {
+        await runFfmpeg(primary.args, { cwd, signal, totalDuration: primary.totalDuration });
+      } catch (err) {
+        if (signal?.aborted || !hw) throw err;
+        const fallback = render(null);
+        this.recordBoundedCommand(fallback.args);
+        await runFfmpeg(fallback.args, { cwd, signal, totalDuration: fallback.totalDuration });
+      }
+      await rename(tmp, path);
+      this.renderStats.segmentRenders += 1;
+      return path;
+    } catch (err) {
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
+    }
+  }
+
+  /** Ensure one lossless PCM dialogue/audio segment exists in the bounded cache. */
+  private async ensureAudioSegmentRendered(
+    staged: ResolvedRenderClip[],
+    cwd: string,
+    canvas: Canvas,
+    seg: PlannedSegment,
+    mtimes: Record<string, number>,
+    profile: RenderProfile,
+    mode: "preview" | "export",
+    settings: ExportSettings | undefined,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const dir = join(this.dataDir, "cache", mode === "preview" ? "segments" : "export-segments");
+    await mkdir(dir, { recursive: true });
+    const key = segmentKey(
+      staged,
+      seg,
+      canvas,
+      profile,
+      mtimes,
+      null,
+      { kind: `${mode}-audio`, settings: mode === "export" ? settings : undefined },
+      "audio",
+    );
+    const path = join(dir, `${key}-a.wav`);
+    if (await fileExists(path)) {
+      this.renderStats.audioSegmentCacheHits += 1;
+      const now = new Date();
+      await utimes(path, now, now).catch(() => {});
+      return path;
+    }
+    const tmp = `${path}.tmp-${process.pid}`;
+    const command = buildRenderCommand(staged, canvas, tmp, profile, undefined, undefined, {
+      window: seg,
+      audioOnly: true,
+      pcmAudio: true,
+    });
+    this.recordBoundedCommand(command.args);
+    try {
+      await runFfmpeg(command.args, { cwd, signal, totalDuration: command.totalDuration });
+      await rename(tmp, path);
+      this.renderStats.audioSegmentRenders += 1;
+      return path;
+    } catch (err) {
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
+    }
+  }
+
+  private async removePartialOutput(path: string): Promise<void> {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        await rm(path, { force: true });
+        return;
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+  }
+
+  /**
+   * Bounded long-form assembler shared by preview and compatible H.264/H.265
+   * export. Every segment command depends only on content intersecting its local
+   * window. Dialogue/audio is PCM per segment; AAC is encoded once at final mux.
+   */
+  private async renderBoundedTimeline(
+    mode: "preview" | "export",
+    outPath: string,
+    canvas: Canvas,
+    profile: RenderProfile,
+    settings: ExportSettings | undefined,
+    signal: AbortSignal,
+    onProgress: (fraction: number) => void,
+    hw: string | null,
+  ): Promise<RenderResult> {
+    const { clips: staged, cwd } = await this.stageRender();
+    const total = this.fullTimelineSeconds(staged);
+    const segments = planSegments(staged, total);
+    const mtimes = await collectMtimes(staged);
+    const transientDir = join(this.dataDir, "render", `bounded-${mode}-${process.pid}-${Date.now()}`);
+    await mkdir(transientDir, { recursive: true });
+
+    const videoPaths: string[] = [];
+    const audioPaths: string[] = [];
+    const totalUnits = Math.max(1, segments.length * 2 + 3);
+    let doneUnits = 0;
+    const publish = (sub = 0) => {
+      const fraction = Math.max(0, Math.min(1, (doneUnits + sub) / totalUnits));
+      onProgress(fraction);
+      this.emit("progress", { job: mode, fraction });
+    };
+
+    try {
+      for (const seg of segments) {
+        if (signal.aborted) throw new Error(`${mode === "preview" ? "Preview render" : "Export"} canceled`);
+        const videoPath = mode === "preview"
+          ? await this.ensureSegmentRendered(staged, cwd, canvas, seg, mtimes, hw, signal)
+          : await this.ensureExportVideoSegmentRendered(staged, cwd, canvas, seg, mtimes, settings, hw, signal);
+        videoPaths.push(videoPath);
+        doneUnits += 1;
+        publish();
+
+        audioPaths.push(
+          await this.ensureAudioSegmentRendered(staged, cwd, canvas, seg, mtimes, profile, mode, settings, signal),
+        );
+        doneUnits += 1;
+        publish();
+      }
+
+      const videoList = join(transientDir, "video-list.txt");
+      const audioList = join(transientDir, "audio-list.txt");
+      const joinedVideo = join(transientDir, "video.ts");
+      const joinedAudio = join(transientDir, "audio.wav");
+      await writeFile(videoList, videoPaths.map((path) => `file '${path.replace(/\\/g, "/")}'`).join("\n"), "utf8");
+      await writeFile(audioList, audioPaths.map((path) => `file '${path.replace(/\\/g, "/")}'`).join("\n"), "utf8");
+
+      const videoConcat = ["-hide_banner", "-f", "concat", "-safe", "0", "-i", videoList, "-c", "copy", "-y", joinedVideo];
+      this.recordBoundedCommand(videoConcat);
+      await runFfmpeg(videoConcat, { signal });
+      doneUnits += 1;
+      publish();
+
+      const audioConcat = ["-hide_banner", "-f", "concat", "-safe", "0", "-i", audioList, "-c", "copy", "-y", joinedAudio];
+      this.recordBoundedCommand(audioConcat);
+      await runFfmpeg(audioConcat, { signal });
+      doneUnits += 1;
+      publish();
+
+      const mux = buildFinalMuxCommand(joinedVideo, joinedAudio, outPath, total, profile, this.resolveMusic(), settings);
+      this.recordBoundedCommand(mux);
+      await runFfmpeg(mux, {
+        signal,
+        totalDuration: total,
+        onProgress: (fraction) => publish(fraction),
+      });
+      doneUnits += 1;
+      publish();
+      if (signal.aborted) throw new Error(`${mode === "preview" ? "Preview render" : "Export"} canceled`);
+      return { path: outPath, duration: total };
+    } catch (err) {
+      await this.removePartialOutput(outPath);
+      throw err;
+    } finally {
+      await rm(transientDir, { recursive: true, force: true }).catch(() => {});
+    }
+  }
+
+  /** Segment-cached bounded preview: video TS + PCM audio segments + one AAC final mux. */
   private async renderPreviewSegmented(
     outPath: string,
     signal: AbortSignal,
     onProgress: (fraction: number) => void,
   ): Promise<RenderResult> {
     const canvas = previewCanvas(this.canvas);
-    const { clips: staged, cwd } = await this.stageRender();
-    const total = this.fullTimelineSeconds(staged);
-    const segments = planSegments(staged, total);
-    const mtimes = await collectMtimes(staged);
     const hw = await pickHwEncoder("h264");
-
-    const segPaths: string[] = [];
-    for (let i = 0; i < segments.length; i++) {
-      if (signal.aborted) throw new Error("Preview render canceled");
-      segPaths.push(await this.ensureSegmentRendered(staged, cwd, canvas, segments[i], mtimes, hw, signal));
-      const f = ((i + 1) / segments.length) * 0.8;
-      onProgress(f);
-      this.emit("progress", { job: "preview", fraction: f });
-    }
-
-    // Concat list (bare ../-free absolute paths with forward slashes; keys are hex).
-    const listPath = join(this.dataDir, "cache", "segments", `concat-${Date.now()}.txt`);
-    await writeFile(listPath, segPaths.map((p) => `file '${p.replace(/\\/g, "/")}'`).join("\n"), "utf8");
-
-    // ONE cheap audio-only pass over the full timeline (mixing is fast).
-    const audioPath = `${outPath}.audio.m4a`;
-    const audio = buildRenderCommand(staged, canvas, audioPath, PREVIEW_PROFILE, this.resolveMusic(), undefined, {
-      audioOnly: true,
-    });
-    await runFfmpeg(audio.args, { cwd, signal, totalDuration: audio.totalDuration, onProgress: (f) => {
-      const g = 0.8 + f * 0.15;
-      onProgress(g);
-      this.emit("progress", { job: "preview", fraction: g });
-    } });
-
-    try {
-      // Lossless assembly: copy the concatenated video + the audio pass.
-      await runFfmpeg(
-        [
-          "-hide_banner",
-          "-f", "concat", "-safe", "0", "-i", listPath,
-          "-i", audioPath,
-          "-map", "0:v:0", "-map", "1:a:0",
-          "-c", "copy", "-movflags", "+faststart",
-          "-y", outPath,
-        ],
-        { signal },
-      );
-    } finally {
-      await rm(listPath, { force: true }).catch(() => {});
-      await rm(audioPath, { force: true }).catch(() => {});
-    }
-    onProgress(1);
-    this.emit("progress", { job: "preview", fraction: 1 });
-    return { path: outPath, duration: total };
+    return this.renderBoundedTimeline("preview", outPath, canvas, PREVIEW_PROFILE, undefined, signal, onProgress, hw);
   }
 
   async renderPreview(): Promise<RenderResult> {
@@ -2819,6 +2987,29 @@ export class EditorEngine extends EventEmitter {
 
     return this.jobs.start("export", `Export → ${basename(outputPath)}`, async (signal, onProgress) => {
       await mkdir(dirname(outputPath), { recursive: true });
+      const ext = (outputPath.split(".").pop() ?? "").toLowerCase();
+      const container = settings?.container ?? (ext === "webm" ? "webm" : ext === "mov" ? "mov" : "mp4");
+      const videoCodec = settings?.videoCodec ?? (container === "webm" ? "vp9" : "h264");
+      if (container !== "webm" && videoCodec !== "vp9") {
+        const boundedHw = settings?.hardware
+          ? await pickHwEncoder(videoCodec === "h265" ? "h265" : "h264")
+          : null;
+        const result = await this.renderBoundedTimeline(
+          "export",
+          outputPath,
+          this.canvas,
+          EXPORT_PROFILE,
+          settings,
+          signal,
+          onProgress,
+          boundedHw,
+        );
+        void pruneDataDir(this.dataDir).catch(() => {});
+        return result;
+      }
+
+      // WebM/VP9 retains the existing single-pass path because MPEG-TS segment
+      // concatenation is intentionally limited to H.264/H.265 MP4/MOV in v1.
       const { clips: staged, cwd } = await this.stageRender();
       // Export defaults to SOFTWARE encoding for quality; `hardware: true` opts
       // into NVENC/QSV/AMF/VideoToolbox for speed (with sw retry on failure).
