@@ -226,6 +226,23 @@ export interface EngineEvents {
   job: (job: Job) => void;
 }
 
+/** Durable state captured before a coherent AI batch. Project JSON remains the only edit truth. */
+export interface EngineBatchCheckpoint {
+  project: Project;
+  currentPath?: string;
+  baselineDirty: boolean;
+  lastSavedRevision: number;
+  canvasAdopted: boolean;
+  tangMetadata: TangMetadata | null;
+  tangMetadataDiskStatus: TangMetadataStatus;
+}
+
+export interface TangBatchReferenceUpdate {
+  batchAuditRef?: string;
+  checkpointRef?: string;
+  evidenceRef?: string;
+}
+
 function defaultProject(): Project {
   const now = Date.now();
   return {
@@ -289,6 +306,10 @@ export class EditorEngine extends EventEmitter {
   private tangMetadata: TangMetadata | null = null;
   /** Diagnostic state of the on-disk sidecar last observed. */
   private tangMetadataDiskStatus: TangMetadataStatus = { state: "unavailable" };
+  /** Narrow lock used only while a coherent AI batch is mutating/restoring state. */
+  private coherentBatchId: string | null = null;
+  /** Coalesce per-operation change events so clients never observe a partial coherent batch. */
+  private coherentBatchChangePending = false;
 
   /** Directory where previews, thumbnails and other render artifacts are written. */
   constructor(readonly dataDir: string) {
@@ -374,6 +395,36 @@ export class EditorEngine extends EventEmitter {
   }
 
   // ---- state access ----------------------------------------------------------
+  activeCoherentBatchId(): string | null {
+    return this.coherentBatchId;
+  }
+
+  beginCoherentBatch(batchId: string): void {
+    if (this.coherentBatchId) {
+      throw new Error('A coherent batch is already active: "' + this.coherentBatchId + '".');
+    }
+    this.coherentBatchId = batchId;
+    this.coherentBatchChangePending = false;
+  }
+
+  endCoherentBatch(batchId: string): void {
+    if (this.coherentBatchId !== batchId) {
+      throw new Error('Cannot end coherent batch "' + batchId + '"; active batch is "' + (this.coherentBatchId ?? 'none') + '".');
+    }
+    const shouldEmit = this.coherentBatchChangePending;
+    this.coherentBatchId = null;
+    this.coherentBatchChangePending = false;
+    if (shouldEmit) this.emit("change", this.project);
+  }
+
+  private emitProjectChange(): void {
+    if (this.coherentBatchId) {
+      this.coherentBatchChangePending = true;
+      return;
+    }
+    this.emit("change", this.project);
+  }
+
   getProject(): Project {
     return this.project;
   }
@@ -514,7 +565,7 @@ export class EditorEngine extends EventEmitter {
     const result = fn();
     this.project.revision += 1;
     this.project.updatedAt = Date.now();
-    this.emit("change", this.project);
+    this.emitProjectChange();
     return result;
   }
 
@@ -3301,6 +3352,106 @@ export class EditorEngine extends EventEmitter {
   /** The .aive file the open project lives in, or undefined if never saved. */
   getCurrentPath(): string | undefined {
     return this.currentPath;
+  }
+
+  /** Capture a self-contained project snapshot plus only the session context needed for batch recovery. */
+  captureBatchCheckpoint(): EngineBatchCheckpoint {
+    return {
+      project: structuredClone(this.serializableProject()),
+      currentPath: this.currentPath,
+      baselineDirty: this.isDirty(),
+      lastSavedRevision: this.lastSavedRevision,
+      canvasAdopted: this.canvasAdopted,
+      tangMetadata: this.tangMetadata ? structuredClone(this.tangMetadata) : null,
+      tangMetadataDiskStatus: { ...this.tangMetadataDiskStatus },
+    };
+  }
+
+  /**
+   * Restore a coherent-batch checkpoint without turning the checkpoint path into
+   * the current project file. The restored semantic state gets a fresh revision
+   * so the failed/applied plan token can never be silently reused. Undo/redo is
+   * reset because this is checkpoint recovery, not an undo-stack transaction.
+   */
+  restoreBatchCheckpoint(checkpoint: EngineBatchCheckpoint): Project {
+    if (!checkpoint.project?.tracks || !Array.isArray(checkpoint.project.assets)) {
+      throw new Error("Batch checkpoint is not a valid .aive project snapshot");
+    }
+    const priorLiveRevision = this.project.revision;
+    const snapshotRevision = checkpoint.project.revision;
+    this.undoStack = [];
+    this.redoStack = [];
+    this.project = migrateProject(structuredClone(checkpoint.project));
+    this.assetCaches.clear();
+    for (const asset of this.project.assets) {
+      if (asset.transcript || asset.visualSig) {
+        this.assetCaches.set(asset.id, {
+          ...(asset.transcript ? { transcript: asset.transcript } : {}),
+          ...(asset.visualSig ? { visualSig: asset.visualSig } : {}),
+        });
+        asset.transcriptIndexed = !!asset.transcript;
+        delete asset.transcript;
+        delete asset.visualSig;
+      }
+    }
+    this.canvasAdopted = checkpoint.canvasAdopted;
+    this.currentPath = checkpoint.currentPath;
+    this.previewCache = null;
+    this.project.revision = Math.max(priorLiveRevision, snapshotRevision) + 1;
+    this.project.updatedAt = Date.now();
+    this.lastSavedRevision = checkpoint.baselineDirty ? checkpoint.lastSavedRevision : this.project.revision;
+
+    const binding = { id: this.project.id, revision: this.project.revision };
+    const capturedMetadata = checkpoint.tangMetadata;
+    if (
+      capturedMetadata &&
+      capturedMetadata.coreProjectId === this.project.id &&
+      capturedMetadata.basedOnRevision === snapshotRevision
+    ) {
+      this.tangMetadata = rebaseTangMetadata(capturedMetadata, binding);
+    } else {
+      this.tangMetadata = capturedMetadata ? structuredClone(capturedMetadata) : null;
+    }
+    if (this.tangMetadata) {
+      this.tangMetadataDiskStatus = {
+        state: "stale",
+        ...(checkpoint.tangMetadataDiskStatus.path ? { path: checkpoint.tangMetadataDiskStatus.path } : {}),
+        reason: "batch_restore_requires_project_save",
+        coreProjectId: this.project.id,
+        basedOnRevision: this.tangMetadata.basedOnRevision,
+      };
+    } else {
+      this.tangMetadataDiskStatus = { ...checkpoint.tangMetadataDiskStatus };
+    }
+    this.emitProjectChange();
+    return this.project;
+  }
+
+  /** Index durable batch/checkpoint/evidence logical refs in derived Tang metadata. */
+  recordTangBatchReferences(update: TangBatchReferenceUpdate): void {
+    const binding = { id: this.project.id, revision: this.project.revision };
+    const exact = this.getTangMetadata();
+    const navigation = this.getTangMetadataForNavigation();
+    const metadata = createTangMetadata(binding, exact);
+    if (!exact && navigation?.brief) metadata.brief = structuredClone(navigation.brief);
+    const appendUnique = (values: string[] | undefined, value: string | undefined): string[] | undefined => {
+      if (!value) return values ? [...values] : undefined;
+      return [...new Set([...(values ?? []), value])];
+    };
+    metadata.batchAuditRefs = appendUnique(exact?.batchAuditRefs ?? navigation?.batchAuditRefs, update.batchAuditRef);
+    metadata.checkpointRefs = appendUnique(exact?.checkpointRefs ?? navigation?.checkpointRefs, update.checkpointRef);
+    metadata.evidenceRefs = appendUnique(exact?.evidenceRefs ?? navigation?.evidenceRefs, update.evidenceRef);
+    this.tangMetadata = metadata;
+    const sidecarPath = this.tangMetadataDiskStatus.path;
+    this.tangMetadataDiskStatus = this.currentPath
+      ? {
+          state: "stale",
+          ...(sidecarPath ? { path: sidecarPath } : {}),
+          reason: "live_batch_refs_pending_project_save",
+          coreProjectId: metadata.coreProjectId,
+          basedOnRevision: metadata.basedOnRevision,
+        }
+      : { state: "unavailable", reason: "live_batch_refs_pending_first_project_save" };
   }
 
   /** Current Tang sidecar status. Live revision drift makes derived metadata stale immediately. */

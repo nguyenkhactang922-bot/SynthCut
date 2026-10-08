@@ -6,6 +6,7 @@ import { GRAPHIC_TEMPLATES, GRAPHIC_TEMPLATE_NAMES } from "./motion/templates.js
 import { EXPORT_PRESETS, EXPORT_PRESET_NAMES } from "./ffmpeg/graph.js";
 import { inspectChapter, inspectProjectRange, projectOverview, transcriptWindow } from "./tang/read-model.js";
 import { dryRunEditPlan, editPlanSchema } from "./tang/edit-plan.js";
+import { applyEditPlanBatch, EDIT_BATCH_ID_PATTERN, restoreEditBatch } from "./tang/batch.js";
 
 /**
  * The RPC surface of the editor. Every editing operation is defined exactly
@@ -44,6 +45,17 @@ function parsePlannedOperationParams(
     throw new Error(`EditPlan operation "${rpcMethod}" must resolve to an object parameter payload.`);
   }
   return parsed.data as Record<string, unknown>;
+}
+
+function executePlannedOperation(
+  engine: EditorEngine,
+  rpcMethod: string,
+  params: Record<string, unknown>,
+): unknown {
+  const entry = plannedMethodCatalog?.[rpcMethod];
+  if (!entry) throw new Error(`Unknown RPC method "${rpcMethod}" in EditPlan operation.`);
+  const parsed = entry.schema.parse(params);
+  return entry.handler(engine, parsed as never);
 }
 
 /**
@@ -257,6 +269,20 @@ export const methods = {
       "Validate an EditPlan against the CURRENT project id/revision and existing RPC schemas, then predict affected clip/asset/track IDs and frame ranges WITHOUT executing any mutation. Stale plans, invalid references/ranges, and unsupported side-effecting methods fail closed.",
     schema: editPlanSchema,
     handler: (engine, p) => dryRunEditPlan(engine, p, parsePlannedOperationParams),
+  },
+
+  apply_edit_plan: {
+    description:
+      "Apply a CURRENT EditPlan as one checkpoint-backed coherent batch. A durable pre-batch .aive checkpoint and ordered audit are written before/while mutations execute. On mid-batch failure, remaining operations stop and the checkpoint is restored. This is recoverability, not database ACID.",
+    schema: editPlanSchema,
+    handler: (engine, p) => applyEditPlanBatch(engine, p, parsePlannedOperationParams, executePlannedOperation),
+  },
+
+  restore_edit_batch: {
+    description:
+      "Explicitly restore a durable pre-batch checkpoint by batchId. The current project must match the checkpoint project; recovery receives a fresh revision so stale plan tokens cannot be reused.",
+    schema: z.object({ batchId: z.string().regex(EDIT_BATCH_ID_PATTERN) }).strict(),
+    handler: (engine, p) => restoreEditBatch(engine, p.batchId),
   },
 
   import_video: {
