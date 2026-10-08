@@ -26,6 +26,14 @@ import { buildSignature, buildReferenceSample, signatureSimilarity } from "./med
 import { findAudioOffset, type AudioSyncResult } from "./media/audiosync.js";
 import { rankTranscript, type TranscriptHit } from "./media/search.js";
 import { embedImage, embedText, ensureClip, cosine } from "./media/clip.js";
+import {
+  createTangMetadata,
+  loadTangMetadata,
+  rebaseTangMetadata,
+  saveTangMetadata,
+  type TangMetadata,
+  type TangMetadataStatus,
+} from "./tang/metadata.js";
 import { trackSubject, buildCropPlan, cropPlanToSendcmd } from "./reframe/reframe.js";
 import { renderGraphic } from "./motion/render.js";
 import {
@@ -277,6 +285,10 @@ export class EditorEngine extends EventEmitter {
    * and extracted again on load. Live assets carry a `transcriptIndexed` marker.
    */
   private assetCaches = new Map<string, { transcript?: AssetTranscript; visualSig?: VisualSignature }>();
+  /** Tang orchestration/read metadata is derived state only. It is never edit/render truth. */
+  private tangMetadata: TangMetadata | null = null;
+  /** Diagnostic state of the on-disk sidecar last observed. */
+  private tangMetadataDiskStatus: TangMetadataStatus = { state: "unavailable" };
 
   /** Directory where previews, thumbnails and other render artifacts are written. */
   constructor(readonly dataDir: string) {
@@ -3291,6 +3303,33 @@ export class EditorEngine extends EventEmitter {
     return this.currentPath;
   }
 
+  /** Current Tang sidecar status. Live revision drift makes derived metadata stale immediately. */
+  getTangMetadataStatus(): TangMetadataStatus {
+    if (
+      this.tangMetadata &&
+      (this.tangMetadata.coreProjectId !== this.project.id || this.tangMetadata.basedOnRevision !== this.project.revision)
+    ) {
+      return {
+        state: "stale",
+        path: this.tangMetadataDiskStatus.path,
+        reason: "live_project_revision_changed",
+        coreProjectId: this.tangMetadata.coreProjectId,
+        basedOnRevision: this.tangMetadata.basedOnRevision,
+      };
+    }
+    return { ...this.tangMetadataDiskStatus };
+  }
+
+  /** Return derived metadata only when bound to the exact live project revision. */
+  getTangMetadata(): TangMetadata | null {
+    if (
+      !this.tangMetadata ||
+      this.tangMetadata.coreProjectId !== this.project.id ||
+      this.tangMetadata.basedOnRevision !== this.project.revision
+    ) return null;
+    return structuredClone(this.tangMetadata);
+  }
+
   /** True when the project has edits that haven't been written to disk yet. */
   isDirty(): boolean {
     return this.project.revision !== this.lastSavedRevision;
@@ -3327,6 +3366,27 @@ export class EditorEngine extends EventEmitter {
     await writeFile(path, JSON.stringify(this.serializableProject(), null, 2), "utf8");
     this.currentPath = path;
     this.lastSavedRevision = this.project.revision;
+    const metadata = createTangMetadata(
+      { id: this.project.id, revision: this.project.revision },
+      this.getTangMetadata() ?? this.tangMetadata,
+    );
+    try {
+      const metadataPath = await saveTangMetadata(path, metadata);
+      this.tangMetadata = metadata;
+      this.tangMetadataDiskStatus = {
+        state: "valid",
+        path: metadataPath,
+        coreProjectId: metadata.coreProjectId,
+        basedOnRevision: metadata.basedOnRevision,
+      };
+    } catch (err) {
+      // Sidecar is rebuildable derived state: never turn a successful .aive save into data loss/failure.
+      this.tangMetadata = metadata;
+      this.tangMetadataDiskStatus = {
+        state: "invalid",
+        reason: `sidecar_write_failed: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
     // The work is safely on disk — the crash-recovery snapshot is now stale.
     await this.clearRecoverySnapshot();
     // Re-emit so clients pick up the new name / file path in the state envelope.
@@ -3342,6 +3402,10 @@ export class EditorEngine extends EventEmitter {
     this.undoStack = [];
     this.redoStack = [];
     this.project = migrateProject(loaded);
+    // Validate against the persisted revision before load bumps the live session
+    // revision. Opening a project changes session revision but not edit semantics.
+    const persistedBinding = { id: this.project.id, revision: this.project.revision };
+    const loadedTang = await loadTangMetadata(path, persistedBinding);
     // Pull persisted transcripts/visual fingerprints OUT of the live project
     // into the engine cache (kept outside the undo history); leave markers.
     this.assetCaches.clear();
@@ -3359,6 +3423,19 @@ export class EditorEngine extends EventEmitter {
     this.canvasAdopted = true;
     this.currentPath = path;
     this.project.revision += 1;
+    const liveBinding = { id: this.project.id, revision: this.project.revision };
+    if (loadedTang.metadata) {
+      this.tangMetadata = rebaseTangMetadata(loadedTang.metadata, liveBinding);
+      this.tangMetadataDiskStatus = {
+        state: "valid",
+        path: loadedTang.status.path,
+        coreProjectId: this.project.id,
+        basedOnRevision: this.project.revision,
+      };
+    } else {
+      this.tangMetadata = createTangMetadata(liveBinding);
+      this.tangMetadataDiskStatus = loadedTang.status;
+    }
     this.lastSavedRevision = this.project.revision;
     this.emit("change", this.project);
     return this.project;
@@ -3416,6 +3493,8 @@ export class EditorEngine extends EventEmitter {
     }
     this.canvasAdopted = true;
     this.currentPath = undefined; // an .otio import has no .aive home yet
+    this.tangMetadata = null;
+    this.tangMetadataDiskStatus = { state: "unavailable", reason: "otio_import_not_saved_as_aive" };
     this.project.revision += 1;
     this.lastSavedRevision = this.project.revision;
     this.emit("change", this.project);
@@ -3429,6 +3508,8 @@ export class EditorEngine extends EventEmitter {
     this.canvasAdopted = false;
     this.currentPath = undefined;
     this.assetCaches.clear();
+    this.tangMetadata = null;
+    this.tangMetadataDiskStatus = { state: "unavailable" };
     this.project = defaultProject();
     this.lastSavedRevision = this.project.revision;
     this.emit("change", this.project);
