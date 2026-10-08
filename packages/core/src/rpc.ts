@@ -5,6 +5,7 @@ import { WHISPER_MODELS } from "./whisper/setup.js";
 import { GRAPHIC_TEMPLATES, GRAPHIC_TEMPLATE_NAMES } from "./motion/templates.js";
 import { EXPORT_PRESETS, EXPORT_PRESET_NAMES } from "./ffmpeg/graph.js";
 import { inspectChapter, inspectProjectRange, projectOverview, transcriptWindow } from "./tang/read-model.js";
+import { dryRunEditPlan, editPlanSchema } from "./tang/edit-plan.js";
 
 /**
  * The RPC surface of the editor. Every editing operation is defined exactly
@@ -26,6 +27,24 @@ export interface RpcMethod<S extends z.ZodTypeAny = z.ZodTypeAny> {
 }
 
 const empty = z.object({}).strict();
+
+let plannedMethodCatalog: Record<string, RpcMethod> | undefined;
+
+function parsePlannedOperationParams(
+  rpcMethod: string,
+  params: Record<string, unknown>,
+): Record<string, unknown> {
+  const entry = plannedMethodCatalog?.[rpcMethod];
+  if (!entry) throw new Error(`Unknown RPC method "${rpcMethod}" in EditPlan operation.`);
+  const parsed = entry.schema.safeParse(params);
+  if (!parsed.success) {
+    throw new Error(`Invalid params for EditPlan operation "${rpcMethod}": ${parsed.error.message}`);
+  }
+  if (!parsed.data || typeof parsed.data !== "object" || Array.isArray(parsed.data)) {
+    throw new Error(`EditPlan operation "${rpcMethod}" must resolve to an object parameter payload.`);
+  }
+  return parsed.data as Record<string, unknown>;
+}
 
 /**
  * Is `value` a color FFmpeg's drawtext/filters accept? That's a named color
@@ -231,6 +250,13 @@ export const methods = {
       radiusWords: z.number().int().min(0).max(100).optional(),
     }).strict(),
     handler: (engine, p) => transcriptWindow(engine, p),
+  },
+
+  dry_run_edit_plan: {
+    description:
+      "Validate an EditPlan against the CURRENT project id/revision and existing RPC schemas, then predict affected clip/asset/track IDs and frame ranges WITHOUT executing any mutation. Stale plans, invalid references/ranges, and unsupported side-effecting methods fail closed.",
+    schema: editPlanSchema,
+    handler: (engine, p) => dryRunEditPlan(engine, p, parsePlannedOperationParams),
   },
 
   import_video: {
@@ -1270,6 +1296,8 @@ export const methods = {
     },
   },
 } satisfies Record<string, RpcMethod>;
+
+plannedMethodCatalog = methods as Record<string, RpcMethod>;
 
 export type MethodName = keyof typeof methods;
 
