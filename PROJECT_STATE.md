@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `c0e62eb`
+HEAD: `68adf99`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001 + TVE-IMP-002 COMMITTED; TVE-IMP-003 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..003 COMMITTED; TVE-IMP-004 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -81,16 +81,17 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 ## Completed production tasks
 - `TVE-IMP-001 — Tang metadata sidecar foundation` — COMMITTED `622769d`
 - `TVE-IMP-002 — Bounded project/chapter/range/transcript read model` — COMMITTED `c0e62eb`
+- `TVE-IMP-003 — MCP bounded tool exposure and operator contract` — COMMITTED `68adf99`
 
 ## Active production task
-`TVE-IMP-003 — MCP bounded tool exposure and operator contract`
+`TVE-IMP-004 — EditPlan, revision guard and dry-run`
 
 Acceptance summary:
-- MCP exposes the bounded core read surfaces without bypassing shared RPC validation;
-- operator guidance prefers `project_overview → search/locate → inspect_range/inspect_chapter → get_transcript_window`;
-- ordinary long-form reasoning does not teach full `get_state` / full transcript as the default path;
-- revision/stale markers remain visible to the AI;
-- evidence + review + commit required before IMP-004.
+- EditPlan binds to projectId + basedOnRevision and fails closed on stale revision;
+- ordered operations/scope/rationale/evidence refs are validated before mutation;
+- dry-run is deterministic and produces affected IDs/ranges without mutating project state or revision;
+- invalid refs/ranges fail before mutation;
+- evidence + review + commit required before IMP-005.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -117,5 +118,13 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - `git diff --check`: PASS / exit 0.
 - Commit: PASS — `c0e62eb`.
 
+## Latest TVE-IMP-003 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-003.md`.
+- Final repaired MCP build: PASS / exit 0.
+- Real stdio MCP bounded-tools smoke: PASS / exit 0; 4/4 bounded tools `readOnlyHint=true`; payload parity with core RPC; generic registration intact at 98 tools.
+- Root typecheck: PASS / exit 0.
+- `git diff --check`: PASS / exit 0.
+- Commit: PASS — `68adf99`.
+
 ## NEXT_EXACT_ACTION
-Analyze `packages/mcp/src/index.ts`, `packages/mcp/src/guide.ts`, and generic core-client/method registration for `TVE-IMP-003`. Plan the smallest MCP exposure/operator-contract change that surfaces the already-committed bounded reads without duplicating core logic. Do not start IMP-004 until IMP-003 reaches its verified/committed boundary.
+Analyze frozen D-008 EditPlan envelope and current core revision/mutation validation for `TVE-IMP-004`; implement only validated/dry-runnable EditPlan after ANALYZE/PLAN, with stale revision and invalid refs producing zero mutation. Do not start IMP-005 until IMP-004 reaches its verified/committed boundary.
