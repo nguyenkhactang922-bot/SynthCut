@@ -4,6 +4,7 @@ import { clipDurationFrames, clipEndFrame } from "./types.js";
 import { WHISPER_MODELS } from "./whisper/setup.js";
 import { GRAPHIC_TEMPLATES, GRAPHIC_TEMPLATE_NAMES } from "./motion/templates.js";
 import { EXPORT_PRESETS, EXPORT_PRESET_NAMES } from "./ffmpeg/graph.js";
+import { inspectChapter, inspectProjectRange, projectOverview, transcriptWindow } from "./tang/read-model.js";
 
 /**
  * The RPC surface of the editor. Every editing operation is defined exactly
@@ -175,6 +176,61 @@ export const methods = {
       "THE VISION LOOP in one call: returns the timeline_summary (structure, in frames) AND a freshly rendered composited frame image at `atSeconds` (defaults to the midpoint) so you SEE the actual result. Call this after a batch of visual edits to verify structure + look together, then continue or fix.",
     schema: z.object({ atSeconds: z.number().min(0).optional() }).strict(),
     handler: async (engine, p) => ({ summary: summarizeTimeline(engine), frame: await engine.renderFrame(p.atSeconds) }),
+  },
+
+  project_overview: {
+    description:
+      "Return a bounded long-form overview: project identity/revision, duration/canvas/counts, compact asset summaries, chapter references, review markers, and index freshness. Ordinary payloads are capped to <=64 KiB.",
+    schema: empty,
+    handler: (engine) => projectOverview(engine),
+  },
+
+  inspect_range: {
+    description:
+      "Inspect only the current timeline range you need. Returns intersecting current clip IDs/frame ranges plus bounded transcript/marker context and a project revision token. Stale Tang chapter/index metadata is marked navigation-only and cannot authorize mutations.",
+    schema: z.object({
+      startFrame: z.number().int().min(0),
+      endFrame: z.number().int().positive(),
+      includeTranscript: z.boolean().optional(),
+      includeMarkers: z.boolean().optional(),
+      clipOffset: z.number().int().min(0).optional(),
+      transcriptOffset: z.number().int().min(0).optional(),
+      clipLimit: z.number().int().positive().max(200).optional(),
+      transcriptLimit: z.number().int().positive().max(300).optional(),
+    }).strict(),
+    handler: (engine, p) => inspectProjectRange(engine, p),
+  },
+
+  inspect_chapter: {
+    description:
+      "Resolve a Tang chapter reference to the SAME current core timeline and inspect only that frame range. Chapters are derived navigation indexes, never a second timeline. Fails with guidance when no chapter index exists.",
+    schema: z.object({
+      chapterId: z.string().min(1),
+      includeTranscript: z.boolean().optional(),
+      includeMarkers: z.boolean().optional(),
+      clipOffset: z.number().int().min(0).optional(),
+      transcriptOffset: z.number().int().min(0).optional(),
+      clipLimit: z.number().int().positive().max(200).optional(),
+      transcriptLimit: z.number().int().positive().max(300).optional(),
+    }).strict(),
+    handler: (engine, p) => {
+      const { chapterId, ...options } = p;
+      return inspectChapter(engine, chapterId, options);
+    },
+  },
+
+  get_transcript_window: {
+    description:
+      "Return a bounded numbered word window from an indexed asset transcript. Select by centerWord, centerSeconds, or startWord+endWord. The result carries current project revision/index freshness and never dumps the full long-form transcript by default.",
+    schema: z.object({
+      assetId: z.string().min(1),
+      centerWord: z.number().int().min(0).optional(),
+      centerSeconds: z.number().min(0).optional(),
+      startWord: z.number().int().min(0).optional(),
+      endWord: z.number().int().min(0).optional(),
+      radiusWords: z.number().int().min(0).max(100).optional(),
+    }).strict(),
+    handler: (engine, p) => transcriptWindow(engine, p),
   },
 
   import_video: {

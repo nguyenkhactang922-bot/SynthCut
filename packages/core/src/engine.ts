@@ -3330,6 +3330,14 @@ export class EditorEngine extends EventEmitter {
     return structuredClone(this.tangMetadata);
   }
 
+  /**
+   * Read-only navigation snapshot, including stale derived indexes. Callers MUST
+   * consult getTangMetadataStatus()/revision before using it to authorize edits.
+   */
+  getTangMetadataForNavigation(): TangMetadata | null {
+    return this.tangMetadata ? structuredClone(this.tangMetadata) : null;
+  }
+
   /** True when the project has edits that haven't been written to disk yet. */
   isDirty(): boolean {
     return this.project.revision !== this.lastSavedRevision;
