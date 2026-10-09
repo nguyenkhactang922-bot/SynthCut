@@ -180,16 +180,19 @@ Evidence: `docs/evidence/release/TVE-REL-003.md`
 Result: exact Windows FFmpeg pin + fail-closed version/hash gate; source offer/notices/package-lock/distribution-doc hashes recorded; 36 staged files independently re-hashed PASS; root typecheck + diff check PASS.
 
 ## TVE-REL-004 — Release-tool dependency security hardening
-Status: PASS / VERIFIED — COMMIT PENDING
+Status: DONE / PASS / COMMITTED — `20c8ff9`
 Dependencies: REL-003 committed at `e051b8d`
 Evidence: `docs/evidence/release/TVE-REL-004.md`
 Result: electron-builder upgraded non-force from 25.1.8 to 26.15.3; full audit reduced 11 high + 1 critical to 8 documented build-only moderate findings; production audit 0; build/typecheck/unpacked package smoke PASS.
 
 ## TVE-REL-005 — Release workflow + version metadata hardening
-Status: READY AFTER REL-004 COMMIT
+Status: PASS / VERIFIED — COMMIT PENDING
+Dependencies: REL-004 committed at `20c8ff9`
+Evidence: `docs/evidence/release/TVE-REL-005.md`
+Result: version set aligned at `1.0.6`; manual workflow is read-only/non-publishing; tag publication is fork-only + commercial-gated; upstream npm namespace publication disabled; artifact/version/tag negative gates PASS.
 
 ## TVE-REL-006 — Local packaged acceptance
-Status: BLOCKED BY REL-005
+Status: READY AFTER REL-005 COMMIT
 
 ## TVE-REL-007 — External commercial authorization gates
 Status: BLOCKED BY REL-006
@@ -211,4 +214,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-005 — Release workflow + version metadata hardening` immediately after the REL-004 task commit. Harden only version/tag/fork-release workflow and clean-source/provenance gates; do not publish and do not rerun prior product E2E.
+`TVE-REL-006 — Local packaged acceptance` immediately after the REL-005 task commit. Build real Windows NSIS + ZIP with `--publish never` from the release-configured source, verify artifact integrity/runtime/update metadata, and keep unsigned outputs test-only. Do not publish.

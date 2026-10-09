@@ -151,10 +151,10 @@ in place; details in
 From a checkout of this repo (without npm):
 `node packages/skill-installer/bin/synthcut.mjs`.
 
-> Maintainers: `npx @relo-video/synthcut` resolves once the package is published
-> (`npm publish --workspace @relo-video/synthcut` — scoped, so `publishConfig.access`
-> is already set to public); bump its version in lockstep with the other
-> packages (see `docs/RELEASING.md`).
+> Fork maintainers: the historical `@relo-video/synthcut` workspace package is
+> intentionally `private: true` in this fork and must **not** be published under
+> the upstream npm namespace. Run it directly from a checkout as shown above;
+> release/version rules live in `docs/RELEASING.md`.
 
 ## Install (packaged app)
 

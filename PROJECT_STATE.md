@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-004 PASS/VERIFIED; commit pending; REL-005 next`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-005 PASS/VERIFIED; commit pending; REL-006 next`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 PASS/VERIFIED (commit pending); REL-005 next; publication remains gated by REL-007
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 PASS/VERIFIED (commit pending); REL-006 next; publication remains gated by REL-007
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-004 — PASS / VERIFIED — COMMIT PENDING; TVE-REL-005 next`
+`TVE-REL-005 — PASS / VERIFIED — COMMIT PENDING; TVE-REL-006 next`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -100,7 +100,8 @@ Release baseline summary:
 - REL-001 commercial scope/audit/ADR/plan is PASS;
 - REL-002 fork identity/updater ownership is PASS with evidence `docs/evidence/release/TVE-REL-002.md`;
 - REL-003 provenance/source compliance is PASS/COMMITTED `e051b8d` with `docs/evidence/release/TVE-REL-003.md`;
-- REL-004 packaging/release-tool security hardening is PASS/VERIFIED with `docs/evidence/release/TVE-REL-004.md`; commit remains;
+- REL-004 packaging/release-tool security hardening is PASS/COMMITTED `20c8ff9` with `docs/evidence/release/TVE-REL-004.md`;
+- REL-005 release workflow/version hardening is PASS/VERIFIED with `docs/evidence/release/TVE-REL-005.md`; commit remains;
 - public commercial-ready publication is still fail-closed on Remotion license basis + trusted Windows signing at REL-007.
 
 ## Hard gate
@@ -273,7 +274,19 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Root typecheck: PASS / exit 0.
 - Unpacked Windows package smoke: PASS / exit 0; marker `REL004_PACK_SMOKE_EXIT=0`.
 - Compliance resources present; executable is intentionally `NotSigned`, carried to REL-007.
+- Commit: `20c8ff9`.
 - No package was published.
 
+## Latest TVE-REL-005 verification
+- Evidence: `docs/evidence/release/TVE-REL-005.md`.
+- Version alignment: all five package manifests + package-lock workspaces = `1.0.6`; no tag created.
+- Personal remote `v1.0.6`: absent; personal GitHub Releases: none.
+- `npm ci --dry-run --ignore-scripts`: PASS / exit 0.
+- Release validator: PASS; authorized tag simulation PASS; wrong repository and wrong tag rejected.
+- Artifact validator fixture: full set PASS; missing `latest.yml` rejected.
+- Workflow YAML parse + semantic permission/fork/gate verification: PASS.
+- Legacy `@relo-video/synthcut` npm publication disabled (`private:true`, no `publishConfig`).
+- No push/tag/release/npm publication occurred.
+
 ## NEXT_EXACT_ACTION
-Review/stage only REL-004 tracked changes, create the task-scoped commit, verify HEAD/status, then CLAIM `TVE-REL-005 — Release workflow + version metadata hardening`. Do not publish.
+Review/stage only REL-005 tracked changes, create the task-scoped commit, verify HEAD/status, then CLAIM `TVE-REL-006 — Local packaged acceptance`. Do not publish.
