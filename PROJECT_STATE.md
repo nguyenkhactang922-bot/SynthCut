@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-003 PASS/VERIFIED; task commit pending; REL-004 next`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-004 PASS/VERIFIED; commit pending; REL-005 next`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 PASS/VERIFIED (commit pending); REL-004 next; publication remains gated by REL-007
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 PASS/VERIFIED (commit pending); REL-005 next; publication remains gated by REL-007
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,15 +92,15 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-003 — PASS / VERIFIED — COMMIT PENDING; TVE-REL-004 next`
+`TVE-REL-004 — PASS / VERIFIED — COMMIT PENDING; TVE-REL-005 next`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
 - user authorized Windows GitHub Release on the personal fork plus commercial-distribution hardening (`B+C`);
 - REL-001 commercial scope/audit/ADR/plan is PASS;
 - REL-002 fork identity/updater ownership is PASS with evidence `docs/evidence/release/TVE-REL-002.md`;
-- REL-003 provenance/source compliance is PASS/VERIFIED with `docs/evidence/release/TVE-REL-003.md`; commit is the remaining closure action;
-- REL-004 packaging/release-tool security hardening is next after that commit;
+- REL-003 provenance/source compliance is PASS/COMMITTED `e051b8d` with `docs/evidence/release/TVE-REL-003.md`;
+- REL-004 packaging/release-tool security hardening is PASS/VERIFIED with `docs/evidence/release/TVE-REL-004.md`; commit remains;
 - public commercial-ready publication is still fail-closed on Remotion license basis + trusted Windows signing at REL-007.
 
 ## Hard gate
@@ -263,5 +263,17 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Focused `git diff --check`: PASS / exit 0.
 - No package or GitHub Release was published.
 
+## Latest TVE-REL-004 verification
+- Evidence: `docs/evidence/release/TVE-REL-004.md`.
+- electron-builder: `25.1.8` → `26.15.3`, explicit non-force release-tool upgrade.
+- Baseline full audit: 12 = 11 high + 1 critical.
+- Final full audit: 8 moderate, 0 high, 0 critical; residual chain is build-only and absent from unpacked runtime.
+- Production audit: 0 findings.
+- Root build: PASS / exit 0.
+- Root typecheck: PASS / exit 0.
+- Unpacked Windows package smoke: PASS / exit 0; marker `REL004_PACK_SMOKE_EXIT=0`.
+- Compliance resources present; executable is intentionally `NotSigned`, carried to REL-007.
+- No package was published.
+
 ## NEXT_EXACT_ACTION
-Review/stage only REL-003 tracked changes, create its task-scoped commit, verify HEAD/status, then CLAIM `TVE-REL-004 — Release-tool dependency security hardening`. Do not package or publish.
+Review/stage only REL-004 tracked changes, create the task-scoped commit, verify HEAD/status, then CLAIM `TVE-REL-005 — Release workflow + version metadata hardening`. Do not publish.
