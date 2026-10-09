@@ -21,7 +21,8 @@ import { transcribe, transcribeFull, type TranscriptCue } from "./whisper/transc
 import { parseSrt, parseVtt, formatSrt, formatVtt } from "./captions/srt.js";
 import { wrapText, maxCharsPerLine } from "./text/wrap.js";
 import { projectToOtio, otioToProject } from "./interop/otio.js";
-import { DEFAULT_MODEL, type WhisperModel } from "./whisper/setup.js";
+import { type WhisperModel } from "./whisper/setup.js";
+import { isVietnameseLanguage, resolveGuardedGapCut, resolveGuardedWordRemoval, resolveTranscriptionPolicy, VIETNAMESE_CUT_GUARD_SEC } from "./whisper/policy.js";
 import { buildSignature, buildReferenceSample, signatureSimilarity } from "./media/signature.js";
 import { findAudioOffset, type AudioSyncResult } from "./media/audiosync.js";
 import { rankTranscript, type TranscriptHit } from "./media/search.js";
@@ -1273,10 +1274,11 @@ export class EditorEngine extends EventEmitter {
       const wav = join(dir, `${assetId}.wav`);
       await runFfmpeg(["-hide_banner", "-i", asset.path, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", "-y", wav], { signal });
 
-      const model = opts.model ?? DEFAULT_MODEL;
+      const policy = resolveTranscriptionPolicy(opts);
+      const { model, language } = policy;
       let result: Awaited<ReturnType<typeof transcribeFull>>;
       try {
-        result = await transcribeFull(wav, { model, language: opts.language });
+        result = await transcribeFull(wav, { model, language });
       } finally {
         // The 16kHz WAV is only whisper's input — delete it as soon as
         // transcription settles instead of letting it pile up on disk.
@@ -1287,7 +1289,7 @@ export class EditorEngine extends EventEmitter {
         segments: result.cues.map((c) => ({ start: c.start, end: c.end, text: c.text })),
         words: result.words,
         model,
-        language: opts.language ?? "en",
+        language,
       };
       // Heavy data → engine cache (outside undo); the project only gets a marker.
       this.setCachedTranscript(assetId, transcript);
@@ -1430,10 +1432,15 @@ export class EditorEngine extends EventEmitter {
     framesRemoved: number;
     removedText: string[];
     ranges: { trackIndex: number; startFrame: number; endFrame: number }[];
+    reviewNeeded: { fromWord: number; toWord: number; text: string; reason: string; leftGapSec: number; rightGapSec: number }[];
   } {
     const words = this.requireWords(assetId);
+    const transcript = this.cachedTranscript(assetId);
+    const asset = this.getAsset(assetId);
+    const vietnamese = isVietnameseLanguage(transcript?.language);
     const secondRanges: { start: number; end: number }[] = [];
     const removedText: string[] = [];
+    const reviewNeeded: { fromWord: number; toWord: number; text: string; reason: string; leftGapSec: number; rightGapSec: number }[] = [];
     for (const r of wordRanges) {
       const from = Math.min(r.fromWord, r.toWord);
       const to = Math.max(r.fromWord, r.toWord);
@@ -1442,8 +1449,25 @@ export class EditorEngine extends EventEmitter {
           `Word range [${r.fromWord}, ${r.toWord}] is out of bounds — this transcript has words 0..${words.length - 1}. Read them with get_transcript.`,
         );
       }
-      secondRanges.push({ start: words[from].start, end: words[to].end });
-      removedText.push(words.slice(from, to + 1).map((w) => w.text).join(" "));
+      const text = words.slice(from, to + 1).map((w) => w.text).join(" ");
+      if (vietnamese) {
+        const safe = resolveGuardedWordRemoval(words, from, to, 0, asset.duration, VIETNAMESE_CUT_GUARD_SEC);
+        if (safe.status === "SAFE_NOOP") {
+          reviewNeeded.push({
+            fromWord: from,
+            toWord: to,
+            text,
+            reason: safe.reason,
+            leftGapSec: Number(safe.leftGapSec.toFixed(3)),
+            rightGapSec: Number(safe.rightGapSec.toFixed(3)),
+          });
+          continue;
+        }
+        secondRanges.push({ start: safe.removeStartSec, end: safe.removeEndSec });
+      } else {
+        secondRanges.push({ start: words[from].start, end: words[to].end });
+      }
+      removedText.push(text);
     }
     const merged = EditorEngine.mergeSecondRanges(secondRanges);
 
@@ -1457,13 +1481,14 @@ export class EditorEngine extends EventEmitter {
       );
     }
 
-    const timelineRanges = this.sourceRangesToTimelineRanges(placed, merged, padFrames);
+    const effectivePadFrames = vietnamese ? 0 : padFrames;
+    const timelineRanges = this.sourceRangesToTimelineRanges(placed, merged, effectivePadFrames);
     if (timelineRanges.length === 0) {
-      return { cuts: 0, framesRemoved: 0, removedText, ranges: [] };
+      return { cuts: 0, framesRemoved: 0, removedText, ranges: [], reviewNeeded };
     }
     this.rippleDeleteRanges(timelineRanges);
     const framesRemoved = timelineRanges.reduce((n, r) => n + (r.endFrame - r.startFrame), 0);
-    return { cuts: timelineRanges.length, framesRemoved, removedText, ranges: timelineRanges };
+    return { cuts: timelineRanges.length, framesRemoved, removedText, ranges: timelineRanges, reviewNeeded };
   }
 
   /** Default filler vocabulary for tightenTalk (normalized, lowercase). */
@@ -1477,13 +1502,21 @@ export class EditorEngine extends EventEmitter {
    */
   async tightenTalk(
     clipId: string,
-    opts: { removeFillers?: boolean; fillerWords?: string[]; maxPauseSec?: number; padFrames?: number } = {},
+    opts: {
+      removeFillers?: boolean;
+      fillerWords?: string[];
+      maxPauseSec?: number;
+      padFrames?: number;
+      model?: WhisperModel;
+      language?: string;
+    } = {},
   ): Promise<{
     removed: { type: "filler" | "pause"; text?: string; start: number; end: number }[];
     cuts: number;
     framesRemoved: number;
     oldDurationFrames: number;
     newDurationFrames: number;
+    reviewNeeded: { type: "filler" | "pause"; text?: string; start: number; end: number; reason: string }[];
   }> {
     const { clip, track } = this.findClip(clipId);
     const asset = this.requireClipAsset(clip, "tighten_talk");
@@ -1492,9 +1525,11 @@ export class EditorEngine extends EventEmitter {
     }
 
     if (!this.cachedTranscript(asset.id)?.words?.length) {
-      await this.indexTranscript(asset.id);
+      await this.indexTranscript(asset.id, { model: opts.model, language: opts.language });
     }
     const words = this.requireWords(asset.id);
+    const transcript = this.cachedTranscript(asset.id);
+    const vietnamese = isVietnameseLanguage(transcript?.language);
 
     const fps = this.project.fps;
     const inSec = clip.sourceInFrame / fps;
@@ -1513,6 +1548,26 @@ export class EditorEngine extends EventEmitter {
     const removeFillers = opts.removeFillers ?? true;
 
     const removed: { type: "filler" | "pause"; text?: string; start: number; end: number }[] = [];
+    const reviewNeeded: { type: "filler" | "pause"; text?: string; start: number; end: number; reason: string }[] = [];
+
+    const addWordRemoval = (from: number, to: number, text: string): void => {
+      if (!vietnamese) {
+        removed.push({ type: "filler", text, start: inWindow[from].start, end: inWindow[to].end });
+        return;
+      }
+      const safe = resolveGuardedWordRemoval(inWindow, from, to, inSec, outSec, VIETNAMESE_CUT_GUARD_SEC);
+      if (safe.status === "SAFE_NOOP") {
+        reviewNeeded.push({
+          type: "filler",
+          text,
+          start: inWindow[from].start,
+          end: inWindow[to].end,
+          reason: safe.reason,
+        });
+        return;
+      }
+      removed.push({ type: "filler", text, start: safe.removeStartSec, end: safe.removeEndSec });
+    };
 
     if (removeFillers) {
       for (let i = 0; i < inWindow.length; i++) {
@@ -1521,22 +1576,48 @@ export class EditorEngine extends EventEmitter {
         const prevGap = i === 0 ? Infinity : w.start - inWindow[i - 1].end;
         const nextGap = i === inWindow.length - 1 ? Infinity : inWindow[i + 1].start - w.end;
         if (fillers.has(norm)) {
-          removed.push({ type: "filler", text: w.text, start: w.start, end: w.end });
+          addWordRemoval(i, i, w.text);
         } else if (norm === "like" && prevGap >= 0.25 && nextGap >= 0.25) {
           // "like" is only a filler when isolated by pauses on both sides.
-          removed.push({ type: "filler", text: w.text, start: w.start, end: w.end });
+          addWordRemoval(i, i, w.text);
         } else if (norm === "you" && i + 1 < inWindow.length && normalize(inWindow[i + 1].text) === "know") {
-          removed.push({ type: "filler", text: `${w.text} ${inWindow[i + 1].text}`, start: w.start, end: inWindow[i + 1].end });
+          addWordRemoval(i, i + 1, `${w.text} ${inWindow[i + 1].text}`);
           i++; // consume "know"
         }
       }
     }
 
-    // Long pauses between consecutive words → shrink, leaving half of
-    // maxPauseSec of natural air (centered).
+    // Long pauses between consecutive words → shrink while preserving the
+    // frozen Vietnamese guard. Non-Vietnamese behavior is unchanged.
     for (let i = 1; i < inWindow.length; i++) {
       const gap = inWindow[i].start - inWindow[i - 1].end;
-      if (gap > maxPauseSec) {
+      if (gap <= maxPauseSec) continue;
+
+      if (vietnamese) {
+        const safeGap = resolveGuardedGapCut(inWindow[i - 1].end, inWindow[i].start, VIETNAMESE_CUT_GUARD_SEC);
+        if (safeGap.status === "SAFE_NOOP") {
+          reviewNeeded.push({
+            type: "pause",
+            start: inWindow[i - 1].end,
+            end: inWindow[i].start,
+            reason: safeGap.reason,
+          });
+          continue;
+        }
+        const retainedEachSide = Math.max(VIETNAMESE_CUT_GUARD_SEC, maxPauseSec / 4);
+        const start = inWindow[i - 1].end + retainedEachSide;
+        const end = inWindow[i].start - retainedEachSide;
+        if (end > start) {
+          removed.push({ type: "pause", start, end });
+        } else {
+          reviewNeeded.push({
+            type: "pause",
+            start: inWindow[i - 1].end,
+            end: inWindow[i].start,
+            reason: "insufficient_gap_after_pause_target_guard",
+          });
+        }
+      } else {
         const air = maxPauseSec / 2;
         removed.push({
           type: "pause",
@@ -1547,12 +1628,22 @@ export class EditorEngine extends EventEmitter {
     }
 
     if (removed.length === 0) {
-      return { removed: [], cuts: 0, framesRemoved: 0, oldDurationFrames: clipDurationFrames(clip), newDurationFrames: clipDurationFrames(clip) };
+      return {
+        removed: [],
+        cuts: 0,
+        framesRemoved: 0,
+        oldDurationFrames: clipDurationFrames(clip),
+        newDurationFrames: clipDurationFrames(clip),
+        reviewNeeded,
+      };
     }
 
     const merged = EditorEngine.mergeSecondRanges(removed.map((r) => ({ start: r.start, end: r.end })));
     // Cut this clip AND its linked members (same absolute ranges → stays in sync).
-    const primaryRanges = this.sourceRangesToTimelineRanges([{ clip, trackIndex: track.index }], merged, padFrames);
+    // Vietnamese guard calculations are in source seconds, so pad expansion is
+    // disabled there to avoid consuming the retained 120 ms breathing room.
+    const effectivePadFrames = vietnamese ? 0 : padFrames;
+    const primaryRanges = this.sourceRangesToTimelineRanges([{ clip, trackIndex: track.index }], merged, effectivePadFrames);
     const allRanges = [...primaryRanges];
     for (const member of this.linkedClips(clip)) {
       if (member.id === clip.id) continue;
@@ -1574,8 +1665,10 @@ export class EditorEngine extends EventEmitter {
       framesRemoved,
       oldDurationFrames,
       newDurationFrames: oldDurationFrames - framesRemoved,
+      reviewNeeded,
     };
   }
+
 
   /**
    * "Here's my script — assemble the cut": diff `keep` (the user's edited text)
@@ -2441,10 +2534,11 @@ export class EditorEngine extends EventEmitter {
       wav,
     ]);
 
-    const model = opts.model ?? DEFAULT_MODEL;
+    const policy = resolveTranscriptionPolicy(opts);
+    const { model, language } = policy;
     let cues: TranscriptCue[];
     try {
-      cues = await transcribe(wav, { model, language: opts.language, maxLen: opts.maxLen });
+      cues = await transcribe(wav, { model, language, maxLen: opts.maxLen });
     } finally {
       // The extracted WAV is only whisper's input — clean it up immediately.
       await rm(wav, { force: true }).catch(() => {});
@@ -2459,7 +2553,7 @@ export class EditorEngine extends EventEmitter {
       }))
       .filter((c) => c.endFrame > c.startFrame);
 
-    const captions: Captions = { cues: localCues, style: opts.style, model, language: opts.language ?? "en" };
+    const captions: Captions = { cues: localCues, style: opts.style, model, language };
 
     const updated = this.mutate(() => {
       const { clip: target } = this.findClip(clipId);

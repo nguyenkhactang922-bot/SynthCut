@@ -797,7 +797,7 @@ export const methods = {
 
   generate_captions: {
     description:
-      "Transcribe a clip's audio locally with Whisper and attach timed captions burned into the clip. Runs offline; the model auto-downloads on first use. Style with the open style fields or restyle later with set_caption_style. Returns the number of caption cues created.",
+      "Transcribe a clip's audio locally with Whisper and attach timed captions burned into the clip. Runs offline; the model auto-downloads on first use. Vietnamese requests (language=vi) use the frozen edit-grade large-v3-turbo policy and reject incompatible model overrides. Style with the open style fields or restyle later with set_caption_style. Returns the number of caption cues created.",
     schema: z
       .object({
         clipId: z.string(),
@@ -1142,7 +1142,7 @@ export const methods = {
 
   index_transcript: {
     description:
-      "Transcribe a WHOLE asset (local Whisper) and cache its transcript: segment cues AND word-level timestamps, making the asset searchable (search_transcript/locate_in_timeline) and TEXT-EDITABLE (delete_transcript_ranges/tighten_talk/edit_by_transcript). Run once per talking asset; idempotent. Returns {segmentCount, wordCount}. (Use generate_captions instead when you want burned-in on-screen captions for a placed clip.)",
+      "Transcribe a WHOLE asset (local Whisper) and cache its transcript: segment cues AND word-level timestamps, making the asset searchable and TEXT-EDITABLE. Vietnamese requests (language=vi) use the frozen edit-grade large-v3-turbo policy and reject incompatible model overrides. Run once per talking asset; idempotent. Returns {segmentCount, wordCount}.",
     schema: z.object({ assetId: z.string(), model: z.enum(WHISPER_MODELS).optional(), language: z.string().optional() }).strict(),
     handler: async (engine, p) => engine.indexTranscript(p.assetId, { model: p.model, language: p.language }),
   },
@@ -1175,7 +1175,7 @@ export const methods = {
   // ---- text-based editing (Descript-style, agent-driven) ---------------------
   delete_transcript_ranges: {
     description:
-      "TEXT-BASED EDITING: cut spoken content by WORD RANGE. Pass word indices from get_transcript's numbered words; every placed clip of that asset has the matching footage removed as frame-accurate ripple cuts (gaps close), all in ONE undo step. Optional padFrames expands each cut by that many frames on both sides (breathing room). Fails with guidance if the asset has no word-level transcript (run index_transcript) or no clips on the timeline. Returns {cuts, framesRemoved, removedText, ranges}.",
+      "TEXT-BASED EDITING: cut spoken content by WORD RANGE. For Vietnamese transcripts the frozen 120ms per-side guard is fail-closed: unsafe ranges are NOT cut and are returned in reviewNeeded; padFrames expansion is disabled so it cannot consume the retained guard. Non-Vietnamese behavior is unchanged. Returns {cuts, framesRemoved, removedText, ranges, reviewNeeded}.",
     schema: z
       .object({
         assetId: z.string(),
@@ -1190,7 +1190,7 @@ export const methods = {
 
   tighten_talk: {
     description:
-      "ONE-CALL talking-head cleanup: transcribes the clip's asset if needed (word-level), then removes filler words (default: um/uh/erm/hmm/…, the 'you know' bigram, and 'like' only when isolated by ≥0.25s pauses) and shrinks every pause longer than maxPauseSec (default 1.0s) down to half of it — as ONE ripple pass / undo step. Linked clips (detached audio) are cut in sync. padFrames (default 1) adds breathing room around each cut. Returns a reviewable report: each removed item with text + seconds, cut count, frames removed, old vs new duration. Run render_preview after to hear the result; undo reverts everything.",
+      "ONE-CALL talking-head cleanup: transcribes the clip asset if needed, removes filler words and shrinks long pauses in one undo step. Pass language=vi for Vietnamese: auto-index uses frozen large-v3-turbo/vi and every automatic removal keeps the 120ms per-side safety policy; unsafe candidates are returned in reviewNeeded instead of forced cuts. Linked clips stay in sync. Render preview/audio after to review the result.",
     schema: z
       .object({
         clipId: z.string(),
@@ -1198,6 +1198,8 @@ export const methods = {
         fillerWords: z.array(z.string().min(1)).max(100).optional(),
         maxPauseSec: z.number().min(0.2).max(10).optional(),
         padFrames: z.number().int().min(0).max(60).optional(),
+        model: z.enum(WHISPER_MODELS).optional(),
+        language: z.string().optional(),
       })
       .strict(),
     handler: async (engine, p) =>
@@ -1206,6 +1208,8 @@ export const methods = {
         fillerWords: p.fillerWords,
         maxPauseSec: p.maxPauseSec,
         padFrames: p.padFrames,
+        model: p.model,
+        language: p.language,
       }),
   },
 
