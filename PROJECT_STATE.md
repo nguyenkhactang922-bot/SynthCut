@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-006 repair coded and focused verification PASS; commit/package rerun pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-006 repair COMMITTED fe6e27b; affected package/runtime rerun pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-006 — REPAIR CODED / FOCUSED VERIFY PASS / COMMIT PENDING`
+`TVE-REL-006 — REPAIR COMMITTED fe6e27b / AFFECTED RERUN PENDING`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -306,6 +306,7 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - `node --check` for both affected CJS files: PASS.
 - Focused env-contract smoke: PASS; marker `REL006_PACKAGED_MCP_ENV_CONTRACT_PASS`.
 - No package/release publication occurred.
+- Repair commit: `fe6e27b`.
 
 ## NEXT_EXACT_ACTION
-Commit this focused repair plus state, sync the resulting HEAD in a clean checkpoint, then rerun only affected staging/build/package/runtime acceptance. Do not publish.
+Commit this post-repair state checkpoint, verify tracked source clean, then rerun only affected REL-006 staging/build/package/runtime acceptance. Do not publish.

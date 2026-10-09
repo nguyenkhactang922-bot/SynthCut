@@ -3,12 +3,12 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-006 — Local packaged acceptance`
-- STATUS: `REPAIR CODED / FOCUSED VERIFY PASS / COMMIT PENDING`
-- CURRENT_STAGE: `VERIFY / COMMIT — packaged MCP bundled-asset env propagation repair`
+- STATUS: `REPAIR COMMITTED / AFFECTED REL-006 RERUN PENDING`
+- CURRENT_STAGE: `PRE-PACKAGE CLEAN CHECKPOINT — rerun affected REL-006 stages only`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `e464502`
+- HEAD: `fe6e27b`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
-- LAST_VERIFIED_CHECKPOINT: `REL-006 repair focused verification PASS on e464502 worktree` — prior package/artifact stages remain PASS; bundled asset env helper exports only approved AIVE paths; packaged MCP config merges them; `node --check` on both CJS files PASS; marker `REL006_PACKAGED_MCP_ENV_CONTRACT_PASS`. Commit/package rerun pending.
+- LAST_VERIFIED_CHECKPOINT: `REL-006 repair COMMITTED fe6e27b` — prior package/artifact stages remain PASS; bundled asset env helper exports only approved AIVE paths; packaged MCP config merges them; `node --check` on both CJS files PASS; marker `REL006_PACKAGED_MCP_ENV_CONTRACT_PASS`. Affected staging/build/package/runtime rerun pending.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `pty_25a88433303bae79a0a4dea96c2420454896 — EXITED 0`
@@ -35,7 +35,7 @@
 - BLOCKERS:
   - `NONE` for REL-003..006 dependency-ready technical work.
   - Public/stable `COMMERCIAL_READY` release remains blocked at REL-007 until an explicit valid Remotion commercial/redistribution basis is recorded and a trusted Windows signing path is configured/verified.
-- NEXT_EXACT_ACTION: Commit the focused REL-006 MCP-env repair plus synchronized state, then create a clean post-commit state checkpoint and rerun only affected staging/build/package/runtime acceptance from that clean commit. Do not publish.
+- NEXT_EXACT_ACTION: Commit this post-repair state checkpoint, verify tracked source clean, then rerun only affected REL-006 staging/build/package/runtime acceptance from the resulting clean commit. Do not publish.
 - DO_NOT_REPEAT:
   - DISCOVER / original DEFINE / original RESEARCH;
   - completed DESIGN spikes and `TVE-FRZ-001`;
