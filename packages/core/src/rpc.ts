@@ -4,6 +4,10 @@ import { clipDurationFrames, clipEndFrame } from "./types.js";
 import { WHISPER_MODELS } from "./whisper/setup.js";
 import { GRAPHIC_TEMPLATES, GRAPHIC_TEMPLATE_NAMES } from "./motion/templates.js";
 import { EXPORT_PRESETS, EXPORT_PRESET_NAMES } from "./ffmpeg/graph.js";
+import { inspectChapter, inspectProjectRange, projectOverview, transcriptWindow } from "./tang/read-model.js";
+import { dryRunEditPlan, editPlanSchema } from "./tang/edit-plan.js";
+import { applyEditPlanBatch, EDIT_BATCH_ID_PATTERN, restoreEditBatch } from "./tang/batch.js";
+import { getQaEvidence, runQaVerification } from "./tang/qa.js";
 
 /**
  * The RPC surface of the editor. Every editing operation is defined exactly
@@ -25,6 +29,35 @@ export interface RpcMethod<S extends z.ZodTypeAny = z.ZodTypeAny> {
 }
 
 const empty = z.object({}).strict();
+
+let plannedMethodCatalog: Record<string, RpcMethod> | undefined;
+
+function parsePlannedOperationParams(
+  rpcMethod: string,
+  params: Record<string, unknown>,
+): Record<string, unknown> {
+  const entry = plannedMethodCatalog?.[rpcMethod];
+  if (!entry) throw new Error(`Unknown RPC method "${rpcMethod}" in EditPlan operation.`);
+  const parsed = entry.schema.safeParse(params);
+  if (!parsed.success) {
+    throw new Error(`Invalid params for EditPlan operation "${rpcMethod}": ${parsed.error.message}`);
+  }
+  if (!parsed.data || typeof parsed.data !== "object" || Array.isArray(parsed.data)) {
+    throw new Error(`EditPlan operation "${rpcMethod}" must resolve to an object parameter payload.`);
+  }
+  return parsed.data as Record<string, unknown>;
+}
+
+function executePlannedOperation(
+  engine: EditorEngine,
+  rpcMethod: string,
+  params: Record<string, unknown>,
+): unknown {
+  const entry = plannedMethodCatalog?.[rpcMethod];
+  if (!entry) throw new Error(`Unknown RPC method "${rpcMethod}" in EditPlan operation.`);
+  const parsed = entry.schema.parse(params);
+  return entry.handler(engine, parsed as never);
+}
 
 /**
  * Is `value` a color FFmpeg's drawtext/filters accept? That's a named color
@@ -175,6 +208,104 @@ export const methods = {
       "THE VISION LOOP in one call: returns the timeline_summary (structure, in frames) AND a freshly rendered composited frame image at `atSeconds` (defaults to the midpoint) so you SEE the actual result. Call this after a batch of visual edits to verify structure + look together, then continue or fix.",
     schema: z.object({ atSeconds: z.number().min(0).optional() }).strict(),
     handler: async (engine, p) => ({ summary: summarizeTimeline(engine), frame: await engine.renderFrame(p.atSeconds) }),
+  },
+
+  project_overview: {
+    description:
+      "Return a bounded long-form overview: project identity/revision, duration/canvas/counts, compact asset summaries, chapter references, review markers, and index freshness. Ordinary payloads are capped to <=64 KiB.",
+    schema: empty,
+    handler: (engine) => projectOverview(engine),
+  },
+
+  inspect_range: {
+    description:
+      "Inspect only the current timeline range you need. Returns intersecting current clip IDs/frame ranges plus bounded transcript/marker context and a project revision token. Stale Tang chapter/index metadata is marked navigation-only and cannot authorize mutations.",
+    schema: z.object({
+      startFrame: z.number().int().min(0),
+      endFrame: z.number().int().positive(),
+      includeTranscript: z.boolean().optional(),
+      includeMarkers: z.boolean().optional(),
+      clipOffset: z.number().int().min(0).optional(),
+      transcriptOffset: z.number().int().min(0).optional(),
+      clipLimit: z.number().int().positive().max(200).optional(),
+      transcriptLimit: z.number().int().positive().max(300).optional(),
+    }).strict(),
+    handler: (engine, p) => inspectProjectRange(engine, p),
+  },
+
+  inspect_chapter: {
+    description:
+      "Resolve a Tang chapter reference to the SAME current core timeline and inspect only that frame range. Chapters are derived navigation indexes, never a second timeline. Fails with guidance when no chapter index exists.",
+    schema: z.object({
+      chapterId: z.string().min(1),
+      includeTranscript: z.boolean().optional(),
+      includeMarkers: z.boolean().optional(),
+      clipOffset: z.number().int().min(0).optional(),
+      transcriptOffset: z.number().int().min(0).optional(),
+      clipLimit: z.number().int().positive().max(200).optional(),
+      transcriptLimit: z.number().int().positive().max(300).optional(),
+    }).strict(),
+    handler: (engine, p) => {
+      const { chapterId, ...options } = p;
+      return inspectChapter(engine, chapterId, options);
+    },
+  },
+
+  get_transcript_window: {
+    description:
+      "Return a bounded numbered word window from an indexed asset transcript. Select by centerWord, centerSeconds, or startWord+endWord. The result carries current project revision/index freshness and never dumps the full long-form transcript by default.",
+    schema: z.object({
+      assetId: z.string().min(1),
+      centerWord: z.number().int().min(0).optional(),
+      centerSeconds: z.number().min(0).optional(),
+      startWord: z.number().int().min(0).optional(),
+      endWord: z.number().int().min(0).optional(),
+      radiusWords: z.number().int().min(0).max(100).optional(),
+    }).strict(),
+    handler: (engine, p) => transcriptWindow(engine, p),
+  },
+
+  dry_run_edit_plan: {
+    description:
+      "Validate an EditPlan against the CURRENT project id/revision and existing RPC schemas, then predict affected clip/asset/track IDs and frame ranges WITHOUT executing any mutation. Stale plans, invalid references/ranges, and unsupported side-effecting methods fail closed.",
+    schema: editPlanSchema,
+    handler: (engine, p) => dryRunEditPlan(engine, p, parsePlannedOperationParams),
+  },
+
+  apply_edit_plan: {
+    description:
+      "Apply a CURRENT EditPlan as one checkpoint-backed coherent batch. A durable pre-batch .aive checkpoint and ordered audit are written before/while mutations execute. On mid-batch failure, remaining operations stop and the checkpoint is restored. This is recoverability, not database ACID.",
+    schema: editPlanSchema,
+    handler: (engine, p) => applyEditPlanBatch(engine, p, parsePlannedOperationParams, executePlannedOperation),
+  },
+
+  restore_edit_batch: {
+    description:
+      "Explicitly restore a durable pre-batch checkpoint by batchId. The current project must match the checkpoint project; recovery receives a fresh revision so stale plan tokens cannot be reused.",
+    schema: z.object({ batchId: z.string().regex(EDIT_BATCH_ID_PATTERN) }).strict(),
+    handler: (engine, p) => restoreEditBatch(engine, p.batchId),
+  },
+
+  run_qa_verification: {
+    description:
+      "Run revision-bound post-batch/final-delivery QA over the CURRENT project. The core computes structural checks, renders exact frame evidence, renders/probes a preview, optionally ffprobes final delivery, and writes a durable evidence record. Only PASS records are indexed into Tang evidenceRefs; stale/failed QA returns a correction/replan or restore-batch action instead of silent acceptance.",
+    schema: z.object({
+      projectId: z.string().min(1),
+      basedOnRevision: z.number().int().min(0),
+      mode: z.enum(["post_batch", "final_delivery"]).optional(),
+      batchId: z.string().regex(EDIT_BATCH_ID_PATTERN).optional(),
+      frameSeconds: z.array(z.number().min(0)).max(8).optional(),
+      deliveryPath: z.string().min(1).optional(),
+      requireAudio: z.boolean().optional(),
+    }).strict(),
+    handler: (engine, p) => runQaVerification(engine, p),
+  },
+
+  get_qa_evidence: {
+    description:
+      "Read one durable Tang QA evidence record by logical evidenceRef. This is evidence/verification state only and never edit truth.",
+    schema: z.object({ evidenceRef: z.string().min(1) }).strict(),
+    handler: (engine, p) => getQaEvidence(engine, p.evidenceRef),
   },
 
   import_video: {
@@ -689,7 +820,7 @@ export const methods = {
 
   generate_captions: {
     description:
-      "Transcribe a clip's audio locally with Whisper and attach timed captions burned into the clip. Runs offline; the model auto-downloads on first use. Style with the open style fields or restyle later with set_caption_style. Returns the number of caption cues created.",
+      "Transcribe a clip's audio locally with Whisper and attach timed captions burned into the clip. Runs offline; the model auto-downloads on first use. Vietnamese requests (language=vi) use the frozen edit-grade large-v3-turbo policy and reject incompatible model overrides. Style with the open style fields or restyle later with set_caption_style. Returns the number of caption cues created.",
     schema: z
       .object({
         clipId: z.string(),
@@ -1034,7 +1165,7 @@ export const methods = {
 
   index_transcript: {
     description:
-      "Transcribe a WHOLE asset (local Whisper) and cache its transcript: segment cues AND word-level timestamps, making the asset searchable (search_transcript/locate_in_timeline) and TEXT-EDITABLE (delete_transcript_ranges/tighten_talk/edit_by_transcript). Run once per talking asset; idempotent. Returns {segmentCount, wordCount}. (Use generate_captions instead when you want burned-in on-screen captions for a placed clip.)",
+      "Transcribe a WHOLE asset (local Whisper) and cache its transcript: segment cues AND word-level timestamps, making the asset searchable and TEXT-EDITABLE. Vietnamese requests (language=vi) use the frozen edit-grade large-v3-turbo policy and reject incompatible model overrides. Run once per talking asset; idempotent. Returns {segmentCount, wordCount}.",
     schema: z.object({ assetId: z.string(), model: z.enum(WHISPER_MODELS).optional(), language: z.string().optional() }).strict(),
     handler: async (engine, p) => engine.indexTranscript(p.assetId, { model: p.model, language: p.language }),
   },
@@ -1067,7 +1198,7 @@ export const methods = {
   // ---- text-based editing (Descript-style, agent-driven) ---------------------
   delete_transcript_ranges: {
     description:
-      "TEXT-BASED EDITING: cut spoken content by WORD RANGE. Pass word indices from get_transcript's numbered words; every placed clip of that asset has the matching footage removed as frame-accurate ripple cuts (gaps close), all in ONE undo step. Optional padFrames expands each cut by that many frames on both sides (breathing room). Fails with guidance if the asset has no word-level transcript (run index_transcript) or no clips on the timeline. Returns {cuts, framesRemoved, removedText, ranges}.",
+      "TEXT-BASED EDITING: cut spoken content by WORD RANGE. For Vietnamese transcripts the frozen 120ms per-side guard is fail-closed: unsafe ranges are NOT cut and are returned in reviewNeeded; padFrames expansion is disabled so it cannot consume the retained guard. Non-Vietnamese behavior is unchanged. Returns {cuts, framesRemoved, removedText, ranges, reviewNeeded}.",
     schema: z
       .object({
         assetId: z.string(),
@@ -1082,7 +1213,7 @@ export const methods = {
 
   tighten_talk: {
     description:
-      "ONE-CALL talking-head cleanup: transcribes the clip's asset if needed (word-level), then removes filler words (default: um/uh/erm/hmm/…, the 'you know' bigram, and 'like' only when isolated by ≥0.25s pauses) and shrinks every pause longer than maxPauseSec (default 1.0s) down to half of it — as ONE ripple pass / undo step. Linked clips (detached audio) are cut in sync. padFrames (default 1) adds breathing room around each cut. Returns a reviewable report: each removed item with text + seconds, cut count, frames removed, old vs new duration. Run render_preview after to hear the result; undo reverts everything.",
+      "ONE-CALL talking-head cleanup: transcribes the clip asset if needed, removes filler words and shrinks long pauses in one undo step. Pass language=vi for Vietnamese: auto-index uses frozen large-v3-turbo/vi and every automatic removal keeps the 120ms per-side safety policy; unsafe candidates are returned in reviewNeeded instead of forced cuts. Linked clips stay in sync. Render preview/audio after to review the result.",
     schema: z
       .object({
         clipId: z.string(),
@@ -1090,6 +1221,8 @@ export const methods = {
         fillerWords: z.array(z.string().min(1)).max(100).optional(),
         maxPauseSec: z.number().min(0.2).max(10).optional(),
         padFrames: z.number().int().min(0).max(60).optional(),
+        model: z.enum(WHISPER_MODELS).optional(),
+        language: z.string().optional(),
       })
       .strict(),
     handler: async (engine, p) =>
@@ -1098,6 +1231,8 @@ export const methods = {
         fillerWords: p.fillerWords,
         maxPauseSec: p.maxPauseSec,
         padFrames: p.padFrames,
+        model: p.model,
+        language: p.language,
       }),
   },
 
@@ -1214,6 +1349,8 @@ export const methods = {
     },
   },
 } satisfies Record<string, RpcMethod>;
+
+plannedMethodCatalog = methods as Record<string, RpcMethod>;
 
 export type MethodName = keyof typeof methods;
 

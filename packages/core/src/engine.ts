@@ -21,11 +21,20 @@ import { transcribe, transcribeFull, type TranscriptCue } from "./whisper/transc
 import { parseSrt, parseVtt, formatSrt, formatVtt } from "./captions/srt.js";
 import { wrapText, maxCharsPerLine } from "./text/wrap.js";
 import { projectToOtio, otioToProject } from "./interop/otio.js";
-import { DEFAULT_MODEL, type WhisperModel } from "./whisper/setup.js";
+import { type WhisperModel } from "./whisper/setup.js";
+import { isVietnameseLanguage, resolveGuardedGapCut, resolveGuardedWordRemoval, resolveTranscriptionPolicy, VIETNAMESE_CUT_GUARD_SEC } from "./whisper/policy.js";
 import { buildSignature, buildReferenceSample, signatureSimilarity } from "./media/signature.js";
 import { findAudioOffset, type AudioSyncResult } from "./media/audiosync.js";
 import { rankTranscript, type TranscriptHit } from "./media/search.js";
 import { embedImage, embedText, ensureClip, cosine } from "./media/clip.js";
+import {
+  createTangMetadata,
+  loadTangMetadata,
+  rebaseTangMetadata,
+  saveTangMetadata,
+  type TangMetadata,
+  type TangMetadataStatus,
+} from "./tang/metadata.js";
 import { trackSubject, buildCropPlan, cropPlanToSendcmd } from "./reframe/reframe.js";
 import { renderGraphic } from "./motion/render.js";
 import {
@@ -35,11 +44,13 @@ import {
   type Transform,
 } from "./keyframes.js";
 import {
+  buildFinalMuxCommand,
   buildRenderCommand,
   buildThumbnailCommand,
   previewCanvas,
   EXPORT_PROFILE,
   PREVIEW_PROFILE,
+  type RenderProfile,
   type ResolvedMusic,
 } from "./ffmpeg/graph.js";
 import {
@@ -218,6 +229,23 @@ export interface EngineEvents {
   job: (job: Job) => void;
 }
 
+/** Durable state captured before a coherent AI batch. Project JSON remains the only edit truth. */
+export interface EngineBatchCheckpoint {
+  project: Project;
+  currentPath?: string;
+  baselineDirty: boolean;
+  lastSavedRevision: number;
+  canvasAdopted: boolean;
+  tangMetadata: TangMetadata | null;
+  tangMetadataDiskStatus: TangMetadataStatus;
+}
+
+export interface TangBatchReferenceUpdate {
+  batchAuditRef?: string;
+  checkpointRef?: string;
+  evidenceRef?: string;
+}
+
 function defaultProject(): Project {
   const now = Date.now();
   return {
@@ -277,6 +305,14 @@ export class EditorEngine extends EventEmitter {
    * and extracted again on load. Live assets carry a `transcriptIndexed` marker.
    */
   private assetCaches = new Map<string, { transcript?: AssetTranscript; visualSig?: VisualSignature }>();
+  /** Tang orchestration/read metadata is derived state only. It is never edit/render truth. */
+  private tangMetadata: TangMetadata | null = null;
+  /** Diagnostic state of the on-disk sidecar last observed. */
+  private tangMetadataDiskStatus: TangMetadataStatus = { state: "unavailable" };
+  /** Narrow lock used only while a coherent AI batch is mutating/restoring state. */
+  private coherentBatchId: string | null = null;
+  /** Coalesce per-operation change events so clients never observe a partial coherent batch. */
+  private coherentBatchChangePending = false;
 
   /** Directory where previews, thumbnails and other render artifacts are written. */
   constructor(readonly dataDir: string) {
@@ -362,6 +398,36 @@ export class EditorEngine extends EventEmitter {
   }
 
   // ---- state access ----------------------------------------------------------
+  activeCoherentBatchId(): string | null {
+    return this.coherentBatchId;
+  }
+
+  beginCoherentBatch(batchId: string): void {
+    if (this.coherentBatchId) {
+      throw new Error('A coherent batch is already active: "' + this.coherentBatchId + '".');
+    }
+    this.coherentBatchId = batchId;
+    this.coherentBatchChangePending = false;
+  }
+
+  endCoherentBatch(batchId: string): void {
+    if (this.coherentBatchId !== batchId) {
+      throw new Error('Cannot end coherent batch "' + batchId + '"; active batch is "' + (this.coherentBatchId ?? 'none') + '".');
+    }
+    const shouldEmit = this.coherentBatchChangePending;
+    this.coherentBatchId = null;
+    this.coherentBatchChangePending = false;
+    if (shouldEmit) this.emit("change", this.project);
+  }
+
+  private emitProjectChange(): void {
+    if (this.coherentBatchId) {
+      this.coherentBatchChangePending = true;
+      return;
+    }
+    this.emit("change", this.project);
+  }
+
   getProject(): Project {
     return this.project;
   }
@@ -502,7 +568,7 @@ export class EditorEngine extends EventEmitter {
     const result = fn();
     this.project.revision += 1;
     this.project.updatedAt = Date.now();
-    this.emit("change", this.project);
+    this.emitProjectChange();
     return result;
   }
 
@@ -1208,10 +1274,11 @@ export class EditorEngine extends EventEmitter {
       const wav = join(dir, `${assetId}.wav`);
       await runFfmpeg(["-hide_banner", "-i", asset.path, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", "-y", wav], { signal });
 
-      const model = opts.model ?? DEFAULT_MODEL;
+      const policy = resolveTranscriptionPolicy(opts);
+      const { model, language } = policy;
       let result: Awaited<ReturnType<typeof transcribeFull>>;
       try {
-        result = await transcribeFull(wav, { model, language: opts.language });
+        result = await transcribeFull(wav, { model, language });
       } finally {
         // The 16kHz WAV is only whisper's input — delete it as soon as
         // transcription settles instead of letting it pile up on disk.
@@ -1222,7 +1289,7 @@ export class EditorEngine extends EventEmitter {
         segments: result.cues.map((c) => ({ start: c.start, end: c.end, text: c.text })),
         words: result.words,
         model,
-        language: opts.language ?? "en",
+        language,
       };
       // Heavy data → engine cache (outside undo); the project only gets a marker.
       this.setCachedTranscript(assetId, transcript);
@@ -1365,10 +1432,15 @@ export class EditorEngine extends EventEmitter {
     framesRemoved: number;
     removedText: string[];
     ranges: { trackIndex: number; startFrame: number; endFrame: number }[];
+    reviewNeeded: { fromWord: number; toWord: number; text: string; reason: string; leftGapSec: number; rightGapSec: number }[];
   } {
     const words = this.requireWords(assetId);
+    const transcript = this.cachedTranscript(assetId);
+    const asset = this.getAsset(assetId);
+    const vietnamese = isVietnameseLanguage(transcript?.language);
     const secondRanges: { start: number; end: number }[] = [];
     const removedText: string[] = [];
+    const reviewNeeded: { fromWord: number; toWord: number; text: string; reason: string; leftGapSec: number; rightGapSec: number }[] = [];
     for (const r of wordRanges) {
       const from = Math.min(r.fromWord, r.toWord);
       const to = Math.max(r.fromWord, r.toWord);
@@ -1377,8 +1449,25 @@ export class EditorEngine extends EventEmitter {
           `Word range [${r.fromWord}, ${r.toWord}] is out of bounds — this transcript has words 0..${words.length - 1}. Read them with get_transcript.`,
         );
       }
-      secondRanges.push({ start: words[from].start, end: words[to].end });
-      removedText.push(words.slice(from, to + 1).map((w) => w.text).join(" "));
+      const text = words.slice(from, to + 1).map((w) => w.text).join(" ");
+      if (vietnamese) {
+        const safe = resolveGuardedWordRemoval(words, from, to, 0, asset.duration, VIETNAMESE_CUT_GUARD_SEC);
+        if (safe.status === "SAFE_NOOP") {
+          reviewNeeded.push({
+            fromWord: from,
+            toWord: to,
+            text,
+            reason: safe.reason,
+            leftGapSec: Number(safe.leftGapSec.toFixed(3)),
+            rightGapSec: Number(safe.rightGapSec.toFixed(3)),
+          });
+          continue;
+        }
+        secondRanges.push({ start: safe.removeStartSec, end: safe.removeEndSec });
+      } else {
+        secondRanges.push({ start: words[from].start, end: words[to].end });
+      }
+      removedText.push(text);
     }
     const merged = EditorEngine.mergeSecondRanges(secondRanges);
 
@@ -1392,13 +1481,14 @@ export class EditorEngine extends EventEmitter {
       );
     }
 
-    const timelineRanges = this.sourceRangesToTimelineRanges(placed, merged, padFrames);
+    const effectivePadFrames = vietnamese ? 0 : padFrames;
+    const timelineRanges = this.sourceRangesToTimelineRanges(placed, merged, effectivePadFrames);
     if (timelineRanges.length === 0) {
-      return { cuts: 0, framesRemoved: 0, removedText, ranges: [] };
+      return { cuts: 0, framesRemoved: 0, removedText, ranges: [], reviewNeeded };
     }
     this.rippleDeleteRanges(timelineRanges);
     const framesRemoved = timelineRanges.reduce((n, r) => n + (r.endFrame - r.startFrame), 0);
-    return { cuts: timelineRanges.length, framesRemoved, removedText, ranges: timelineRanges };
+    return { cuts: timelineRanges.length, framesRemoved, removedText, ranges: timelineRanges, reviewNeeded };
   }
 
   /** Default filler vocabulary for tightenTalk (normalized, lowercase). */
@@ -1412,13 +1502,21 @@ export class EditorEngine extends EventEmitter {
    */
   async tightenTalk(
     clipId: string,
-    opts: { removeFillers?: boolean; fillerWords?: string[]; maxPauseSec?: number; padFrames?: number } = {},
+    opts: {
+      removeFillers?: boolean;
+      fillerWords?: string[];
+      maxPauseSec?: number;
+      padFrames?: number;
+      model?: WhisperModel;
+      language?: string;
+    } = {},
   ): Promise<{
     removed: { type: "filler" | "pause"; text?: string; start: number; end: number }[];
     cuts: number;
     framesRemoved: number;
     oldDurationFrames: number;
     newDurationFrames: number;
+    reviewNeeded: { type: "filler" | "pause"; text?: string; start: number; end: number; reason: string }[];
   }> {
     const { clip, track } = this.findClip(clipId);
     const asset = this.requireClipAsset(clip, "tighten_talk");
@@ -1427,9 +1525,11 @@ export class EditorEngine extends EventEmitter {
     }
 
     if (!this.cachedTranscript(asset.id)?.words?.length) {
-      await this.indexTranscript(asset.id);
+      await this.indexTranscript(asset.id, { model: opts.model, language: opts.language });
     }
     const words = this.requireWords(asset.id);
+    const transcript = this.cachedTranscript(asset.id);
+    const vietnamese = isVietnameseLanguage(transcript?.language);
 
     const fps = this.project.fps;
     const inSec = clip.sourceInFrame / fps;
@@ -1448,6 +1548,26 @@ export class EditorEngine extends EventEmitter {
     const removeFillers = opts.removeFillers ?? true;
 
     const removed: { type: "filler" | "pause"; text?: string; start: number; end: number }[] = [];
+    const reviewNeeded: { type: "filler" | "pause"; text?: string; start: number; end: number; reason: string }[] = [];
+
+    const addWordRemoval = (from: number, to: number, text: string): void => {
+      if (!vietnamese) {
+        removed.push({ type: "filler", text, start: inWindow[from].start, end: inWindow[to].end });
+        return;
+      }
+      const safe = resolveGuardedWordRemoval(inWindow, from, to, inSec, outSec, VIETNAMESE_CUT_GUARD_SEC);
+      if (safe.status === "SAFE_NOOP") {
+        reviewNeeded.push({
+          type: "filler",
+          text,
+          start: inWindow[from].start,
+          end: inWindow[to].end,
+          reason: safe.reason,
+        });
+        return;
+      }
+      removed.push({ type: "filler", text, start: safe.removeStartSec, end: safe.removeEndSec });
+    };
 
     if (removeFillers) {
       for (let i = 0; i < inWindow.length; i++) {
@@ -1456,22 +1576,48 @@ export class EditorEngine extends EventEmitter {
         const prevGap = i === 0 ? Infinity : w.start - inWindow[i - 1].end;
         const nextGap = i === inWindow.length - 1 ? Infinity : inWindow[i + 1].start - w.end;
         if (fillers.has(norm)) {
-          removed.push({ type: "filler", text: w.text, start: w.start, end: w.end });
+          addWordRemoval(i, i, w.text);
         } else if (norm === "like" && prevGap >= 0.25 && nextGap >= 0.25) {
           // "like" is only a filler when isolated by pauses on both sides.
-          removed.push({ type: "filler", text: w.text, start: w.start, end: w.end });
+          addWordRemoval(i, i, w.text);
         } else if (norm === "you" && i + 1 < inWindow.length && normalize(inWindow[i + 1].text) === "know") {
-          removed.push({ type: "filler", text: `${w.text} ${inWindow[i + 1].text}`, start: w.start, end: inWindow[i + 1].end });
+          addWordRemoval(i, i + 1, `${w.text} ${inWindow[i + 1].text}`);
           i++; // consume "know"
         }
       }
     }
 
-    // Long pauses between consecutive words → shrink, leaving half of
-    // maxPauseSec of natural air (centered).
+    // Long pauses between consecutive words → shrink while preserving the
+    // frozen Vietnamese guard. Non-Vietnamese behavior is unchanged.
     for (let i = 1; i < inWindow.length; i++) {
       const gap = inWindow[i].start - inWindow[i - 1].end;
-      if (gap > maxPauseSec) {
+      if (gap <= maxPauseSec) continue;
+
+      if (vietnamese) {
+        const safeGap = resolveGuardedGapCut(inWindow[i - 1].end, inWindow[i].start, VIETNAMESE_CUT_GUARD_SEC);
+        if (safeGap.status === "SAFE_NOOP") {
+          reviewNeeded.push({
+            type: "pause",
+            start: inWindow[i - 1].end,
+            end: inWindow[i].start,
+            reason: safeGap.reason,
+          });
+          continue;
+        }
+        const retainedEachSide = Math.max(VIETNAMESE_CUT_GUARD_SEC, maxPauseSec / 4);
+        const start = inWindow[i - 1].end + retainedEachSide;
+        const end = inWindow[i].start - retainedEachSide;
+        if (end > start) {
+          removed.push({ type: "pause", start, end });
+        } else {
+          reviewNeeded.push({
+            type: "pause",
+            start: inWindow[i - 1].end,
+            end: inWindow[i].start,
+            reason: "insufficient_gap_after_pause_target_guard",
+          });
+        }
+      } else {
         const air = maxPauseSec / 2;
         removed.push({
           type: "pause",
@@ -1482,12 +1628,22 @@ export class EditorEngine extends EventEmitter {
     }
 
     if (removed.length === 0) {
-      return { removed: [], cuts: 0, framesRemoved: 0, oldDurationFrames: clipDurationFrames(clip), newDurationFrames: clipDurationFrames(clip) };
+      return {
+        removed: [],
+        cuts: 0,
+        framesRemoved: 0,
+        oldDurationFrames: clipDurationFrames(clip),
+        newDurationFrames: clipDurationFrames(clip),
+        reviewNeeded,
+      };
     }
 
     const merged = EditorEngine.mergeSecondRanges(removed.map((r) => ({ start: r.start, end: r.end })));
     // Cut this clip AND its linked members (same absolute ranges → stays in sync).
-    const primaryRanges = this.sourceRangesToTimelineRanges([{ clip, trackIndex: track.index }], merged, padFrames);
+    // Vietnamese guard calculations are in source seconds, so pad expansion is
+    // disabled there to avoid consuming the retained 120 ms breathing room.
+    const effectivePadFrames = vietnamese ? 0 : padFrames;
+    const primaryRanges = this.sourceRangesToTimelineRanges([{ clip, trackIndex: track.index }], merged, effectivePadFrames);
     const allRanges = [...primaryRanges];
     for (const member of this.linkedClips(clip)) {
       if (member.id === clip.id) continue;
@@ -1509,8 +1665,10 @@ export class EditorEngine extends EventEmitter {
       framesRemoved,
       oldDurationFrames,
       newDurationFrames: oldDurationFrames - framesRemoved,
+      reviewNeeded,
     };
   }
+
 
   /**
    * "Here's my script — assemble the cut": diff `keep` (the user's edited text)
@@ -2376,10 +2534,11 @@ export class EditorEngine extends EventEmitter {
       wav,
     ]);
 
-    const model = opts.model ?? DEFAULT_MODEL;
+    const policy = resolveTranscriptionPolicy(opts);
+    const { model, language } = policy;
     let cues: TranscriptCue[];
     try {
-      cues = await transcribe(wav, { model, language: opts.language, maxLen: opts.maxLen });
+      cues = await transcribe(wav, { model, language, maxLen: opts.maxLen });
     } finally {
       // The extracted WAV is only whisper's input — clean it up immediately.
       await rm(wav, { force: true }).catch(() => {});
@@ -2394,7 +2553,7 @@ export class EditorEngine extends EventEmitter {
       }))
       .filter((c) => c.endFrame > c.startFrame);
 
-    const captions: Captions = { cues: localCues, style: opts.style, model, language: opts.language ?? "en" };
+    const captions: Captions = { cues: localCues, style: opts.style, model, language };
 
     const updated = this.mutate(() => {
       const { clip: target } = this.findClip(clipId);
@@ -2502,7 +2661,22 @@ export class EditorEngine extends EventEmitter {
    * Render-cache instrumentation (read by smoke-cache): how many segments were
    * re-encoded vs served from cache, and how often the single-pass path ran.
    */
-  readonly renderStats = { segmentRenders: 0, segmentCacheHits: 0, singlePassRenders: 0 };
+  readonly renderStats = {
+    segmentRenders: 0,
+    segmentCacheHits: 0,
+    audioSegmentRenders: 0,
+    audioSegmentCacheHits: 0,
+    singlePassRenders: 0,
+    maxSegmentInputs: 0,
+    maxSegmentCommandChars: 0,
+  };
+
+  private recordBoundedCommand(args: string[]): void {
+    const inputCount = args.filter((arg) => arg === "-i").length;
+    const approxChars = args.reduce((total, arg) => total + arg.length + 3, 0);
+    this.renderStats.maxSegmentInputs = Math.max(this.renderStats.maxSegmentInputs, inputCount);
+    this.renderStats.maxSegmentCommandChars = Math.max(this.renderStats.maxSegmentCommandChars, approxChars);
+  }
 
   /** Full timeline extent in seconds (video + slipped audio), same math as graph.ts. */
   private fullTimelineSeconds(staged: ResolvedRenderClip[]): number {
@@ -2515,11 +2689,7 @@ export class EditorEngine extends EventEmitter {
     return Math.max(total, 1 / this.project.fps);
   }
 
-  /**
-   * Ensure one planned segment exists in the cache (render it if missing).
-   * Returns its path. Cache entries are video-only MPEG-TS at the preview
-   * canvas/profile; `hw` is the hardware encoder to try (falls back to sw).
-   */
+  /** Ensure one preview video segment exists in the cache. */
   private async ensureSegmentRendered(
     staged: ResolvedRenderClip[],
     cwd: string,
@@ -2531,11 +2701,10 @@ export class EditorEngine extends EventEmitter {
   ): Promise<string> {
     const dir = join(this.dataDir, "cache", "segments");
     await mkdir(dir, { recursive: true });
-    const key = segmentKey(staged, seg, canvas, PREVIEW_PROFILE, mtimes, hw);
+    const key = segmentKey(staged, seg, canvas, PREVIEW_PROFILE, mtimes, hw, { kind: "preview-video" });
     const path = join(dir, `${key}.ts`);
     if (await fileExists(path)) {
       this.renderStats.segmentCacheHits += 1;
-      // Touch for the GC's LRU ordering.
       const now = new Date();
       await utimes(path, now, now).catch(() => {});
       return path;
@@ -2549,74 +2718,230 @@ export class EditorEngine extends EventEmitter {
         hwEncoder: enc,
       });
     try {
-      await runFfmpeg(render(hw).args, { cwd, signal });
+      const primary = render(hw);
+      this.recordBoundedCommand(primary.args);
+      try {
+        await runFfmpeg(primary.args, { cwd, signal, totalDuration: primary.totalDuration });
+      } catch (err) {
+        if (signal?.aborted || !hw) throw err;
+        const fallback = render(null);
+        this.recordBoundedCommand(fallback.args);
+        await runFfmpeg(fallback.args, { cwd, signal, totalDuration: fallback.totalDuration });
+      }
+      await rename(tmp, path);
+      this.renderStats.segmentRenders += 1;
+      return path;
     } catch (err) {
-      if (signal?.aborted || !hw) throw err;
-      // A listed hardware encoder can still fail at runtime — retry software.
-      await runFfmpeg(render(null).args, { cwd, signal });
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
     }
-    await rename(tmp, path);
-    this.renderStats.segmentRenders += 1;
-    return path;
   }
 
-  /** Segment-cached preview: render only missing segments, concat, one audio pass. */
+  /** Ensure one full-resolution export video segment exists in its settings-aware cache. */
+  private async ensureExportVideoSegmentRendered(
+    staged: ResolvedRenderClip[],
+    cwd: string,
+    canvas: Canvas,
+    seg: PlannedSegment,
+    mtimes: Record<string, number>,
+    settings: ExportSettings | undefined,
+    hw: string | null,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const dir = join(this.dataDir, "cache", "export-segments");
+    await mkdir(dir, { recursive: true });
+    const key = segmentKey(staged, seg, canvas, EXPORT_PROFILE, mtimes, hw, { kind: "export-video", settings });
+    const path = join(dir, `${key}-v.ts`);
+    if (await fileExists(path)) {
+      this.renderStats.segmentCacheHits += 1;
+      const now = new Date();
+      await utimes(path, now, now).catch(() => {});
+      return path;
+    }
+    const tmp = `${path}.tmp-${process.pid}`;
+    const render = (enc: string | null) =>
+      buildRenderCommand(staged, canvas, tmp, EXPORT_PROFILE, undefined, settings, {
+        window: seg,
+        videoOnly: true,
+        mpegts: true,
+        hwEncoder: enc,
+      });
+    try {
+      const primary = render(hw);
+      this.recordBoundedCommand(primary.args);
+      try {
+        await runFfmpeg(primary.args, { cwd, signal, totalDuration: primary.totalDuration });
+      } catch (err) {
+        if (signal?.aborted || !hw) throw err;
+        const fallback = render(null);
+        this.recordBoundedCommand(fallback.args);
+        await runFfmpeg(fallback.args, { cwd, signal, totalDuration: fallback.totalDuration });
+      }
+      await rename(tmp, path);
+      this.renderStats.segmentRenders += 1;
+      return path;
+    } catch (err) {
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
+    }
+  }
+
+  /** Ensure one lossless PCM dialogue/audio segment exists in the bounded cache. */
+  private async ensureAudioSegmentRendered(
+    staged: ResolvedRenderClip[],
+    cwd: string,
+    canvas: Canvas,
+    seg: PlannedSegment,
+    mtimes: Record<string, number>,
+    profile: RenderProfile,
+    mode: "preview" | "export",
+    settings: ExportSettings | undefined,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const dir = join(this.dataDir, "cache", mode === "preview" ? "segments" : "export-segments");
+    await mkdir(dir, { recursive: true });
+    const key = segmentKey(
+      staged,
+      seg,
+      canvas,
+      profile,
+      mtimes,
+      null,
+      { kind: `${mode}-audio`, settings: mode === "export" ? settings : undefined },
+      "audio",
+    );
+    const path = join(dir, `${key}-a.wav`);
+    if (await fileExists(path)) {
+      this.renderStats.audioSegmentCacheHits += 1;
+      const now = new Date();
+      await utimes(path, now, now).catch(() => {});
+      return path;
+    }
+    const tmp = `${path}.tmp-${process.pid}`;
+    const command = buildRenderCommand(staged, canvas, tmp, profile, undefined, undefined, {
+      window: seg,
+      audioOnly: true,
+      pcmAudio: true,
+    });
+    this.recordBoundedCommand(command.args);
+    try {
+      await runFfmpeg(command.args, { cwd, signal, totalDuration: command.totalDuration });
+      await rename(tmp, path);
+      this.renderStats.audioSegmentRenders += 1;
+      return path;
+    } catch (err) {
+      await rm(tmp, { force: true }).catch(() => {});
+      throw err;
+    }
+  }
+
+  private async removePartialOutput(path: string): Promise<void> {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        await rm(path, { force: true });
+        return;
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+  }
+
+  /**
+   * Bounded long-form assembler shared by preview and compatible H.264/H.265
+   * export. Every segment command depends only on content intersecting its local
+   * window. Dialogue/audio is PCM per segment; AAC is encoded once at final mux.
+   */
+  private async renderBoundedTimeline(
+    mode: "preview" | "export",
+    outPath: string,
+    canvas: Canvas,
+    profile: RenderProfile,
+    settings: ExportSettings | undefined,
+    signal: AbortSignal,
+    onProgress: (fraction: number) => void,
+    hw: string | null,
+  ): Promise<RenderResult> {
+    const { clips: staged, cwd } = await this.stageRender();
+    const total = this.fullTimelineSeconds(staged);
+    const segments = planSegments(staged, total);
+    const mtimes = await collectMtimes(staged);
+    const transientDir = join(this.dataDir, "render", `bounded-${mode}-${process.pid}-${Date.now()}`);
+    await mkdir(transientDir, { recursive: true });
+
+    const videoPaths: string[] = [];
+    const audioPaths: string[] = [];
+    const totalUnits = Math.max(1, segments.length * 2 + 3);
+    let doneUnits = 0;
+    const publish = (sub = 0) => {
+      const fraction = Math.max(0, Math.min(1, (doneUnits + sub) / totalUnits));
+      onProgress(fraction);
+      this.emit("progress", { job: mode, fraction });
+    };
+
+    try {
+      for (const seg of segments) {
+        if (signal.aborted) throw new Error(`${mode === "preview" ? "Preview render" : "Export"} canceled`);
+        const videoPath = mode === "preview"
+          ? await this.ensureSegmentRendered(staged, cwd, canvas, seg, mtimes, hw, signal)
+          : await this.ensureExportVideoSegmentRendered(staged, cwd, canvas, seg, mtimes, settings, hw, signal);
+        videoPaths.push(videoPath);
+        doneUnits += 1;
+        publish();
+
+        audioPaths.push(
+          await this.ensureAudioSegmentRendered(staged, cwd, canvas, seg, mtimes, profile, mode, settings, signal),
+        );
+        doneUnits += 1;
+        publish();
+      }
+
+      const videoList = join(transientDir, "video-list.txt");
+      const audioList = join(transientDir, "audio-list.txt");
+      const joinedVideo = join(transientDir, "video.ts");
+      const joinedAudio = join(transientDir, "audio.wav");
+      await writeFile(videoList, videoPaths.map((path) => `file '${path.replace(/\\/g, "/")}'`).join("\n"), "utf8");
+      await writeFile(audioList, audioPaths.map((path) => `file '${path.replace(/\\/g, "/")}'`).join("\n"), "utf8");
+
+      const videoConcat = ["-hide_banner", "-f", "concat", "-safe", "0", "-i", videoList, "-c", "copy", "-y", joinedVideo];
+      this.recordBoundedCommand(videoConcat);
+      await runFfmpeg(videoConcat, { signal });
+      doneUnits += 1;
+      publish();
+
+      const audioConcat = ["-hide_banner", "-f", "concat", "-safe", "0", "-i", audioList, "-c", "copy", "-y", joinedAudio];
+      this.recordBoundedCommand(audioConcat);
+      await runFfmpeg(audioConcat, { signal });
+      doneUnits += 1;
+      publish();
+
+      const mux = buildFinalMuxCommand(joinedVideo, joinedAudio, outPath, total, profile, this.resolveMusic(), settings);
+      this.recordBoundedCommand(mux);
+      await runFfmpeg(mux, {
+        signal,
+        totalDuration: total,
+        onProgress: (fraction) => publish(fraction),
+      });
+      doneUnits += 1;
+      publish();
+      if (signal.aborted) throw new Error(`${mode === "preview" ? "Preview render" : "Export"} canceled`);
+      return { path: outPath, duration: total };
+    } catch (err) {
+      await this.removePartialOutput(outPath);
+      throw err;
+    } finally {
+      await rm(transientDir, { recursive: true, force: true }).catch(() => {});
+    }
+  }
+
+  /** Segment-cached bounded preview: video TS + PCM audio segments + one AAC final mux. */
   private async renderPreviewSegmented(
     outPath: string,
     signal: AbortSignal,
     onProgress: (fraction: number) => void,
   ): Promise<RenderResult> {
     const canvas = previewCanvas(this.canvas);
-    const { clips: staged, cwd } = await this.stageRender();
-    const total = this.fullTimelineSeconds(staged);
-    const segments = planSegments(staged, total);
-    const mtimes = await collectMtimes(staged);
     const hw = await pickHwEncoder("h264");
-
-    const segPaths: string[] = [];
-    for (let i = 0; i < segments.length; i++) {
-      if (signal.aborted) throw new Error("Preview render canceled");
-      segPaths.push(await this.ensureSegmentRendered(staged, cwd, canvas, segments[i], mtimes, hw, signal));
-      const f = ((i + 1) / segments.length) * 0.8;
-      onProgress(f);
-      this.emit("progress", { job: "preview", fraction: f });
-    }
-
-    // Concat list (bare ../-free absolute paths with forward slashes; keys are hex).
-    const listPath = join(this.dataDir, "cache", "segments", `concat-${Date.now()}.txt`);
-    await writeFile(listPath, segPaths.map((p) => `file '${p.replace(/\\/g, "/")}'`).join("\n"), "utf8");
-
-    // ONE cheap audio-only pass over the full timeline (mixing is fast).
-    const audioPath = `${outPath}.audio.m4a`;
-    const audio = buildRenderCommand(staged, canvas, audioPath, PREVIEW_PROFILE, this.resolveMusic(), undefined, {
-      audioOnly: true,
-    });
-    await runFfmpeg(audio.args, { cwd, signal, totalDuration: audio.totalDuration, onProgress: (f) => {
-      const g = 0.8 + f * 0.15;
-      onProgress(g);
-      this.emit("progress", { job: "preview", fraction: g });
-    } });
-
-    try {
-      // Lossless assembly: copy the concatenated video + the audio pass.
-      await runFfmpeg(
-        [
-          "-hide_banner",
-          "-f", "concat", "-safe", "0", "-i", listPath,
-          "-i", audioPath,
-          "-map", "0:v:0", "-map", "1:a:0",
-          "-c", "copy", "-movflags", "+faststart",
-          "-y", outPath,
-        ],
-        { signal },
-      );
-    } finally {
-      await rm(listPath, { force: true }).catch(() => {});
-      await rm(audioPath, { force: true }).catch(() => {});
-    }
-    onProgress(1);
-    this.emit("progress", { job: "preview", fraction: 1 });
-    return { path: outPath, duration: total };
+    return this.renderBoundedTimeline("preview", outPath, canvas, PREVIEW_PROFILE, undefined, signal, onProgress, hw);
   }
 
   async renderPreview(): Promise<RenderResult> {
@@ -2756,6 +3081,29 @@ export class EditorEngine extends EventEmitter {
 
     return this.jobs.start("export", `Export → ${basename(outputPath)}`, async (signal, onProgress) => {
       await mkdir(dirname(outputPath), { recursive: true });
+      const ext = (outputPath.split(".").pop() ?? "").toLowerCase();
+      const container = settings?.container ?? (ext === "webm" ? "webm" : ext === "mov" ? "mov" : "mp4");
+      const videoCodec = settings?.videoCodec ?? (container === "webm" ? "vp9" : "h264");
+      if (container !== "webm" && videoCodec !== "vp9") {
+        const boundedHw = settings?.hardware
+          ? await pickHwEncoder(videoCodec === "h265" ? "h265" : "h264")
+          : null;
+        const result = await this.renderBoundedTimeline(
+          "export",
+          outputPath,
+          this.canvas,
+          EXPORT_PROFILE,
+          settings,
+          signal,
+          onProgress,
+          boundedHw,
+        );
+        void pruneDataDir(this.dataDir).catch(() => {});
+        return result;
+      }
+
+      // WebM/VP9 retains the existing single-pass path because MPEG-TS segment
+      // concatenation is intentionally limited to H.264/H.265 MP4/MOV in v1.
       const { clips: staged, cwd } = await this.stageRender();
       // Export defaults to SOFTWARE encoding for quality; `hardware: true` opts
       // into NVENC/QSV/AMF/VideoToolbox for speed (with sw retry on failure).
@@ -3291,6 +3639,141 @@ export class EditorEngine extends EventEmitter {
     return this.currentPath;
   }
 
+  /** Capture a self-contained project snapshot plus only the session context needed for batch recovery. */
+  captureBatchCheckpoint(): EngineBatchCheckpoint {
+    return {
+      project: structuredClone(this.serializableProject()),
+      currentPath: this.currentPath,
+      baselineDirty: this.isDirty(),
+      lastSavedRevision: this.lastSavedRevision,
+      canvasAdopted: this.canvasAdopted,
+      tangMetadata: this.tangMetadata ? structuredClone(this.tangMetadata) : null,
+      tangMetadataDiskStatus: { ...this.tangMetadataDiskStatus },
+    };
+  }
+
+  /**
+   * Restore a coherent-batch checkpoint without turning the checkpoint path into
+   * the current project file. The restored semantic state gets a fresh revision
+   * so the failed/applied plan token can never be silently reused. Undo/redo is
+   * reset because this is checkpoint recovery, not an undo-stack transaction.
+   */
+  restoreBatchCheckpoint(checkpoint: EngineBatchCheckpoint): Project {
+    if (!checkpoint.project?.tracks || !Array.isArray(checkpoint.project.assets)) {
+      throw new Error("Batch checkpoint is not a valid .aive project snapshot");
+    }
+    const priorLiveRevision = this.project.revision;
+    const snapshotRevision = checkpoint.project.revision;
+    this.undoStack = [];
+    this.redoStack = [];
+    this.project = migrateProject(structuredClone(checkpoint.project));
+    this.assetCaches.clear();
+    for (const asset of this.project.assets) {
+      if (asset.transcript || asset.visualSig) {
+        this.assetCaches.set(asset.id, {
+          ...(asset.transcript ? { transcript: asset.transcript } : {}),
+          ...(asset.visualSig ? { visualSig: asset.visualSig } : {}),
+        });
+        asset.transcriptIndexed = !!asset.transcript;
+        delete asset.transcript;
+        delete asset.visualSig;
+      }
+    }
+    this.canvasAdopted = checkpoint.canvasAdopted;
+    this.currentPath = checkpoint.currentPath;
+    this.previewCache = null;
+    this.project.revision = Math.max(priorLiveRevision, snapshotRevision) + 1;
+    this.project.updatedAt = Date.now();
+    this.lastSavedRevision = checkpoint.baselineDirty ? checkpoint.lastSavedRevision : this.project.revision;
+
+    const binding = { id: this.project.id, revision: this.project.revision };
+    const capturedMetadata = checkpoint.tangMetadata;
+    if (
+      capturedMetadata &&
+      capturedMetadata.coreProjectId === this.project.id &&
+      capturedMetadata.basedOnRevision === snapshotRevision
+    ) {
+      this.tangMetadata = rebaseTangMetadata(capturedMetadata, binding);
+    } else {
+      this.tangMetadata = capturedMetadata ? structuredClone(capturedMetadata) : null;
+    }
+    if (this.tangMetadata) {
+      this.tangMetadataDiskStatus = {
+        state: "stale",
+        ...(checkpoint.tangMetadataDiskStatus.path ? { path: checkpoint.tangMetadataDiskStatus.path } : {}),
+        reason: "batch_restore_requires_project_save",
+        coreProjectId: this.project.id,
+        basedOnRevision: this.tangMetadata.basedOnRevision,
+      };
+    } else {
+      this.tangMetadataDiskStatus = { ...checkpoint.tangMetadataDiskStatus };
+    }
+    this.emitProjectChange();
+    return this.project;
+  }
+
+  /** Index durable batch/checkpoint/evidence logical refs in derived Tang metadata. */
+  recordTangBatchReferences(update: TangBatchReferenceUpdate): void {
+    const binding = { id: this.project.id, revision: this.project.revision };
+    const exact = this.getTangMetadata();
+    const navigation = this.getTangMetadataForNavigation();
+    const metadata = createTangMetadata(binding, exact);
+    if (!exact && navigation?.brief) metadata.brief = structuredClone(navigation.brief);
+    const appendUnique = (values: string[] | undefined, value: string | undefined): string[] | undefined => {
+      if (!value) return values ? [...values] : undefined;
+      return [...new Set([...(values ?? []), value])];
+    };
+    metadata.batchAuditRefs = appendUnique(exact?.batchAuditRefs ?? navigation?.batchAuditRefs, update.batchAuditRef);
+    metadata.checkpointRefs = appendUnique(exact?.checkpointRefs ?? navigation?.checkpointRefs, update.checkpointRef);
+    metadata.evidenceRefs = appendUnique(exact?.evidenceRefs ?? navigation?.evidenceRefs, update.evidenceRef);
+    this.tangMetadata = metadata;
+    const sidecarPath = this.tangMetadataDiskStatus.path;
+    this.tangMetadataDiskStatus = this.currentPath
+      ? {
+          state: "stale",
+          ...(sidecarPath ? { path: sidecarPath } : {}),
+          reason: "live_batch_refs_pending_project_save",
+          coreProjectId: metadata.coreProjectId,
+          basedOnRevision: metadata.basedOnRevision,
+        }
+      : { state: "unavailable", reason: "live_batch_refs_pending_first_project_save" };
+  }
+
+  /** Current Tang sidecar status. Live revision drift makes derived metadata stale immediately. */
+  getTangMetadataStatus(): TangMetadataStatus {
+    if (
+      this.tangMetadata &&
+      (this.tangMetadata.coreProjectId !== this.project.id || this.tangMetadata.basedOnRevision !== this.project.revision)
+    ) {
+      return {
+        state: "stale",
+        path: this.tangMetadataDiskStatus.path,
+        reason: "live_project_revision_changed",
+        coreProjectId: this.tangMetadata.coreProjectId,
+        basedOnRevision: this.tangMetadata.basedOnRevision,
+      };
+    }
+    return { ...this.tangMetadataDiskStatus };
+  }
+
+  /** Return derived metadata only when bound to the exact live project revision. */
+  getTangMetadata(): TangMetadata | null {
+    if (
+      !this.tangMetadata ||
+      this.tangMetadata.coreProjectId !== this.project.id ||
+      this.tangMetadata.basedOnRevision !== this.project.revision
+    ) return null;
+    return structuredClone(this.tangMetadata);
+  }
+
+  /**
+   * Read-only navigation snapshot, including stale derived indexes. Callers MUST
+   * consult getTangMetadataStatus()/revision before using it to authorize edits.
+   */
+  getTangMetadataForNavigation(): TangMetadata | null {
+    return this.tangMetadata ? structuredClone(this.tangMetadata) : null;
+  }
+
   /** True when the project has edits that haven't been written to disk yet. */
   isDirty(): boolean {
     return this.project.revision !== this.lastSavedRevision;
@@ -3327,6 +3810,27 @@ export class EditorEngine extends EventEmitter {
     await writeFile(path, JSON.stringify(this.serializableProject(), null, 2), "utf8");
     this.currentPath = path;
     this.lastSavedRevision = this.project.revision;
+    const metadata = createTangMetadata(
+      { id: this.project.id, revision: this.project.revision },
+      this.getTangMetadata() ?? this.tangMetadata,
+    );
+    try {
+      const metadataPath = await saveTangMetadata(path, metadata);
+      this.tangMetadata = metadata;
+      this.tangMetadataDiskStatus = {
+        state: "valid",
+        path: metadataPath,
+        coreProjectId: metadata.coreProjectId,
+        basedOnRevision: metadata.basedOnRevision,
+      };
+    } catch (err) {
+      // Sidecar is rebuildable derived state: never turn a successful .aive save into data loss/failure.
+      this.tangMetadata = metadata;
+      this.tangMetadataDiskStatus = {
+        state: "invalid",
+        reason: `sidecar_write_failed: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
     // The work is safely on disk — the crash-recovery snapshot is now stale.
     await this.clearRecoverySnapshot();
     // Re-emit so clients pick up the new name / file path in the state envelope.
@@ -3342,6 +3846,10 @@ export class EditorEngine extends EventEmitter {
     this.undoStack = [];
     this.redoStack = [];
     this.project = migrateProject(loaded);
+    // Validate against the persisted revision before load bumps the live session
+    // revision. Opening a project changes session revision but not edit semantics.
+    const persistedBinding = { id: this.project.id, revision: this.project.revision };
+    const loadedTang = await loadTangMetadata(path, persistedBinding);
     // Pull persisted transcripts/visual fingerprints OUT of the live project
     // into the engine cache (kept outside the undo history); leave markers.
     this.assetCaches.clear();
@@ -3359,6 +3867,19 @@ export class EditorEngine extends EventEmitter {
     this.canvasAdopted = true;
     this.currentPath = path;
     this.project.revision += 1;
+    const liveBinding = { id: this.project.id, revision: this.project.revision };
+    if (loadedTang.metadata) {
+      this.tangMetadata = rebaseTangMetadata(loadedTang.metadata, liveBinding);
+      this.tangMetadataDiskStatus = {
+        state: "valid",
+        path: loadedTang.status.path,
+        coreProjectId: this.project.id,
+        basedOnRevision: this.project.revision,
+      };
+    } else {
+      this.tangMetadata = createTangMetadata(liveBinding);
+      this.tangMetadataDiskStatus = loadedTang.status;
+    }
     this.lastSavedRevision = this.project.revision;
     this.emit("change", this.project);
     return this.project;
@@ -3416,6 +3937,8 @@ export class EditorEngine extends EventEmitter {
     }
     this.canvasAdopted = true;
     this.currentPath = undefined; // an .otio import has no .aive home yet
+    this.tangMetadata = null;
+    this.tangMetadataDiskStatus = { state: "unavailable", reason: "otio_import_not_saved_as_aive" };
     this.project.revision += 1;
     this.lastSavedRevision = this.project.revision;
     this.emit("change", this.project);
@@ -3429,6 +3952,8 @@ export class EditorEngine extends EventEmitter {
     this.canvasAdopted = false;
     this.currentPath = undefined;
     this.assetCaches.clear();
+    this.tangMetadata = null;
+    this.tangMetadataDiskStatus = { state: "unavailable" };
     this.project = defaultProject();
     this.lastSavedRevision = this.project.revision;
     this.emit("change", this.project);

@@ -594,6 +594,8 @@ interface Run {
   idxs: number[];
   /** Absolute timeline start of the run, in seconds. */
   startSec: number;
+  /** Audio slip applies only to a true single-clip run; joined transition runs historically ignore per-clip slip. */
+  audioOffset: number;
   trackIndex: number;
 }
 
@@ -606,8 +608,16 @@ function groupRuns(entries: { clip: ResolvedRenderClip; idx: number }[]): Run[] 
     if (joins && last) {
       last.clips.push(e.clip);
       last.idxs.push(e.idx);
+      // Preserve pre-windowing semantics: a joined transition run ignores J/L slip.
+      last.audioOffset = 0;
     } else {
-      runs.push({ clips: [e.clip], idxs: [e.idx], startSec: e.clip.startSec, trackIndex: e.clip.trackIndex });
+      runs.push({
+        clips: [e.clip],
+        idxs: [e.idx],
+        startSec: e.clip.startSec,
+        audioOffset: e.clip.audioOffset ?? 0,
+        trackIndex: e.clip.trackIndex,
+      });
     }
   }
   return runs;
@@ -684,8 +694,10 @@ export interface RenderOptions {
   window?: { start: number; end: number };
   /** Video-only render (no audio graph at all) — segment cache entries. */
   videoOnly?: boolean;
-  /** Audio-only render (no video graph) — the preview's single audio pass. */
+  /** Audio-only render (no video graph). May be windowed for bounded PCM segments. */
   audioOnly?: boolean;
+  /** For audio-only renders, emit 48 kHz stereo PCM WAV instead of a lossy codec. */
+  pcmAudio?: boolean;
   /** Wrap the output in MPEG-TS (losslessly concat-able segments). */
   mpegts?: boolean;
 }
@@ -700,8 +712,14 @@ export function buildRenderCommand(
   opts: RenderOptions = {},
 ): RenderCommand {
   const window = opts.window;
-  if (window && !opts.videoOnly) {
-    throw new Error("Windowed rendering is video-only (segments carry no audio; the preview runs one full audio pass).");
+  if (window && !opts.videoOnly && !opts.audioOnly) {
+    throw new Error("Windowed rendering must be video-only or audio-only; bounded A/V is assembled from separate segment streams.");
+  }
+  if (window && opts.audioOnly && music) {
+    throw new Error("Windowed audio segments exclude background music; mix music once after PCM segment concatenation.");
+  }
+  if (window && opts.audioOnly && settings?.loudnessTarget !== undefined) {
+    throw new Error("Windowed audio segments exclude loudness normalization; normalize once on the final joined mix.");
   }
   if (clips.length === 0 && !window && !opts.audioOnly) {
     throw new Error("Cannot render an empty timeline — add at least one clip.");
@@ -732,10 +750,41 @@ export function buildRenderCommand(
     list.push({ clip, idx });
     byTrack.set(clip.trackIndex, list);
   });
-  const runIntersects = (run: Run): boolean => {
-    if (!window) return true;
-    const runEnd = Math.max(...run.clips.map((c) => c.startSec + c.outDuration));
-    return run.startSec < window.end && runEnd > window.start;
+  /**
+   * Slice a full transition run down to only contiguous members that can
+   * contribute to the requested window. Without this, one long transition
+   * chain makes a tiny window depend on every source input in the project.
+   */
+  const windowRunSlices = (run: Run, audio: boolean): Run[] => {
+    if (!window) return [run];
+    const slices: Run[] = [];
+    let sliceStart = -1;
+    const intersects = (index: number): boolean => {
+      const clip = run.clips[index];
+      const shift = audio && run.clips.length === 1 ? run.audioOffset : 0;
+      const start = clip.startSec + shift;
+      return start < window.end && start + clip.outDuration > window.start;
+    };
+    for (let i = 0; i < run.clips.length; i++) {
+      const hit = intersects(i);
+      if (hit && sliceStart < 0) sliceStart = i;
+      const closes = sliceStart >= 0 && (!hit || i === run.clips.length - 1);
+      if (!closes) continue;
+      const end = hit && i === run.clips.length - 1 ? i + 1 : i;
+      const clipsSlice = run.clips.slice(sliceStart, end);
+      const idxsSlice = run.idxs.slice(sliceStart, end);
+      if (clipsSlice.length > 0) {
+        slices.push({
+          clips: clipsSlice,
+          idxs: idxsSlice,
+          startSec: clipsSlice[0].startSec,
+          audioOffset: run.audioOffset,
+          trackIndex: run.trackIndex,
+        });
+      }
+      sliceStart = -1;
+    }
+    return slices;
   };
   const videoRuns: Run[] = [];
   const audioRuns: Run[] = [];
@@ -745,13 +794,16 @@ export function buildRenderCommand(
     // clip (wav/mp3 on a video track) has no [N:v] stream, so it must neither
     // join a video run nor sit inside one as a dangling label.
     if (!opts.audioOnly) {
-      for (const run of groupRuns(list.filter((e) => e.clip.showVideo))) {
-        if (runIntersects(run)) videoRuns.push(run);
+      for (const fullRun of groupRuns(list.filter((e) => e.clip.showVideo))) {
+        videoRuns.push(...windowRunSlices(fullRun, false));
       }
     }
-    for (const run of groupRuns(list)) {
-      if (!runIntersects(run)) continue;
-      if (!opts.videoOnly && run.clips.some((c) => c.hasAudio && !c.muted)) audioRuns.push(run);
+    if (!opts.videoOnly) {
+      for (const fullRun of groupRuns(list)) {
+        for (const run of windowRunSlices(fullRun, true)) {
+          if (run.clips.some((c) => c.hasAudio && !c.muted)) audioRuns.push(run);
+        }
+      }
     }
   }
 
@@ -979,8 +1031,18 @@ export function buildRenderCommand(
         cur = `[${out}]`;
       }
       // Place at the run start; for a single clip also apply its audio slip (J/L).
-      const offset = run.clips.length === 1 ? run.clips[0].audioOffset ?? 0 : 0;
-      const startMs = Math.round(Math.max(0, run.startSec + offset) * 1000);
+      // Windowed audio keeps the absolute clip-local audio processing above, then
+      // trims only the portion before the requested window and re-bases placement.
+      const offset = run.audioOffset;
+      let startSec = rel(run.startSec + offset);
+      if (window && startSec < -1e-6) {
+        const cut = -startSec;
+        const out = `awin${r}`;
+        filterParts.push(`${cur}atrim=start=${cut.toFixed(6)},asetpts=PTS-STARTPTS[${out}]`);
+        cur = `[${out}]`;
+        startSec = 0;
+      }
+      const startMs = Math.round(Math.max(0, startSec) * 1000);
       if (startMs > 0) {
         const out = `ad${r}`;
         filterParts.push(`${cur}adelay=${startMs}:all=1[${out}]`);
@@ -1046,7 +1108,9 @@ export function buildRenderCommand(
       })
       .concat("-an");
   } else if (opts.audioOnly) {
-    codecArgs = ["-vn", "-c:a", "aac", "-b:a", profile.audioBitrate];
+    codecArgs = opts.pcmAudio
+      ? ["-vn", "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2", "-f", "wav"]
+      : ["-vn", "-c:a", "aac", "-b:a", profile.audioBitrate];
   } else {
     codecArgs = exportCodecArgs(settings, profile, outputPath, opts.hwEncoder);
   }
@@ -1068,6 +1132,70 @@ export function buildRenderCommand(
   ];
 
   return { args, totalDuration: total };
+}
+
+/**
+ * Assemble already-concatenated bounded video + PCM dialogue into the final
+ * container. Background music/ducking and loudness normalization happen here
+ * exactly once, so segment boundaries cannot reset fades/compressor state and
+ * AAC/Opus priming is introduced only by this final encode.
+ */
+export function buildFinalMuxCommand(
+  videoPath: string,
+  dialoguePcmPath: string,
+  outputPath: string,
+  totalDuration: number,
+  profile: RenderProfile,
+  music?: ResolvedMusic,
+  settings?: ExportSettings,
+): string[] {
+  const ext = (outputPath.split(".").pop() ?? "").toLowerCase();
+  const container = settings?.container ?? (ext === "webm" ? "webm" : ext === "mov" ? "mov" : "mp4");
+  const videoCodec = settings?.videoCodec ?? (container === "webm" ? "vp9" : "h264");
+  if (container === "webm" || videoCodec === "vp9") {
+    throw new Error("Bounded segment mux currently supports H.264/H.265 MP4/MOV; use the single-pass path for WebM/VP9.");
+  }
+
+  const args: string[] = ["-hide_banner", "-i", videoPath, "-i", dialoguePcmPath];
+  const filterParts = [
+    `[1:a]asetpts=PTS-STARTPTS,aresample=48000,apad,atrim=0:${totalDuration.toFixed(6)}[paud]`,
+  ];
+  let audioOut = "[paud]";
+
+  if (music) {
+    args.push("-stream_loop", "-1", "-t", totalDuration.toFixed(6), "-i", music.path);
+    const mSteps = ["asetpts=PTS-STARTPTS", "aresample=48000", `volume=${music.volume}`];
+    if (music.fadeIn && music.fadeIn > 0) mSteps.push(`afade=t=in:st=0:d=${music.fadeIn.toFixed(3)}`);
+    if (music.fadeOut && music.fadeOut > 0) {
+      mSteps.push(`afade=t=out:st=${Math.max(0, totalDuration - music.fadeOut).toFixed(3)}:d=${music.fadeOut.toFixed(3)}`);
+    }
+    filterParts.push(`[2:a]${mSteps.join(",")}[mraw]`);
+    if (music.duck) {
+      filterParts.push("[paud]asplit=2[pmix][pside]");
+      filterParts.push("[mraw][pside]sidechaincompress=threshold=0.03:ratio=8:attack=20:release=300:level_sc=1[mduck]");
+      filterParts.push("[pmix][mduck]amix=inputs=2:duration=first:normalize=0[outa]");
+    } else {
+      filterParts.push("[paud][mraw]amix=inputs=2:duration=first:normalize=0[outa]");
+    }
+    audioOut = "[outa]";
+  }
+
+  if (settings?.loudnessTarget !== undefined) {
+    const I = clampN(settings.loudnessTarget, -70, -5);
+    const TP = clampN(settings.truePeak ?? -1.5, -9, 0);
+    filterParts.push(`${audioOut}loudnorm=I=${num(I)}:TP=${num(TP)}:LRA=11,aresample=48000[louda]`);
+    audioOut = "[louda]";
+  }
+
+  const audioCodec = settings?.audioCodec === "opus" ? "libopus" : "aac";
+  args.push(
+    "-filter_complex", filterParts.join(";"),
+    "-map", "0:v:0", "-map", audioOut,
+    "-c:v", "copy", "-c:a", audioCodec, "-b:a", settings?.audioBitrate ?? profile.audioBitrate,
+    "-t", totalDuration.toFixed(6), "-movflags", "+faststart",
+    "-progress", "pipe:1", "-nostats", "-y", outputPath,
+  );
+  return args;
 }
 
 /** Build an ffmpeg command that extracts a single thumbnail frame from a source. */

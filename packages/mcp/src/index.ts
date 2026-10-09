@@ -7,6 +7,7 @@ import { z } from "zod";
 import { methods } from "@aive/core/rpc";
 import { CoreClient } from "./core-client.js";
 import { EDITING_GUIDE, PLATFORM_INSTRUCTIONS, PLATFORM_PRESETS } from "./guide.js";
+import { buildLongFormPrompt } from "./tang/orchestration.js";
 
 /**
  * The MCP server. It does NOT hold editing state — it forwards every tool call
@@ -16,7 +17,8 @@ import { EDITING_GUIDE, PLATFORM_INSTRUCTIONS, PLATFORM_PRESETS } from "./guide.
 
 // Tools that only read state / analyze — hint this to clients.
 const READ_ONLY = new Set([
-  "get_state", "timeline_summary", "analyze_silence", "analyze_scenes", "generate_thumbnail", "get_frame",
+  "get_state", "timeline_summary", "project_overview", "inspect_range", "inspect_chapter", "get_transcript_window",
+  "analyze_silence", "analyze_scenes", "generate_thumbnail", "get_frame", "get_qa_evidence",
 ]);
 
 // Tools whose result `{ path }` is an image file we should hand back to the
@@ -187,6 +189,32 @@ async function main(): Promise<void> {
         ],
       };
     },
+  );
+
+  server.registerPrompt(
+    "edit_long_form",
+    {
+      description: "Start a bounded, revision-safe long-form editorial session (PROJECT→CHAPTER→SCENE/BEAT→EDIT ACTION).",
+      argsSchema: {
+        goal: z.string().min(1).describe("Editorial goal / audience promise for the long-form video"),
+        platform: z.enum(["vertical", "widescreen", "square"]).optional().describe("Target platform/aspect ratio"),
+        targetMinutes: z.string().refine((value) => { const minutes = Number(value); return Number.isFinite(minutes) && minutes > 0 && minutes <= 240; }, "targetMinutes must be a number between 0 and 240").optional().describe("Approximate target duration in minutes; defaults to 30"),
+        language: z.string().min(1).optional().describe("Spoken language code, e.g. vi"),
+      },
+    },
+    ({ goal, platform, targetMinutes, language }) => ({
+      messages: [
+        {
+          role: "user" as const,
+          content: {
+            type: "text" as const,
+            text:
+              `First read aive://guide/editing, then follow this long-form operating contract exactly:\n\n` +
+              buildLongFormPrompt({ goal, platform, targetMinutes: targetMinutes ? Number(targetMinutes) : undefined, language }),
+          },
+        },
+      ],
+    }),
   );
 
   const transport = new StdioServerTransport();
