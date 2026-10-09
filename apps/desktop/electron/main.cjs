@@ -16,11 +16,11 @@ const { applyBundledAssetEnv } = require("./bundled-assets.cjs");
 // groups our windows under one taskbar button. In a DEV run (not packaged) we use
 // a distinct name + AppUserModelID so a source build is a SEPARATE taskbar entry
 // and can't be confused with an installed copy. No effect on the shipped app.
-const APP_NAME = app.isPackaged ? "SynthCut by Relo" : "SynthCut by Relo (DEV)";
+const APP_NAME = app.isPackaged ? "Tang AI Video Editor" : "Tang AI Video Editor (DEV)";
 const APP_ICON = path.join(__dirname, "..", "build", "icon.ico");
 app.setName(APP_NAME);
 if (process.platform === "win32") {
-  app.setAppUserModelId(app.isPackaged ? "com.relo.synthcut" : "com.relo.synthcut.dev");
+  app.setAppUserModelId(app.isPackaged ? "com.tang.aivideoeditor" : "com.tang.aivideoeditor.dev");
 }
 
 let coreChild = null;
@@ -78,7 +78,7 @@ function setupAutoUpdate() {
       cancelId: 1,
       noLink: true,
       title: "Update ready",
-      message: `SynthCut ${info.version} has been downloaded.`,
+      message: `${APP_NAME} ${info.version} has been downloaded.`,
       detail: "Restart to install it — the update installs on next launch if you choose Later.",
     });
     if (choice === 0) {

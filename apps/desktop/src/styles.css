@@ -254,10 +254,8 @@ input[type="range"]:disabled { opacity: 0.45; }
 .topbar .proj-menu,
 .topbar .statuspill { -webkit-app-region: no-drag; }
 .brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; letter-spacing: 0.1px; }
-.brand-mark { color: var(--accent); display: inline-grid; place-items: center; }
-.brand-logo { width: 24px; height: 24px; object-fit: contain; display: block; }
+.brand-mark { width: 24px; height: 24px; color: var(--accent); display: inline-grid; place-items: center; font-weight: 800; }
 .brand-name { display: inline-flex; align-items: baseline; gap: 5px; }
-.brand-by { font-size: 11px; font-weight: 500; color: var(--ink-3); letter-spacing: 0.2px; }
 .brand b { font-weight: 600; }
 .brand .thin { color: var(--ink-3); font-weight: 500; }
 

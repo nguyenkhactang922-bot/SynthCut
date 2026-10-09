@@ -2,24 +2,24 @@
 
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
-Branch: `chatgpt/ai-video-editor-design`
-HEAD: `c921f9e`
+Branch: `chatgpt/phase7-commercial-release`
+HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..011 + TVE-E2E-001 COMMITTED; MAIN verification gate pending`
+`RELEASE & OPERATE — ACTIVE; commercial B+C re-entry completed through REL-001; TVE-REL-002 ACTIVE`
 
 ## Phase gates
-- DISCOVER: PASS
-- DEFINE: FROZEN FOR V1
-- RESEARCH: PASS
-- DESIGN: FROZEN — `TVE-FRZ-001 PASS`
-- PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — `TVE-E2E-001 PASS/COMMITTED c921f9e`; push/PR/review/merge/main verification remains
-- RELEASE & OPERATE: LOCKED until MAIN VERIFIED
+- DISCOVER: PASS — retained
+- DEFINE: V1 FROZEN + commercial release scope amendment PASS — `docs/define/COMMERCIAL_RELEASE_SCOPE_V1.md`
+- RESEARCH: V1 PASS + commercial redistribution audit PASS WITH HARD GATES — `docs/research/COMMERCIAL_REDISTRIBUTION_AUDIT_V1.md`
+- DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
+- PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
+- BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
+- RELEASE & OPERATE: ACTIVE — REL-001 PASS; REL-002 ACTIVE; publication remains gated by REL-007
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,19 +92,20 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`MAIN verification gate — TVE-E2E-001 is PASS/COMMITTED c921f9e; feature branch is not yet MAIN VERIFIED`
+`TVE-REL-003 — Third-party provenance + corresponding-source compliance — ACTIVE`
 
-Acceptance summary:
-- one authoritative 30-minute/~300-clip project proves integrated core/MCP/UI contracts;
-- bounded reads, stale-plan rejection, coherent rollback/recovery, Vietnamese fail-closed policy and viewport convergence are exercised together where cross-feature interaction matters;
-- jobs/cancel, final 1080p MP4, durable final-delivery QA, restart/persistence and error paths are proven;
-- CapCut is not required at runtime;
-- feature-branch E2E PASS does not by itself authorize MAIN VERIFIED.
+Release baseline summary:
+- prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
+- user authorized Windows GitHub Release on the personal fork plus commercial-distribution hardening (`B+C`);
+- REL-001 commercial scope/audit/ADR/plan is PASS;
+- REL-002 fork identity/updater ownership is PASS with evidence `docs/evidence/release/TVE-REL-002.md`;
+- REL-003 provenance/source compliance is the next dependency-ready task;
+- public commercial-ready publication is still fail-closed on Remotion license basis + trusted Windows signing at REL-007.
 
 ## Hard gate
-`IMPLEMENTATION_ALLOWED=true`
+`RELEASE_IMPLEMENTATION_ALLOWED=true` for dependency-ready REL-002..006 tasks.
 
-This authorization is task/dependency scoped, not blanket permission to skip queue order.
+`PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until REL-007 PASS. This authorization is task/dependency scoped and does not permit skipping license/signing gates or rerunning prior IMP/E2E stages.
 
 ## Git identity
 Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkhactang813@gmail.com>`.
@@ -232,5 +233,23 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Root typecheck: PASS / exit 0.
 - Commit: `c921f9e`.
 
+## Latest MAIN verification
+- Evidence: `docs/evidence/e2e/TVE-MAIN-VERIFICATION.md`.
+- PR #1: MERGED to personal fork `main` at `af92f2018d287a14e4f3af03f6d00879d12a6ab1`.
+- Owner review: Final review PASS before merge; fork has no configured GitHub CI checks.
+- Merge tree parity: PASS — `git diff --exit-code HEAD^2 HEAD` = 0.
+- Merged-main root typecheck: PASS / exit 0.
+- Merged-main integrated E2E: PASS / exit 0 with marker `TVE-E2E-001 INTEGRATED PROOF PASSED`.
+- Ref verification: `HEAD == personal/main == af92f20`; upstream `origin/main` remains `96b1ca0` and was not modified.
+
+## Latest TVE-REL-002 verification
+- Evidence: `docs/evidence/release/TVE-REL-002.md`.
+- Fork identity/updater ownership: PASS.
+- Forbidden upstream identity scan in distributed desktop scope: PASS / no matches.
+- Root typecheck: PASS / exit 0 before final renderer brand repair; desktop typecheck after final repair: PASS / exit 0.
+- Root build: PASS; final renderer build: PASS and no `relo-logo` asset.
+- Packaged-renderer identity scan: PASS.
+- `git diff --check` focused desktop diff: PASS.
+
 ## NEXT_EXACT_ACTION
-Inspect remote/upstream/auth/existing PR state. If available, push feature branch, create/reuse PR to main, review and merge only after PASS, then verify merged main with the risk-based main gate. Do not mark MAIN VERIFIED before actual merge + main verification.
+Execute `TVE-REL-003`: make bundled FFmpeg provenance/source traceability release-grade, emit deterministic release compliance metadata, and verify exact staged binary version/hash/source mapping. Do not package/publish yet.

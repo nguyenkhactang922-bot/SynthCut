@@ -145,17 +145,65 @@ Required integrated proof: 30-minute/~300 clips, UI+MCP same project, bounded re
 Artifact target: `docs/evidence/e2e/TVE-E2E-001.md`.
 
 ## MAIN VERIFIED
-Status: BLOCKED only by required push/PR/review/merge + verification on merged main; TVE-E2E-001 is PASS/COMMITTED `c921f9e`.
-Never claim MAIN VERIFIED from feature-branch tests alone.
+Status: DONE / PASS — `personal/main@af92f20` verified after PR #1 review+merge.
+Evidence: `docs/evidence/e2e/TVE-MAIN-VERIFICATION.md`.
+Merged-main root typecheck PASS; integrated E2E PASS / exit 0; merge tree equals reviewed feature tip. Upstream `origin/main` was not modified.
 
 ---
 
-# PHASE 7 — RELEASE & OPERATE — LOCKED
-Package → Release → Deploy (if applicable) → Monitor → Incident Handling.
-Unlock only after MAIN VERIFIED and an explicit release scope exists.
+# COMMERCIAL RELEASE RE-ENTRY — B + C — 2026-10-09
+
+## TVE-REL-001 — Commercial scope / license-security re-entry / ADR / Phase-7 plan
+Status: DONE / PASS
+Dependencies: MAIN VERIFIED + explicit user authorization `B + C`
+Artifacts:
+- `docs/define/COMMERCIAL_RELEASE_SCOPE_V1.md`
+- `docs/research/COMMERCIAL_REDISTRIBUTION_AUDIT_V1.md`
+- `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
+- `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
+Result: GPL commercial distribution path accepted with fail-closed Remotion, FFmpeg provenance, release-tool security, fork identity/updater and trusted-signing gates.
+
+# PHASE 7 — RELEASE & OPERATE — ACTIVE
+Canonical plan: `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
+Baseline retained: `personal/main@af92f20` MAIN VERIFIED.
+Branch: `chatgpt/phase7-commercial-release`.
+
+## TVE-REL-002 — Fork identity + updater ownership
+Status: DONE / PASS
+Dependencies: REL-001 PASS
+Evidence: `docs/evidence/release/TVE-REL-002.md`
+Result: fork display/app identity, installer identity and updater publish provider now use `Tang AI Video Editor` + `nguyenkhactang922-bot/SynthCut`; upstream visible logo/name removed from renderer bundle; typecheck/build/static scans PASS.
+
+## TVE-REL-003 — Third-party provenance + corresponding-source compliance
+Status: ACTIVE / CLAIMED
+
+## TVE-REL-004 — Release-tool dependency security hardening
+Status: BLOCKED BY REL-003
+
+## TVE-REL-005 — Release workflow + version metadata hardening
+Status: BLOCKED BY REL-004
+
+## TVE-REL-006 — Local packaged acceptance
+Status: BLOCKED BY REL-005
+
+## TVE-REL-007 — External commercial authorization gates
+Status: BLOCKED BY REL-006
+Required before public commercial-ready release:
+- explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
+- trusted Windows signing identity/service and signature verification.
+
+## TVE-REL-008 — GitHub Release publication
+Status: BLOCKED BY REL-007
+Target: `nguyenkhactang922-bot/SynthCut` only.
+
+## TVE-REL-009 — Installed updater E2E + stable verification
+Status: BLOCKED BY REL-008
+
+## TVE-REL-010 — Monitor / incident handoff
+Status: BLOCKED BY REL-009
 
 # PHASE 8 — LEARN — FUTURE
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`MAIN verification gate` — inspect real remote/upstream/auth/PR state; push/review/merge if available and authorized, then verify the merged main commit. Never claim MAIN VERIFIED from feature-branch evidence. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+`TVE-REL-003 — Third-party provenance + corresponding-source compliance.` Harden bundled FFmpeg provenance/source traceability and release compliance artifacts without packaging/publishing; then verify exact binary version/hash/source mapping.

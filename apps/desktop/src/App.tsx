@@ -14,7 +14,6 @@ import {
   Film, FolderPlus, Frame, Import, Music, Pause, Play, Plus, Redo, RotateCcw, Scissors,
   Search, SkipEnd, SkipStart, Sliders, Sparkles, Trash, Type, Undo, Waveform, X,
 } from "./icons";
-import reloLogo from "./assets/relo-logo.png";
 
 function fmt(seconds: number): string {
   return fmtTime(seconds);
@@ -530,8 +529,8 @@ export function App({ api }: { api: CoreApi }) {
     <div className="editor">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark"><img src={reloLogo} alt="" className="brand-logo" /></span>
-          <span className="brand-name">SynthCut<span className="brand-by">by Relo</span></span>
+          <span className="brand-mark" aria-hidden="true">T</span>
+          <span className="brand-name">Tang AI Video Editor</span>
         </div>
         <div className="transport">
           <button className="icon-btn" onClick={undo} disabled={!connected} aria-label="Undo" title="Undo"><Undo /></button>
