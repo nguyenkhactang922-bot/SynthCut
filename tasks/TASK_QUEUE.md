@@ -186,13 +186,14 @@ Evidence: `docs/evidence/release/TVE-REL-004.md`
 Result: electron-builder upgraded non-force from 25.1.8 to 26.15.3; full audit reduced 11 high + 1 critical to 8 documented build-only moderate findings; production audit 0; build/typecheck/unpacked package smoke PASS.
 
 ## TVE-REL-005 — Release workflow + version metadata hardening
-Status: PASS / VERIFIED — COMMIT PENDING
+Status: DONE / PASS / COMMITTED — `227535b`
 Dependencies: REL-004 committed at `20c8ff9`
 Evidence: `docs/evidence/release/TVE-REL-005.md`
 Result: version set aligned at `1.0.6`; manual workflow is read-only/non-publishing; tag publication is fork-only + commercial-gated; upstream npm namespace publication disabled; artifact/version/tag negative gates PASS.
 
 ## TVE-REL-006 — Local packaged acceptance
-Status: READY AFTER REL-005 COMMIT
+Status: ACTIVE / CLAIMED
+Dependencies: REL-005 committed at `227535b`
 
 ## TVE-REL-007 — External commercial authorization gates
 Status: BLOCKED BY REL-006
@@ -214,4 +215,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-006 — Local packaged acceptance` immediately after the REL-005 task commit. Build real Windows NSIS + ZIP with `--publish never` from the release-configured source, verify artifact integrity/runtime/update metadata, and keep unsigned outputs test-only. Do not publish.
+`TVE-REL-006 — Local packaged acceptance` is CLAIMED. Package from a clean tracked release source, produce real NSIS + ZIP with `--publish never`, validate integrity/provenance/update metadata, then run packaged runtime acceptance. Keep unsigned outputs test-only; do not publish.

@@ -2,13 +2,13 @@
 
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
-- ACTIVE_TASK: `TVE-REL-005 — Release workflow + version metadata hardening`
-- STATUS: `PASS / VERIFIED — COMMIT PENDING`
-- CURRENT_STAGE: `REVIEW / COMMIT`
+- ACTIVE_TASK: `TVE-REL-006 — Local packaged acceptance`
+- STATUS: `ACTIVE / CLAIMED`
+- CURRENT_STAGE: `PRE-PACKAGE — clean release-source checkpoint`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `20c8ff9`
+- HEAD: `227535b`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
-- LAST_VERIFIED_CHECKPOINT: `TVE-REL-005 PASS / VERIFIED` — version `1.0.6` aligned; fork-only permission-separated workflow; upstream npm publication disabled; authorized tag/full artifact validator PASS; wrong repo/tag/missing latest.yml rejected. Evidence: `docs/evidence/release/TVE-REL-005.md`.
+- LAST_VERIFIED_CHECKPOINT: `TVE-REL-005 PASS / COMMITTED 227535b` — version `1.0.6` aligned; fork-only permission-separated workflow; upstream npm publication disabled; authorized tag/full artifact validator PASS; wrong repo/tag/missing latest.yml rejected. Evidence: `docs/evidence/release/TVE-REL-005.md`.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `pty_25a88433303bae79a0a4dea96c2420454896 — EXITED 0`
@@ -35,7 +35,7 @@
 - BLOCKERS:
   - `NONE` for REL-003..006 dependency-ready technical work.
   - Public/stable `COMMERCIAL_READY` release remains blocked at REL-007 until an explicit valid Remotion commercial/redistribution basis is recorded and a trusted Windows signing path is configured/verified.
-- NEXT_EXACT_ACTION: Review/stage only REL-005 tracked changes and create the task-scoped commit. Verify HEAD/status, then CLAIM `TVE-REL-006 — Local packaged acceptance`. Do not publish.
+- NEXT_EXACT_ACTION: Commit this governance-only REL-006 claim, verify tracked source clean, then run REL-006 package acceptance from that exact clean commit. Do not publish.
 - DO_NOT_REPEAT:
   - DISCOVER / original DEFINE / original RESEARCH;
   - completed DESIGN spikes and `TVE-FRZ-001`;
@@ -47,6 +47,7 @@
   - TVE-REL-002;
   - TVE-REL-003;
   - TVE-REL-004;
+  - TVE-REL-005;
   - unrelated `.spike-temp/`, `.tmp/`, dataset scratch, or other project PTYs.
 
 ## Lifecycle law
