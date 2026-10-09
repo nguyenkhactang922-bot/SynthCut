@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `f46feda`
+HEAD: `10711c1`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..009 COMMITTED; TVE-IMP-010 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..010 COMMITTED; TVE-IMP-011 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -18,7 +18,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - RESEARCH: PASS
 - DESIGN: FROZEN — `TVE-FRZ-001 PASS`
 - PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — `TVE-IMP-010` claimed after `TVE-IMP-009` verified/committed
+- BUILD & VERIFY: ACTIVE — `TVE-IMP-011` claimed after `TVE-IMP-010` verified/committed
 - RELEASE & OPERATE: LOCKED until MAIN VERIFIED
 - LEARN: FUTURE
 
@@ -88,16 +88,16 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-007 — 300-clip timeline viewport culling/virtualization` — COMMITTED `7741f69`
 - `TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver` — COMMITTED `dcb3579`
 - `TVE-IMP-009 — Dependency hardening promotion` — COMMITTED `f46feda`
+- `TVE-IMP-010 — Tang long-form editorial orchestration contract` — COMMITTED `10711c1`
 
 ## Active production task
-`TVE-IMP-010 — Tang long-form editorial orchestration contract`
+`TVE-IMP-011 — QA and durable evidence coordinator`
 
 Acceptance summary:
-- encode PROJECT→CHAPTER→SCENE/BEAT→EDIT ACTION operator contract over existing core/MCP surfaces;
-- representative 30-minute brief decomposes into chapter/range-scoped plans using bounded reads;
-- generated operations reference actual RPC methods/frames/IDs with revision preconditions and safe batch flow;
-- no whole-state default, no direct `.aive` writes, no local second LLM or shadow timeline;
-- hook/narrative/pacing/retention/filler/repetition/B-roll/caption/audio policy remains orchestration guidance, not execution authority.
+- standardize post-batch structural → rendered frame → preview/audio → delivery verification over existing core/MCP surfaces;
+- persist bounded durable evidence references without making evidence a second edit truth;
+- failed/stale QA must lead to correction/rollback/replan rather than silent acceptance;
+- final delivery verification records ffprobe-backed output facts before E2E convergence.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -196,5 +196,14 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Core security smoke: PASS / exit 0 using project-local FFmpeg/FFprobe.
 - Commit: PASS — `f46feda`.
 
+## Latest TVE-IMP-010 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-010.md`.
+- Repaired MCP build: PASS / exit 0.
+- Real stdio 30-minute / 300-clip orchestration smoke: PASS / exit 0 with marker `TVE-IMP-010 LONG-FORM ORCHESTRATION SMOKE PASSED`.
+- Six chapter packets; overview 1,711 bytes; chapter read 23,634 bytes; real revision 12; real clip `clip-001`; non-mutating dry-run 1 operation.
+- Root typecheck: PASS / exit 0.
+- Focused staged diff/check/review: PASS; task scope 5 files / +464.
+- Commit: PASS — `10711c1`.
+
 ## NEXT_EXACT_ACTION
-Analyze `TVE-IMP-010`: inspect current MCP guide/index plus bounded read, EditPlan/batch, and Vietnamese policy surfaces. Encode the smallest deterministic long-form editorial orchestration contract without duplicating core logic, then build a representative 30-minute scenario smoke that asserts bounded reads, real RPC IDs/frames, revision precondition, plan-before-mutation, and no direct `.aive` writes.
+Analyze `TVE-IMP-011`: inspect safe batch result/audit/checkpoint metadata, rendered-frame/preview/export verification surfaces, Tang sidecar evidence references, and existing ffprobe/job outputs. Design the smallest coordinator that records structural + rendered + audio/preview + final-delivery evidence refs without duplicating edit truth, then implement and prove fail-closed QA/correction behavior.

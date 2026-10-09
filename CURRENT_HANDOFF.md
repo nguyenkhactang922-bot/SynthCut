@@ -2,35 +2,35 @@
 
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
-- ACTIVE_TASK: `TVE-IMP-010`
+- ACTIVE_TASK: `TVE-IMP-011`
 - STATUS: `CLAIMED`
-- CURRENT_STAGE: `BUILD & VERIFY - ANALYZE/PLAN: Tang long-form editorial orchestration contract`
+- CURRENT_STAGE: `BUILD & VERIFY — ANALYZE/PLAN: QA and durable evidence coordinator`
 - BRANCH: `chatgpt/ai-video-editor-design`
-- HEAD: `f46feda`
-- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-009 PASS / COMMITTED f46feda` - materialized dependency tree verified with `npm ls --omit=dev --json`; production audit 0; full audit remains 12 tracked dev/packaging findings (11 high / 1 critical) in electron-builder chain; root build/typecheck, composite, CLIP tokenizer and core security smoke all PASS. Evidence: `docs/evidence/implementation/TVE-IMP-009.md`.
+- HEAD: `10711c1`
+- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-010 PASS / COMMITTED 10711c1` — repaired MCP prompt contract accepts MCP string arguments, real stdio 30-minute/300-clip scenario PASS, six bounded chapter packets, revision-bound real clip/frame EditPlan dry-run, root typecheck PASS, evidence at `docs/evidence/implementation/TVE-IMP-010.md`.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE`
-- LATEST_LOG: `NONE - IMP-009 tests completed; no SynthCut long-run process active for current task`
-- LAST_EXIT_CODE: `IMP-009 regression/security gates PASS; commit f46feda created`
+- LATEST_LOG: `NONE — IMP-010 smoke completed PASS; no SynthCut long-run process active`
+- LAST_EXIT_CODE: `IMP-010 build/smoke/typecheck/review PASS; commit 10711c1 created`
 - ARTIFACTS:
-  - `docs/evidence/implementation/TVE-IMP-009.md`
-  - commit `f46feda`
-  - frozen inputs `docs/plan/TASK_DECOMPOSITION_V1.md`, `docs/design/TANG_AI_VIDEO_EDITOR_DESIGN.md`
+  - `docs/evidence/implementation/TVE-IMP-010.md`
+  - commit `10711c1`
+  - frozen task input `docs/plan/TASK_DECOMPOSITION_V1.md#TVE-IMP-011`
 - BLOCKERS:
   - `NONE`.
-- NEXT_EXACT_ACTION: For `TVE-IMP-010`, inspect current `packages/mcp/src/guide.ts`, `packages/mcp/src/index.ts`, bounded read RPCs, EditPlan/batch surfaces, and Vietnamese policy. Encode the smallest deterministic PROJECT->CHAPTER->SCENE/BEAT->EDIT ACTION operator contract without duplicating core logic. Then create a representative 30-minute scenario smoke proving bounded reads, real RPC methods/frames/IDs, revision precondition, plan-before-mutation, no whole-state default, and no direct `.aive` writes.
+- NEXT_EXACT_ACTION: For `TVE-IMP-011`, inspect current checkpoint-backed batch result/audit metadata, Tang sidecar evidence refs, `inspect_timeline`/`get_frame`/`render_preview`/export + ffprobe/job surfaces. Design the smallest coordinator that records structural + rendered-frame + preview/audio + delivery evidence references, rejects stale/failed QA, and routes failure to correction/rollback without duplicating `.aive` edit truth. Then implement only that scope and run dedicated runtime smoke + build/typecheck/evidence/review.
 - DO_NOT_REPEAT:
   - DISCOVER / DEFINE / RESEARCH;
   - completed DESIGN audits/spikes and `TVE-FRZ-001`;
   - TVE-PLAN-001..004;
-  - TVE-IMP-001..009 stages/commits;
-  - IMP-009 audit/build/typecheck/smokes unless its lockfile/source becomes stale;
-  - `.spike-temp/`, `.tmp/`, dataset scratch and unrelated `packages/skill-installer/bin/synthcut.mjs` WIP.
+  - TVE-IMP-001..010 stages/commits;
+  - IMP-010 build/smoke/typecheck unless its source becomes stale;
+  - `.spike-temp/`, unrelated `.tmp/`, dataset scratch, and `packages/skill-installer/bin/synthcut.mjs` WIP.
 
 ## Lifecycle law
-All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law section 20 ten-field contract.
+All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20 ten-field contract.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true` because DESIGN is FROZEN and PLAN IMPLEMENTATION is PASS.
-Authorization remains dependency/task scoped. Current claim: `TVE-IMP-010`.
+Authorization remains dependency/task scoped. Current claim: `TVE-IMP-011`.

@@ -127,12 +127,14 @@ Primary files: `package-lock.json` only; no manifest/source change.
 Convergence: production audit 0; remaining dev/packaging findings explicitly carried to release hardening.
 
 ## TVE-IMP-010 — Tang long-form editorial orchestration contract
-Status: ACTIVE / CLAIMED — ANALYZE/PLAN
+Status: DONE / COMMITTED — `10711c1`
+Evidence: `docs/evidence/implementation/TVE-IMP-010.md`
 Dependencies: bounded reads/MCP + safe batch + Vietnamese policy
 Primary candidate files: `packages/mcp/src/guide.ts`, `packages/mcp/src/index.ts`, optional pure `packages/mcp/src/tang/` helpers.
 
 ## TVE-IMP-011 — QA and durable evidence coordinator
-Status: BLOCKED by TVE-IMP-005 + TVE-IMP-006 + TVE-IMP-008 + TVE-IMP-010
+Status: ACTIVE / CLAIMED
+Dependencies: IMP-005 + IMP-006 + IMP-008 + IMP-010 — all satisfied
 Primary scope: structural → rendered frame → preview/audio → delivery verification and evidence refs.
 
 ## TVE-E2E-001 — Integrated frozen-requirement proof
@@ -154,6 +156,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-010 — Tang long-form editorial orchestration contract` — ACTIVE / CLAIMED.
+`TVE-IMP-011 — QA and durable evidence coordinator` — ACTIVE / CLAIMED.
 
-Encode the frozen PROJECT→CHAPTER→SCENE/BEAT→EDIT ACTION operating contract over bounded MCP reads + safe EditPlan batches + Vietnamese policy. Preserve actual core RPC authority; no whole-state default, direct `.aive` writes, shadow timeline, or local second LLM. Keep IMP-011 unclaimed until IMP-010 PASS. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+Standardize structural → rendered-frame → preview/audio → final-delivery verification and durable evidence references over the already-committed batch/render/Vietnamese/orchestration surfaces. Do not create a second edit truth. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
