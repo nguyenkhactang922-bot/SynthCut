@@ -43,7 +43,7 @@ export interface EditorialWorkPacket {
   }>;
   transcriptReadMethod: "get_transcript_window";
   mutationSequence: ["dry_run_edit_plan", "apply_edit_plan"];
-  qaSequence: ["inspect_timeline", "get_frame", "render_preview"];
+  qaSequence: ["inspect_timeline", "get_frame", "render_preview", "run_qa_verification"];
 }
 
 const DEFAULT_WINDOW_MINUTES = 5;
@@ -122,7 +122,7 @@ export function buildLongFormPrompt(brief: LongFormBrief): string {
     "CHAPTER: if chapter metadata is current, use inspect_chapter; otherwise use bounded inspect_range windows. Treat derived chapters only as navigation, never as edit truth.",
     "SCENE/BEAT: within one bounded packet, use search_transcript/locate_in_timeline and get_transcript_window plus inspect_range to resolve real clip IDs, asset IDs and frame ranges before proposing edits.",
     "EDIT ACTION: create one coherent EditPlan for the packet using the current projectId + revision, an actual chapter/range scope, real RPC method names and real IDs/frames. Call dry_run_edit_plan before apply_edit_plan. If revision changes or dry-run says stale, discard and rebuild from current bounded reads.",
-    "VERIFY: after each applied batch inspect structure and rendered truth with inspect_timeline/get_frame; use render_preview for audio/motion/pacing review before continuing or exporting.",
+    "VERIFY: after each applied batch call run_qa_verification with the current projectId + revision and batchId when available. FAIL/STALE means restore/replan, never silent acceptance. For final delivery pass mode=final_delivery + deliveryPath so ffprobe-backed facts are durable; get_qa_evidence reads the record.",
     "Editorial pass order: hook/promise -> narrative clarity -> pacing/retention -> filler/repetition -> B-roll/visual support -> captions/text -> audio/music polish -> QA.",
     "Do not force decoration. Every B-roll, caption, music cue, transition or effect must serve comprehension, continuity, emphasis or retention.",
     viPolicy,
@@ -157,7 +157,7 @@ function packet(input: {
     readSequence: input.readSequence,
     transcriptReadMethod: "get_transcript_window",
     mutationSequence: ["dry_run_edit_plan", "apply_edit_plan"],
-    qaSequence: ["inspect_timeline", "get_frame", "render_preview"],
+    qaSequence: ["inspect_timeline", "get_frame", "render_preview", "run_qa_verification"],
   };
 }
 

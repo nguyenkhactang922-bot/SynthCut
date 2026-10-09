@@ -7,6 +7,7 @@ import { EXPORT_PRESETS, EXPORT_PRESET_NAMES } from "./ffmpeg/graph.js";
 import { inspectChapter, inspectProjectRange, projectOverview, transcriptWindow } from "./tang/read-model.js";
 import { dryRunEditPlan, editPlanSchema } from "./tang/edit-plan.js";
 import { applyEditPlanBatch, EDIT_BATCH_ID_PATTERN, restoreEditBatch } from "./tang/batch.js";
+import { getQaEvidence, runQaVerification } from "./tang/qa.js";
 
 /**
  * The RPC surface of the editor. Every editing operation is defined exactly
@@ -283,6 +284,28 @@ export const methods = {
       "Explicitly restore a durable pre-batch checkpoint by batchId. The current project must match the checkpoint project; recovery receives a fresh revision so stale plan tokens cannot be reused.",
     schema: z.object({ batchId: z.string().regex(EDIT_BATCH_ID_PATTERN) }).strict(),
     handler: (engine, p) => restoreEditBatch(engine, p.batchId),
+  },
+
+  run_qa_verification: {
+    description:
+      "Run revision-bound post-batch/final-delivery QA over the CURRENT project. The core computes structural checks, renders exact frame evidence, renders/probes a preview, optionally ffprobes final delivery, and writes a durable evidence record. Only PASS records are indexed into Tang evidenceRefs; stale/failed QA returns a correction/replan or restore-batch action instead of silent acceptance.",
+    schema: z.object({
+      projectId: z.string().min(1),
+      basedOnRevision: z.number().int().min(0),
+      mode: z.enum(["post_batch", "final_delivery"]).optional(),
+      batchId: z.string().regex(EDIT_BATCH_ID_PATTERN).optional(),
+      frameSeconds: z.array(z.number().min(0)).max(8).optional(),
+      deliveryPath: z.string().min(1).optional(),
+      requireAudio: z.boolean().optional(),
+    }).strict(),
+    handler: (engine, p) => runQaVerification(engine, p),
+  },
+
+  get_qa_evidence: {
+    description:
+      "Read one durable Tang QA evidence record by logical evidenceRef. This is evidence/verification state only and never edit truth.",
+    schema: z.object({ evidenceRef: z.string().min(1) }).strict(),
+    handler: (engine, p) => getQaEvidence(engine, p.evidenceRef),
   },
 
   import_video: {

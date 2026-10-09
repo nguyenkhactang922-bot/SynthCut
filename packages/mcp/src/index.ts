@@ -18,7 +18,7 @@ import { buildLongFormPrompt } from "./tang/orchestration.js";
 // Tools that only read state / analyze — hint this to clients.
 const READ_ONLY = new Set([
   "get_state", "timeline_summary", "project_overview", "inspect_range", "inspect_chapter", "get_transcript_window",
-  "analyze_silence", "analyze_scenes", "generate_thumbnail", "get_frame",
+  "analyze_silence", "analyze_scenes", "generate_thumbnail", "get_frame", "get_qa_evidence",
 ]);
 
 // Tools whose result `{ path }` is an image file we should hand back to the
