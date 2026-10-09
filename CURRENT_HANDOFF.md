@@ -2,25 +2,26 @@
 
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
-- ACTIVE_TASK: `TVE-E2E-001`
-- STATUS: `CLAIMED`
-- CURRENT_STAGE: `BUILD & VERIFY — CLAIM/ANALYZE: integrated frozen-requirement proof after TVE-IMP-001..011 committed`
+- ACTIVE_TASK: `MAIN verification gate`
+- STATUS: `PASS / COMMITTED`
+- CURRENT_STAGE: `BUILD & VERIFY — TVE-E2E-001 PASS/COMMITTED; PUSH/PR/REVIEW/MERGE/MAIN verification gate next`
 - BRANCH: `chatgpt/ai-video-editor-design`
-- HEAD: `1cf0b80`
-- LAST_VERIFIED_CHECKPOINT: `TVE-IMP-011 PASS / VERIFIED / COMMITTED 1cf0b80` — core build PASS; MCP build PASS; dedicated QA coordinator smoke PASS for accepted delivery + stale fail-closed + failed-delivery fail-closed + durable evidenceRefs + save/restart persistence; root typecheck PASS; focused cached diff-check PASS. Evidence: `docs/evidence/implementation/TVE-IMP-011.md`.
+- HEAD: `c921f9e`
+- LAST_VERIFIED_CHECKPOINT: `TVE-E2E-001 PASS / VERIFIED / COMMITTED c921f9e` — integrated 30-minute/310-clip proof PASS: same core/MCP/UI authority, bounded reads, stale zero-mutation, coherent rollback with one UI broadcast, Vietnamese fail-closed NOOP, save/restart, same-project IMP-006 final/cancel evidence, no CapCut runtime. Root typecheck PASS. Evidence: `docs/evidence/e2e/TVE-E2E-001.md`.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE`
-- LATEST_LOG: `NONE — E2E process not started yet`
-- LAST_EXIT_CODE: `IMP-011 committed successfully; E2E not started`
+- LATEST_LOG: `.tmp/TVE-E2E-001-runtime.json` — PASS metrics; no active E2E process
+- LAST_EXIT_CODE: `0 — E2E PASS; commit c921f9e created`
 - ARTIFACTS:
-  - `docs/evidence/implementation/TVE-IMP-011.md`
-  - commit `1cf0b80`
-  - `docs/plan/TRACEABILITY_PLAN_V1.md`
+  - `docs/evidence/e2e/TVE-E2E-001.md`
+  - `packages/core/scripts/smoke-e2e-integrated.ts`
+  - `.tmp/TVE-E2E-001-runtime.json`
+  - commit `c921f9e`
   - prior verified evidence `TVE-IMP-001..011`
 - BLOCKERS:
   - `NONE`.
-- NEXT_EXACT_ACTION: Analyze `TVE-E2E-001` against the frozen requirement/traceability artifacts and current production code. Build the smallest integrated proof that reuses valid task evidence instead of blindly rerunning every feature gate, but executes the cross-feature interactions that only E2E can prove: one 30-minute/~300-clip authoritative project shared through core/MCP/UI contracts, bounded reads, stale-plan rejection, coherent batch rollback/recovery, Vietnamese fail-closed policy, viewport convergence, jobs/cancel, final 1080p MP4 + QA evidence, restart/persistence/error paths, and no required CapCut runtime. Persist `docs/evidence/e2e/TVE-E2E-001.md`; do not claim MAIN VERIFIED from feature-branch evidence alone.
+- NEXT_EXACT_ACTION: Inspect Git remote/upstream/auth and existing PR/merge state before any side-effect retry. If network workflow is available, push the current feature branch, create or reuse a PR to main, perform review, merge only after checks/review PASS, then verify the merged main commit with the required risk-based main gate before marking MAIN VERIFIED. If PR/merge tooling or authority is unavailable, record the exact blocker; do not claim MAIN VERIFIED from feature-branch evidence.
 - DO_NOT_REPEAT:
   - DISCOVER / DEFINE / RESEARCH;
   - completed DESIGN audits/spikes and `TVE-FRZ-001`;
@@ -33,4 +34,4 @@ All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20 ten-
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true` because DESIGN is FROZEN and PLAN IMPLEMENTATION is PASS.
-Authorization remains dependency/task scoped. Current claim: `TVE-E2E-001`.
+Authorization remains dependency/task scoped. Current claim: `MAIN verification gate`.

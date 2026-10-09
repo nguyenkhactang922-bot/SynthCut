@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `1cf0b80`
+HEAD: `c921f9e`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..011 COMMITTED; TVE-E2E-001 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..011 + TVE-E2E-001 COMMITTED; MAIN verification gate pending`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -18,7 +18,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - RESEARCH: PASS
 - DESIGN: FROZEN — `TVE-FRZ-001 PASS`
 - PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — `TVE-E2E-001` claimed after `TVE-IMP-011` verified/committed
+- BUILD & VERIFY: ACTIVE — `TVE-E2E-001 PASS/COMMITTED c921f9e`; push/PR/review/merge/main verification remains
 - RELEASE & OPERATE: LOCKED until MAIN VERIFIED
 - LEARN: FUTURE
 
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-E2E-001 — Integrated frozen-requirement proof`
+`MAIN verification gate — TVE-E2E-001 is PASS/COMMITTED c921f9e; feature branch is not yet MAIN VERIFIED`
 
 Acceptance summary:
 - one authoritative 30-minute/~300-clip project proves integrated core/MCP/UI contracts;
@@ -218,5 +218,19 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Focused cached diff/check/review: PASS; task scope 7 files / +710/-5.
 - Commit: PASS — `1cf0b80`.
 
+## Latest TVE-E2E-001 verification
+- Evidence: `docs/evidence/e2e/TVE-E2E-001.md`.
+- Integrated runtime: PASS / exit 0 with marker `TVE-E2E-001 INTEGRATED PROOF PASSED`.
+- Same authoritative project: `proj_jnjvadlpe3`, 310 clips, 1800 s.
+- MCP bounded reads: overview 1708 B; chapter 24383 B; six packets.
+- UI/MCP/core convergence: same initial revision; coherent rollback observed as exactly one restored-state UI broadcast.
+- Stale plan: rejected with zero mutation/no UI state advance.
+- Coherent batch: forced runtime failure rolled back and restored 310 clips; durable audit/checkpoint refs survive save/restart.
+- Vietnamese policy: `vi` + `large-v3-turbo`; unsafe cut produced zero cuts + reviewNeeded.
+- Same-project durable IMP-006 evidence supplies final exact 1800 s 1080p H.264+AAC and clean cancel; IMP-007/011 evidence reused without blind rerun.
+- CapCut process count: 0; no required package dependency.
+- Root typecheck: PASS / exit 0.
+- Commit: `c921f9e`.
+
 ## NEXT_EXACT_ACTION
-Analyze `TVE-E2E-001` against frozen requirements, traceability, current source and the already-verified IMP-001..011 evidence. Reuse valid task evidence instead of blindly rerunning every feature gate; execute only cross-feature interactions that require integrated proof, persist `docs/evidence/e2e/TVE-E2E-001.md`, then perform review/commit. Do not claim MAIN VERIFIED until required merge/main verification actually occurs.
+Inspect remote/upstream/auth/existing PR state. If available, push feature branch, create/reuse PR to main, review and merge only after PASS, then verify merged main with the risk-based main gate. Do not mark MAIN VERIFIED before actual merge + main verification.

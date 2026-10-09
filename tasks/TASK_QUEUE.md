@@ -139,12 +139,13 @@ Dependencies: IMP-005 + IMP-006 + IMP-008 + IMP-010 — all satisfied
 Primary scope: structural → rendered frame → preview/audio → delivery verification and evidence refs.
 
 ## TVE-E2E-001 — Integrated frozen-requirement proof
-Status: ACTIVE / CLAIMED — dependencies TVE-IMP-001..011 satisfied
+Status: DONE / COMMITTED — `c921f9e`
+Evidence: `docs/evidence/e2e/TVE-E2E-001.md`
 Required integrated proof: 30-minute/~300 clips, UI+MCP same project, bounded reads, stale-plan rejection, safe batch rollback, Vietnamese policy, viewport UI, jobs/cancel, final 1080p MP4, no required CapCut runtime, restart/persistence/error paths.
 Artifact target: `docs/evidence/e2e/TVE-E2E-001.md`.
 
 ## MAIN VERIFIED
-Status: BLOCKED by TVE-E2E-001 + required review/merge/main verification.
+Status: BLOCKED only by required push/PR/review/merge + verification on merged main; TVE-E2E-001 is PASS/COMMITTED `c921f9e`.
 Never claim MAIN VERIFIED from feature-branch tests alone.
 
 ---
@@ -157,6 +158,4 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-E2E-001 — Integrated frozen-requirement proof` — ACTIVE / CLAIMED.
-
-Run the smallest integrated proof that closes cross-feature frozen requirements over one authoritative project while reusing valid IMP-001..011 evidence instead of blindly rerunning every feature test. Persist `docs/evidence/e2e/TVE-E2E-001.md`. Do not claim MAIN VERIFIED until required review/merge/main verification actually occurs. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+`MAIN verification gate` — inspect real remote/upstream/auth/PR state; push/review/merge if available and authorized, then verify the merged main commit. Never claim MAIN VERIFIED from feature-branch evidence. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
