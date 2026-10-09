@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-005 COMMITTED 227535b; TVE-REL-006 ACTIVE`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-006 repair coded and focused verification PASS; commit/package rerun pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 ACTIVE; publication remains gated by REL-007
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 package/artifact stages PASS but packaged MCP offline baseline FAIL; repair active; publication remains gated by REL-007
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-006 — Local packaged acceptance — ACTIVE / CLAIMED`
+`TVE-REL-006 — REPAIR CODED / FOCUSED VERIFY PASS / COMMIT PENDING`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -289,5 +289,23 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Commit: `227535b`.
 - No push/tag/release/npm publication occurred.
 
+## REL-006 partial acceptance evidence
+- Clean release source validation on `e464502`: PASS.
+- Bundle staging: PASS / `REL006_STAGE_EXIT=0`; manifest sourceCommit `e464502...`, `sourceTrackedDirty=false`.
+- Root build: PASS.
+- NSIS + ZIP package: PASS / `REL006_DIST_EXIT=0`.
+- Real artifacts: installer 397,648,809 B; ZIP 505,854,857 B; blockmap/latest.yml/checksums emitted.
+- Release artifact validator: PASS / 10 files.
+- ZIP payload + latest.yml + provenance checks: PASS.
+- Installer Authenticode: `NotSigned` (expected REL-007 blocker, not this runtime failure).
+- Packaged standalone MCP smoke: FAIL as acceptance; MCP/core start, but `import_video` fails because bundled ffprobe env is not propagated. Marker `REL006_PACKAGED_MCP_BUNDLED_ENV_GAP_CONFIRMED`.
+
+## REL-006 repair checkpoint
+- `bundled-assets.cjs` now exposes only approved bundled `AIVE_*` paths via `getBundledAssetEnv()`.
+- Packaged `mcp:config` merges those paths alongside `ELECTRON_RUN_AS_NODE=1`.
+- `node --check` for both affected CJS files: PASS.
+- Focused env-contract smoke: PASS; marker `REL006_PACKAGED_MCP_ENV_CONTRACT_PASS`.
+- No package/release publication occurred.
+
 ## NEXT_EXACT_ACTION
-Create a clean governance checkpoint with REL-006 claimed, verify tracked source clean, then execute REL-006: validate clean release source, stage bundle provenance from that exact commit, build NSIS + ZIP with `--publish never`, validate artifacts, then perform packaged runtime/install acceptance. Do not publish.
+Commit this focused repair plus state, sync the resulting HEAD in a clean checkpoint, then rerun only affected staging/build/package/runtime acceptance. Do not publish.

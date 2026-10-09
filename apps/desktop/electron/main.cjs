@@ -9,7 +9,7 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require("electron");
 const path = require("node:path");
 const { ensureCore } = require("./core-launcher.cjs");
-const { applyBundledAssetEnv } = require("./bundled-assets.cjs");
+const { applyBundledAssetEnv, getBundledAssetEnv } = require("./bundled-assets.cjs");
 
 // Branding: the display name (taskbar / jump-list / dialogs) and a stable Windows
 // AppUserModelID so the taskbar shows OUR name + icon instead of "Electron" and
@@ -232,7 +232,14 @@ ipcMain.handle("mcp:config", () => {
   }
   const packaged = app.isPackaged;
   const server = packaged
-    ? { command: process.execPath, args: [mcpEntry], env: { ELECTRON_RUN_AS_NODE: "1" } }
+    ? {
+        command: process.execPath,
+        args: [mcpEntry],
+        env: {
+          ELECTRON_RUN_AS_NODE: "1",
+          ...getBundledAssetEnv(),
+        },
+      }
     : { command: "node", args: [mcpEntry] };
   const config = { mcpServers: { "ai-video-editor": server } };
   return {

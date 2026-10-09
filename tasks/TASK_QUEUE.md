@@ -192,8 +192,10 @@ Evidence: `docs/evidence/release/TVE-REL-005.md`
 Result: version set aligned at `1.0.6`; manual workflow is read-only/non-publishing; tag publication is fork-only + commercial-gated; upstream npm namespace publication disabled; artifact/version/tag negative gates PASS.
 
 ## TVE-REL-006 — Local packaged acceptance
-Status: ACTIVE / CLAIMED
+Status: REPAIR CODED / FOCUSED VERIFY PASS / COMMIT PENDING
 Dependencies: REL-005 committed at `227535b`
+Last PASS checkpoints: clean-source validation; bundled resource staging; root build; NSIS+ZIP build; release artifact validation; ZIP/latest.yml/provenance inspection.
+Failed checkpoint: standalone packaged MCP could spawn core but `import_video` could not find bundled ffprobe because generated MCP env omitted bundled asset overrides. Repair now exposes approved bundled AIVE paths and merges them into packaged MCP config; focused contract verification PASS.
 
 ## TVE-REL-007 — External commercial authorization gates
 Status: BLOCKED BY REL-006
@@ -215,4 +217,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-006 — Local packaged acceptance` is CLAIMED. Package from a clean tracked release source, produce real NSIS + ZIP with `--publish never`, validate integrity/provenance/update metadata, then run packaged runtime acceptance. Keep unsigned outputs test-only; do not publish.
+`TVE-REL-006` repair is coded and focused verification PASS. Commit the repair/state, establish a clean post-commit checkpoint, then rerun only affected staging/build/package/runtime acceptance. Do not repeat already-valid IMP/E2E gates and do not publish.

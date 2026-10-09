@@ -3,17 +3,17 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-006 — Local packaged acceptance`
-- STATUS: `ACTIVE / CLAIMED`
-- CURRENT_STAGE: `PRE-PACKAGE — clean release-source checkpoint`
+- STATUS: `REPAIR CODED / FOCUSED VERIFY PASS / COMMIT PENDING`
+- CURRENT_STAGE: `VERIFY / COMMIT — packaged MCP bundled-asset env propagation repair`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `227535b`
+- HEAD: `e464502`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
-- LAST_VERIFIED_CHECKPOINT: `TVE-REL-005 PASS / COMMITTED 227535b` — version `1.0.6` aligned; fork-only permission-separated workflow; upstream npm publication disabled; authorized tag/full artifact validator PASS; wrong repo/tag/missing latest.yml rejected. Evidence: `docs/evidence/release/TVE-REL-005.md`.
+- LAST_VERIFIED_CHECKPOINT: `REL-006 repair focused verification PASS on e464502 worktree` — prior package/artifact stages remain PASS; bundled asset env helper exports only approved AIVE paths; packaged MCP config merges them; `node --check` on both CJS files PASS; marker `REL006_PACKAGED_MCP_ENV_CONTRACT_PASS`. Commit/package rerun pending.
 - PROCESS_PID: `NONE`
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `pty_25a88433303bae79a0a4dea96c2420454896 — EXITED 0`
-- LATEST_LOG: `.tmp/rel005-wrong-repo.log` + `.tmp/rel005-artifact-fixture`; markers `REL005_SEMANTIC_VERIFY_PASS`, `REL005_ARTIFACT_VALIDATION_PASS`, negative gates PASS
-- LAST_EXIT_CODE: `0 — REL-005 semantic/workflow/artifact validator verification PASS`
+- LATEST_LOG: `.tmp/rel006-packaged-mcp-gap.mjs`; marker `REL006_PACKAGED_MCP_BUNDLED_ENV_GAP_CONFIRMED`; package PTY `pty_b0521cf3b3b9cac9d9dc75bd27767ace077c` exited 0
+- LAST_EXIT_CODE: `0 — REL-006 focused repair verification PASS`
 - ARTIFACTS:
   - `docs/evidence/e2e/TVE-MAIN-VERIFICATION.md`
   - `docs/define/COMMERCIAL_RELEASE_SCOPE_V1.md`
@@ -35,7 +35,7 @@
 - BLOCKERS:
   - `NONE` for REL-003..006 dependency-ready technical work.
   - Public/stable `COMMERCIAL_READY` release remains blocked at REL-007 until an explicit valid Remotion commercial/redistribution basis is recorded and a trusted Windows signing path is configured/verified.
-- NEXT_EXACT_ACTION: Commit this governance-only REL-006 claim, verify tracked source clean, then run REL-006 package acceptance from that exact clean commit. Do not publish.
+- NEXT_EXACT_ACTION: Commit the focused REL-006 MCP-env repair plus synchronized state, then create a clean post-commit state checkpoint and rerun only affected staging/build/package/runtime acceptance from that clean commit. Do not publish.
 - DO_NOT_REPEAT:
   - DISCOVER / original DEFINE / original RESEARCH;
   - completed DESIGN spikes and `TVE-FRZ-001`;
