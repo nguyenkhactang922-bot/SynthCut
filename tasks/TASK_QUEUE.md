@@ -133,12 +133,13 @@ Dependencies: bounded reads/MCP + safe batch + Vietnamese policy
 Primary candidate files: `packages/mcp/src/guide.ts`, `packages/mcp/src/index.ts`, optional pure `packages/mcp/src/tang/` helpers.
 
 ## TVE-IMP-011 — QA and durable evidence coordinator
-Status: ACTIVE / CLAIMED
+Status: DONE / COMMITTED — `1cf0b80`
+Evidence: `docs/evidence/implementation/TVE-IMP-011.md`
 Dependencies: IMP-005 + IMP-006 + IMP-008 + IMP-010 — all satisfied
 Primary scope: structural → rendered frame → preview/audio → delivery verification and evidence refs.
 
 ## TVE-E2E-001 — Integrated frozen-requirement proof
-Status: BLOCKED by TVE-IMP-001..011
+Status: ACTIVE / CLAIMED — dependencies TVE-IMP-001..011 satisfied
 Required integrated proof: 30-minute/~300 clips, UI+MCP same project, bounded reads, stale-plan rejection, safe batch rollback, Vietnamese policy, viewport UI, jobs/cancel, final 1080p MP4, no required CapCut runtime, restart/persistence/error paths.
 Artifact target: `docs/evidence/e2e/TVE-E2E-001.md`.
 
@@ -156,6 +157,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-011 — QA and durable evidence coordinator` — ACTIVE / CLAIMED.
+`TVE-E2E-001 — Integrated frozen-requirement proof` — ACTIVE / CLAIMED.
 
-Standardize structural → rendered-frame → preview/audio → final-delivery verification and durable evidence references over the already-committed batch/render/Vietnamese/orchestration surfaces. Do not create a second edit truth. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+Run the smallest integrated proof that closes cross-feature frozen requirements over one authoritative project while reusing valid IMP-001..011 evidence instead of blindly rerunning every feature test. Persist `docs/evidence/e2e/TVE-E2E-001.md`. Do not claim MAIN VERIFIED until required review/merge/main verification actually occurs. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.

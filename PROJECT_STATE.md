@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `10711c1`
+HEAD: `1cf0b80`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..010 COMMITTED; TVE-IMP-011 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..011 COMMITTED; TVE-E2E-001 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -18,7 +18,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - RESEARCH: PASS
 - DESIGN: FROZEN — `TVE-FRZ-001 PASS`
 - PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — `TVE-IMP-011` claimed after `TVE-IMP-010` verified/committed
+- BUILD & VERIFY: ACTIVE — `TVE-E2E-001` claimed after `TVE-IMP-011` verified/committed
 - RELEASE & OPERATE: LOCKED until MAIN VERIFIED
 - LEARN: FUTURE
 
@@ -89,15 +89,17 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver` — COMMITTED `dcb3579`
 - `TVE-IMP-009 — Dependency hardening promotion` — COMMITTED `f46feda`
 - `TVE-IMP-010 — Tang long-form editorial orchestration contract` — COMMITTED `10711c1`
+- `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-IMP-011 — QA and durable evidence coordinator`
+`TVE-E2E-001 — Integrated frozen-requirement proof`
 
 Acceptance summary:
-- standardize post-batch structural → rendered frame → preview/audio → delivery verification over existing core/MCP surfaces;
-- persist bounded durable evidence references without making evidence a second edit truth;
-- failed/stale QA must lead to correction/rollback/replan rather than silent acceptance;
-- final delivery verification records ffprobe-backed output facts before E2E convergence.
+- one authoritative 30-minute/~300-clip project proves integrated core/MCP/UI contracts;
+- bounded reads, stale-plan rejection, coherent rollback/recovery, Vietnamese fail-closed policy and viewport convergence are exercised together where cross-feature interaction matters;
+- jobs/cancel, final 1080p MP4, durable final-delivery QA, restart/persistence and error paths are proven;
+- CapCut is not required at runtime;
+- feature-branch E2E PASS does not by itself authorize MAIN VERIFIED.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -205,5 +207,16 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Focused staged diff/check/review: PASS; task scope 5 files / +464.
 - Commit: PASS — `10711c1`.
 
+## Latest TVE-IMP-011 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-011.md`.
+- Core build: PASS / exit 0.
+- MCP build: PASS / exit 0.
+- Dedicated QA coordinator smoke: PASS / exit 0 with marker `TVE-IMP-011 QA COORDINATOR SMOKE PASSED`.
+- STALE and failed-delivery records are durable but rejected from accepted evidenceRefs; matching delivery PASS records structural + exact frame + preview/audio + ffprobe delivery facts.
+- Save/restart preserves only accepted evidenceRefs while `.aive` remains authoritative edit truth.
+- Root typecheck: PASS / exit 0.
+- Focused cached diff/check/review: PASS; task scope 7 files / +710/-5.
+- Commit: PASS — `1cf0b80`.
+
 ## NEXT_EXACT_ACTION
-Analyze `TVE-IMP-011`: inspect safe batch result/audit/checkpoint metadata, rendered-frame/preview/export verification surfaces, Tang sidecar evidence references, and existing ffprobe/job outputs. Design the smallest coordinator that records structural + rendered + audio/preview + final-delivery evidence refs without duplicating edit truth, then implement and prove fail-closed QA/correction behavior.
+Analyze `TVE-E2E-001` against frozen requirements, traceability, current source and the already-verified IMP-001..011 evidence. Reuse valid task evidence instead of blindly rerunning every feature gate; execute only cross-feature interactions that require integrated proof, persist `docs/evidence/e2e/TVE-E2E-001.md`, then perform review/commit. Do not claim MAIN VERIFIED until required merge/main verification actually occurs.
