@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; commercial B+C re-entry completed through REL-001; TVE-REL-002 ACTIVE`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-003 PASS/VERIFIED; task commit pending; REL-004 next`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001 PASS; REL-002 ACTIVE; publication remains gated by REL-007
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 PASS/VERIFIED (commit pending); REL-004 next; publication remains gated by REL-007
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,14 +92,15 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-003 — Third-party provenance + corresponding-source compliance — ACTIVE`
+`TVE-REL-003 — PASS / VERIFIED — COMMIT PENDING; TVE-REL-004 next`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
 - user authorized Windows GitHub Release on the personal fork plus commercial-distribution hardening (`B+C`);
 - REL-001 commercial scope/audit/ADR/plan is PASS;
 - REL-002 fork identity/updater ownership is PASS with evidence `docs/evidence/release/TVE-REL-002.md`;
-- REL-003 provenance/source compliance is the next dependency-ready task;
+- REL-003 provenance/source compliance is PASS/VERIFIED with `docs/evidence/release/TVE-REL-003.md`; commit is the remaining closure action;
+- REL-004 packaging/release-tool security hardening is next after that commit;
 - public commercial-ready publication is still fail-closed on Remotion license basis + trusted Windows signing at REL-007.
 
 ## Hard gate
@@ -251,5 +252,16 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Packaged-renderer identity scan: PASS.
 - `git diff --check` focused desktop diff: PASS.
 
+## Latest TVE-REL-003 verification
+- Evidence: `docs/evidence/release/TVE-REL-003.md`.
+- Exact Gyan FFmpeg/ffprobe 6.1.1 version/hash pin: PASS.
+- Positive staged-resource proof: PASS / exit 0; final staged bundle ~313.0 MB.
+- Wrong FFmpeg (`n7.1`) negative path: PASS by expected fail-closed rejection.
+- Independent manifest verification: PASS / exit 0; marker `REL003_MANIFEST_VERIFY_PASS files=36 bytes=328141128 ... trackedDirty=True`.
+- `package-lock.json` + `LICENSE` + `THIRD_PARTY_LICENSES.md` + `SOURCE_OFFER.md` source hashes are recorded; package resources include all three distribution documents.
+- Root typecheck: PASS / exit 0.
+- Focused `git diff --check`: PASS / exit 0.
+- No package or GitHub Release was published.
+
 ## NEXT_EXACT_ACTION
-Execute `TVE-REL-003`: make bundled FFmpeg provenance/source traceability release-grade, emit deterministic release compliance metadata, and verify exact staged binary version/hash/source mapping. Do not package/publish yet.
+Review/stage only REL-003 tracked changes, create its task-scoped commit, verify HEAD/status, then CLAIM `TVE-REL-004 — Release-tool dependency security hardening`. Do not package or publish.

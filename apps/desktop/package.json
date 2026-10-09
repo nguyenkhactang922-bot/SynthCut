@@ -61,8 +61,16 @@
         "to": "aive"
       },
       {
+        "from": "../../LICENSE",
+        "to": "LICENSE"
+      },
+      {
         "from": "../../THIRD_PARTY_LICENSES.md",
         "to": "THIRD_PARTY_LICENSES.md"
+      },
+      {
+        "from": "../../release/compliance/SOURCE_OFFER.md",
+        "to": "SOURCE_OFFER.md"
       }
     ],
     "afterAllArtifactBuild": "build/afterbuild.cjs",

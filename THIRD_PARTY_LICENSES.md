@@ -12,7 +12,7 @@ redistribution. Packaged installers include a copy of this file.
 >   use it. It powers the motion-graphics feature only.
 > - **FFmpeg** is bundled as a GPL build and invoked as a separate process. If you
 >   redistribute the installer you must make the **corresponding FFmpeg source**
->   available (it is unmodified upstream FFmpeg — see the FFmpeg section).
+>   available and preserve the exact release provenance described below.
 
 ---
 
@@ -22,13 +22,22 @@ redistribution. Packaged installers include a copy of this file.
 - **Role:** all media decoding, filtering, encoding. Invoked as an external
   subprocess — it is **never linked** into our code. Its GPL license is in any
   case compatible with this project's GPL-3.0 license.
-- **Build shipped:** a static GPL build (e.g. gyan.dev or BtbN). Because the
-  binary is a GPL build, distributing it carries GPL obligations **for the binary
-  itself**: you must offer the corresponding source.
-- **License:** GPLv3 (the build); FFmpeg itself is LGPL/GPL.
-- **Source:** https://ffmpeg.org/download.html and the build packager's source
-  (https://www.gyan.dev/ffmpeg/builds/ or https://github.com/BtbN/FFmpeg-Builds).
-  The bundled binaries are unmodified upstream releases.
+- **Release build pin (Windows x64):** gyan.dev `6.1.1-essentials_build`, tracked in
+  `release/compliance/ffmpeg-windows.json`. Release staging verifies both the
+  observed version/provider banner and exact SHA-256 of `ffmpeg.exe` and
+  `ffprobe.exe`; mismatches fail closed.
+- **Binary archive:** `https://github.com/GyanD/codexffmpeg/releases/download/6.1.1/ffmpeg-6.1.1-essentials_build.7z`
+  with pinned SHA-256 `9e1ddfab8eb16c30690eb769fab1301380139dd00026c8da5c667c7aad7e5cc9`.
+- **License:** GPLv3 (the static build); FFmpeg itself is LGPL/GPL depending on
+  configuration. This release build is GPL-enabled.
+- **Upstream source:** FFmpeg tag `n6.1.1`,
+  `https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n6.1.1.tar.gz`.
+- **Provider/build information:** `https://www.gyan.dev/ffmpeg/builds/` and the
+  pinned Chocolatey package record `https://community.chocolatey.org/packages/ffmpeg/6.1.1`.
+- **Redistribution record:** packaged releases include `SOURCE_OFFER.md`, and the
+  staged `aive/bundle-manifest.json` records the exact binary hashes/version and
+  source mapping used for that build. Do not substitute an unpinned FFmpeg build
+  without reopening the release provenance gate.
 
 ### whisper.cpp (`whisper-cli` + ggml libraries)
 - **Role:** local, offline speech-to-text for captions.

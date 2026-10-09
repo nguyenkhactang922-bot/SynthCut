@@ -175,10 +175,12 @@ Evidence: `docs/evidence/release/TVE-REL-002.md`
 Result: fork display/app identity, installer identity and updater publish provider now use `Tang AI Video Editor` + `nguyenkhactang922-bot/SynthCut`; upstream visible logo/name removed from renderer bundle; typecheck/build/static scans PASS.
 
 ## TVE-REL-003 — Third-party provenance + corresponding-source compliance
-Status: ACTIVE / CLAIMED
+Status: PASS / VERIFIED — COMMIT PENDING
+Evidence: `docs/evidence/release/TVE-REL-003.md`
+Result: exact Windows FFmpeg pin + fail-closed version/hash gate; source offer/notices/package-lock/distribution-doc hashes recorded; 36 staged files independently re-hashed PASS; root typecheck + diff check PASS.
 
 ## TVE-REL-004 — Release-tool dependency security hardening
-Status: BLOCKED BY REL-003
+Status: READY AFTER REL-003 COMMIT
 
 ## TVE-REL-005 — Release workflow + version metadata hardening
 Status: BLOCKED BY REL-004
@@ -206,4 +208,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-003 — Third-party provenance + corresponding-source compliance.` Harden bundled FFmpeg provenance/source traceability and release compliance artifacts without packaging/publishing; then verify exact binary version/hash/source mapping.
+`TVE-REL-004 — Release-tool dependency security hardening` immediately after the REL-003 task commit. Audit only the release/packaging dependency chain carried from TVE-IMP-009, remediate it without reopening already-PASS product runtime tasks, and preserve the no-publish gate.
