@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `7741f69`
+HEAD: `dcb3579`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..007 COMMITTED; TVE-IMP-008 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..008 COMMITTED; TVE-IMP-009 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -18,7 +18,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - RESEARCH: PASS
 - DESIGN: FROZEN — `TVE-FRZ-001 PASS`
 - PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — `TVE-IMP-008` claimed after `TVE-IMP-007` verified/committed
+- BUILD & VERIFY: ACTIVE — `TVE-IMP-009` claimed after `TVE-IMP-008` verified/committed
 - RELEASE & OPERATE: LOCKED until MAIN VERIFIED
 - LEARN: FUTURE
 
@@ -86,17 +86,17 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-005 — Checkpoint-backed coherent batch/audit/rollback` — COMMITTED `840bacd`
 - `TVE-IMP-006 — Bounded long-form preview/export execution` — COMMITTED `52039c5`
 - `TVE-IMP-007 — 300-clip timeline viewport culling/virtualization` — COMMITTED `7741f69`
+- `TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver` — COMMITTED `dcb3579`
 
 ## Active production task
-`TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver`
+`TVE-IMP-009 — Dependency hardening promotion`
 
 Acceptance summary:
-- Vietnamese requests select multilingual `large-v3-turbo` with explicit `language=vi`; never a `.en` model;
-- `small` is not the edit-grade Vietnamese default;
-- transcript-cut resolver enforces >=120 ms safe gap on each side; insufficient gap returns NOOP/review-needed rather than forcing a cut;
-- frozen 20-sample cut fixture reproduces 13 safe cut / 7 safe no-op or equivalent fail-closed resolution;
-- retained VI-STT benchmark contract stays within frozen metrics;
-- rendered preview/audio QA remains required evidence.
+- current package/dependency graph is revalidated against frozen `TVE-SPIKE-DEPSEC-001` before mutation;
+- only the proven non-force compatible remediation is promoted; no blind forced major upgrade;
+- `npm audit --omit=dev` reaches the accepted production target;
+- build/typecheck/security smoke PASS after remediation;
+- remaining dev/packaging findings are explicitly classified and carried to release convergence.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -173,5 +173,15 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Focused diff/check/review: PASS.
 - Commit: PASS — `7741f69`.
 
+## Latest TVE-IMP-008 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-008.md`.
+- Core build: PASS / exit 0.
+- Dedicated VI-policy + frozen 20-sample resolver smoke: PASS / exit 0; 13 SAFE_CUT + 7 SAFE_NOOP.
+- Unsafe Vietnamese delete: zero mutation + reviewNeeded; safe delete: real ripple cut.
+- Production preview/audio QA: PASS; 8.900 s pre-cut H.264+AAC → 8.700 s post-cut H.264+AAC.
+- Root typecheck: PASS / exit 0.
+- Focused diff/check/review: PASS.
+- Commit: PASS — `dcb3579`.
+
 ## NEXT_EXACT_ACTION
-Analyze only `TVE-IMP-008`: read frozen AC-18/VI-STT evidence and current production Whisper/transcript-edit paths; PLAN the minimal multilingual `large-v3-turbo` + explicit `vi` policy and >=120 ms fail-closed cut resolver. Reuse frozen fixtures and do not rerun the DESIGN model benchmark.
+Analyze `TVE-IMP-009`: compare current manifests/lockfile and baseline audit with `TVE-SPIKE-DEPSEC-001`. If graph is materially unchanged, promote only the proven non-force remediation; otherwise loop back to License/Security research before any dependency mutation.

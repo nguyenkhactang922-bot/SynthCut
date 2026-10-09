@@ -113,19 +113,20 @@ Primary candidate files: `apps/desktop/src/timeline.tsx`, optional styles/helper
 Convergence: must be verified before E2E.
 
 ## TVE-IMP-008 — Vietnamese STT + fail-closed transcript-cut policy
-Status: ACTIVE / CLAIMED — dependency satisfied by TVE-IMP-006 commit `52039c5`; serialized lane released by TVE-IMP-007 commit `7741f69`
+Status: DONE / COMMITTED — `dcb3579`
+Evidence: `docs/evidence/implementation/TVE-IMP-008.md`
 Dependencies: IMP-006 verified/committed
 Primary candidate files: `packages/core/src/whisper/transcribe.ts`, transcript edit RPC/helpers, policy helper.
 Frozen policy: multilingual `large-v3-turbo`, explicit `vi`, >=120 ms guard each side, insufficient gap = NOOP/review-needed.
 
 ## TVE-IMP-009 — Dependency hardening promotion
-Status: QUEUED INDEPENDENT LANE, verify dependency graph still matches DEPSEC evidence before mutation
+Status: ACTIVE / CLAIMED — ANALYZE current package graph against frozen DEPSEC evidence before mutation
 Dependencies: FROZEN DESIGN
 Primary files: minimal package manifest/`package-lock.json` changes only.
 Convergence: must PASS before final integration/MAIN VERIFIED.
 
 ## TVE-IMP-010 — Tang long-form editorial orchestration contract
-Status: BLOCKED by TVE-IMP-003 + TVE-IMP-005 + TVE-IMP-008
+Status: QUEUED — dependencies satisfied; defer while serialized execution owns TVE-IMP-009
 Dependencies: bounded reads/MCP + safe batch + Vietnamese policy
 Primary candidate files: `packages/mcp/src/guide.ts`, `packages/mcp/src/index.ts`, optional pure `packages/mcp/src/tang/` helpers.
 
@@ -152,6 +153,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver` — ACTIVE / CLAIMED.
+`TVE-IMP-009 — Dependency hardening promotion` — ACTIVE / CLAIMED.
 
-Analyze and implement only IMP-008 according to the frozen AC-18/VI-STT policy. Do not rerun the DESIGN model benchmark. Keep IMP-009 unclaimed while serialized execution owns IMP-008. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+Revalidate the current package graph and baseline audits against `TVE-SPIKE-DEPSEC-001` before mutation. Promote only the proven non-force compatible remediation when the graph still matches; otherwise loop back to License/Security research. Keep IMP-010 unclaimed while serialized execution owns IMP-009. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
