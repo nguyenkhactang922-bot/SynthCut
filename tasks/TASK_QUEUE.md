@@ -120,13 +120,14 @@ Primary candidate files: `packages/core/src/whisper/transcribe.ts`, transcript e
 Frozen policy: multilingual `large-v3-turbo`, explicit `vi`, >=120 ms guard each side, insufficient gap = NOOP/review-needed.
 
 ## TVE-IMP-009 — Dependency hardening promotion
-Status: ACTIVE / CLAIMED — ANALYZE current package graph against frozen DEPSEC evidence before mutation
+Status: DONE / COMMITTED — `f46feda`
+Evidence: `docs/evidence/implementation/TVE-IMP-009.md`
 Dependencies: FROZEN DESIGN
-Primary files: minimal package manifest/`package-lock.json` changes only.
-Convergence: must PASS before final integration/MAIN VERIFIED.
+Primary files: `package-lock.json` only; no manifest/source change.
+Convergence: production audit 0; remaining dev/packaging findings explicitly carried to release hardening.
 
 ## TVE-IMP-010 — Tang long-form editorial orchestration contract
-Status: QUEUED — dependencies satisfied; defer while serialized execution owns TVE-IMP-009
+Status: ACTIVE / CLAIMED — ANALYZE/PLAN
 Dependencies: bounded reads/MCP + safe batch + Vietnamese policy
 Primary candidate files: `packages/mcp/src/guide.ts`, `packages/mcp/src/index.ts`, optional pure `packages/mcp/src/tang/` helpers.
 
@@ -153,6 +154,6 @@ Unlock only after MAIN VERIFIED and an explicit release scope exists.
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-IMP-009 — Dependency hardening promotion` — ACTIVE / CLAIMED.
+`TVE-IMP-010 — Tang long-form editorial orchestration contract` — ACTIVE / CLAIMED.
 
-Revalidate the current package graph and baseline audits against `TVE-SPIKE-DEPSEC-001` before mutation. Promote only the proven non-force compatible remediation when the graph still matches; otherwise loop back to License/Security research. Keep IMP-010 unclaimed while serialized execution owns IMP-009. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+Encode the frozen PROJECT→CHAPTER→SCENE/BEAT→EDIT ACTION operating contract over bounded MCP reads + safe EditPlan batches + Vietnamese policy. Preserve actual core RPC authority; no whole-state default, direct `.aive` writes, shadow timeline, or local second LLM. Keep IMP-011 unclaimed until IMP-010 PASS. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.

@@ -3,14 +3,14 @@
 Project: Tang AI Video Editor on SynthCut base
 Root: `E:\SynthCut`
 Branch: `chatgpt/ai-video-editor-design`
-HEAD: `dcb3579`
+HEAD: `f46feda`
 
 ## Canonical lifecycle
 `docs/process/PROJECT_LIFECYCLE_V1.md`
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`BUILD & VERIFY — TVE-IMP-001..008 COMMITTED; TVE-IMP-009 ACTIVE / CLAIMED`
+`BUILD & VERIFY — TVE-IMP-001..009 COMMITTED; TVE-IMP-010 ACTIVE / CLAIMED`
 
 ## Phase gates
 - DISCOVER: PASS
@@ -18,7 +18,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - RESEARCH: PASS
 - DESIGN: FROZEN — `TVE-FRZ-001 PASS`
 - PLAN IMPLEMENTATION: PASS — `TVE-PLAN-001..004 PASS`
-- BUILD & VERIFY: ACTIVE — `TVE-IMP-009` claimed after `TVE-IMP-008` verified/committed
+- BUILD & VERIFY: ACTIVE — `TVE-IMP-010` claimed after `TVE-IMP-009` verified/committed
 - RELEASE & OPERATE: LOCKED until MAIN VERIFIED
 - LEARN: FUTURE
 
@@ -87,16 +87,17 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-006 — Bounded long-form preview/export execution` — COMMITTED `52039c5`
 - `TVE-IMP-007 — 300-clip timeline viewport culling/virtualization` — COMMITTED `7741f69`
 - `TVE-IMP-008 — Vietnamese STT policy and fail-closed cut resolver` — COMMITTED `dcb3579`
+- `TVE-IMP-009 — Dependency hardening promotion` — COMMITTED `f46feda`
 
 ## Active production task
-`TVE-IMP-009 — Dependency hardening promotion`
+`TVE-IMP-010 — Tang long-form editorial orchestration contract`
 
 Acceptance summary:
-- current package/dependency graph is revalidated against frozen `TVE-SPIKE-DEPSEC-001` before mutation;
-- only the proven non-force compatible remediation is promoted; no blind forced major upgrade;
-- `npm audit --omit=dev` reaches the accepted production target;
-- build/typecheck/security smoke PASS after remediation;
-- remaining dev/packaging findings are explicitly classified and carried to release convergence.
+- encode PROJECT→CHAPTER→SCENE/BEAT→EDIT ACTION operator contract over existing core/MCP surfaces;
+- representative 30-minute brief decomposes into chapter/range-scoped plans using bounded reads;
+- generated operations reference actual RPC methods/frames/IDs with revision preconditions and safe batch flow;
+- no whole-state default, no direct `.aive` writes, no local second LLM or shadow timeline;
+- hook/narrative/pacing/retention/filler/repetition/B-roll/caption/audio policy remains orchestration guidance, not execution authority.
 
 ## Hard gate
 `IMPLEMENTATION_ALLOWED=true`
@@ -183,5 +184,17 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Focused diff/check/review: PASS.
 - Commit: PASS — `dcb3579`.
 
+## Latest TVE-IMP-009 verification
+- Evidence: `docs/evidence/implementation/TVE-IMP-009.md`.
+- Materialized production dependency tree verification: PASS / `npm ls --omit=dev --json` exit 0.
+- Production audit: PASS / 0 findings.
+- Full audit remaining risk: 12 findings = 11 high + 1 critical, isolated to the tracked electron-builder dev/packaging chain; semver-major remediation deferred by frozen scope.
+- Root build: PASS / exit 0.
+- Root typecheck: PASS / exit 0.
+- Composite smoke: PASS / exit 0.
+- CLIP tokenizer smoke: PASS / exit 0.
+- Core security smoke: PASS / exit 0 using project-local FFmpeg/FFprobe.
+- Commit: PASS — `f46feda`.
+
 ## NEXT_EXACT_ACTION
-Analyze `TVE-IMP-009`: compare current manifests/lockfile and baseline audit with `TVE-SPIKE-DEPSEC-001`. If graph is materially unchanged, promote only the proven non-force remediation; otherwise loop back to License/Security research before any dependency mutation.
+Analyze `TVE-IMP-010`: inspect current MCP guide/index plus bounded read, EditPlan/batch, and Vietnamese policy surfaces. Encode the smallest deterministic long-form editorial orchestration contract without duplicating core logic, then build a representative 30-minute scenario smoke that asserts bounded reads, real RPC IDs/frames, revision precondition, plan-before-mutation, and no direct `.aive` writes.
