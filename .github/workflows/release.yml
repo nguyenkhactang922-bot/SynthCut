@@ -48,7 +48,21 @@ jobs:
       - name: Stage verified FFmpeg, Whisper, YuNet, font and provenance
         run: npm run prepare:bundle --workspace synthcut-by-relo
 
+      - name: Require trusted signing credentials for commercial tag publication
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED == 'true' }}
+        shell: pwsh
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ([string]::IsNullOrWhiteSpace($env:WIN_CSC_LINK)) { throw 'Missing WIN_CSC_LINK secret for trusted Windows signing' }
+          if ([string]::IsNullOrWhiteSpace($env:WIN_CSC_KEY_PASSWORD)) { throw 'Missing WIN_CSC_KEY_PASSWORD secret for trusted Windows signing' }
+
       - name: Package Windows NSIS + ZIP without publishing
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npm run dist --workspace synthcut-by-relo -- --publish never
 
       - name: Assemble and validate release artifact set

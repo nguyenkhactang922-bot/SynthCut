@@ -311,8 +311,10 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-007-BLOCKER.md`.
 - Official Remotion terms checked 2026-10-10: individuals and teams/organizations up to 3 are Free-License eligible for commercial/automation use; 4+ require the applicable Company License.
 - ADR-002 D-002-5 forbids inferring operator/team size or eligibility; no durable owner eligibility declaration or paid Remotion license basis is recorded.
-- Accepted installer remains `NotSigned`; no CurrentUser code-signing certificate with private key was found and signing/Azure environment variables are unset.
-- Therefore `REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_GATE=PASS` are both absent; `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+- Repository signing integration is now PREPARED/PASS: `.github/workflows/release.yml` injects `secrets.WIN_CSC_LINK` + `secrets.WIN_CSC_KEY_PASSWORD` into electron-builder for Windows packaging, commercial tag runs fail fast when either secret is absent, and post-build Authenticode verification remains mandatory. Canonical release validator PASS / exit 0 after this change.
+- Accepted installer remains `NotSigned`; no real trusted signing certificate/service credential is configured yet.
+- Remotion commercial intent is confirmed, but ADR-002 forbids inferring operator/team eligibility from that intent; no explicit eligibility/headcount declaration or paid basis is recorded.
+- Therefore `REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_GATE=PASS` are both still absent; `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
 - No REL-006 stage was rerun and no tag/push/release/publish/deploy side effect occurred.
 
 ## NEXT_EXACT_ACTION

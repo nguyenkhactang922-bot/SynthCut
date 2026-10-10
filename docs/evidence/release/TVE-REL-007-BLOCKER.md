@@ -84,3 +84,18 @@ No public commercial release, tag publication, GitHub Release, deploy, or update
 - Owner chooses Remotion-free distribution -> reopen only the required DEFINE/RESEARCH/DESIGN/PLAN slice before implementation; do not silently remove runtime dependencies.
 - Trusted signing identity/service becomes available -> create/verify only the signed-candidate signing sub-gate.
 - Until either external fact changes, do not rerun REL-006 or earlier IMP/E2E gates.
+
+## 2026-10-11 technical signing-path preparation
+The repository-side signing integration that does not require external credentials is now prepared:
+- `.github/workflows/release.yml` passes `secrets.WIN_CSC_LINK` and `secrets.WIN_CSC_KEY_PASSWORD` to the Windows `electron-builder` package step;
+- commercial tag publication fails early when either trusted-signing secret is absent;
+- the existing post-build Authenticode verification remains mandatory before publication;
+- `scripts/release/validate-release.mjs` now asserts that the signing-secret wiring and fail-fast markers remain present.
+
+Verification:
+- `node scripts/release/validate-release.mjs` -> PASS / exit 0 / marker `REL005_RELEASE_VALIDATION_PASS version=1.0.6 tag=v1.0.6 repo=nguyenkhactang922-bot/SynthCut cleanRequired=false`.
+- An optional direct YAML parse probe could not run because no `yaml` Node module is installed in this repo (`MODULE_NOT_FOUND`). No dependency was added solely for that optional parser check; the canonical release validator PASS remains the accepted static check.
+
+External gate status is unchanged:
+- `REMOTION_LICENSE_GATE` still requires an explicit owner eligibility/license basis; commercial intent alone does not establish operator/team headcount.
+- `WINDOWS_SIGNING_GATE` still requires a real trusted certificate/service and non-secret signature evidence. The workflow is ready to consume credentials, but none is available yet.

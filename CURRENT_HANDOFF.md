@@ -4,7 +4,7 @@
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-007 — External commercial authorization gates`
 - STATUS: `INTERRUPTED / REL-007 BLOCKED_EXTERNAL`
-- CURRENT_STAGE: `REL-007 ENTRY GATE — no REL-007 process started; waiting on external Remotion eligibility/license basis + trusted Windows signing authority`
+- CURRENT_STAGE: `REL-007 — repository signing integration PREPARED/PASS; waiting on explicit owner Remotion eligibility/license basis + real trusted Windows signing credential/service`
 - BRANCH: `chatgpt/phase7-commercial-release`
 - HEAD: resolve from current Git HEAD (Git is authoritative); REL-006 acceptance/state commit: `f297abb`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
@@ -30,9 +30,9 @@
   - `.tmp/rel006-packaged-export-av.mp4`
 - BLOCKERS:
   - `REMOTION_LICENSE_GATE`: official Remotion terms checked 2026-10-10 allow commercial/automation use for individuals or teams up to 3, but ADR-002 forbids inferring operator/team size; no owner eligibility declaration or paid license basis is recorded.
-  - `WINDOWS_SIGNING_GATE`: no trusted Windows signing identity/service is configured; installer is `NotSigned`, no CurrentUser code-signing cert with private key was found, and signing/Azure variables are unset.
+  - `WINDOWS_SIGNING_GATE`: repository workflow is now prepared to consume `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` and fail fast when commercial tag signing secrets are absent, but no real trusted signing identity/service or credential is configured; accepted installer remains `NotSigned`.
   - Therefore `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
-- NEXT_EXACT_ACTION: Resolve REL-007 external gates by (1) recording a valid Remotion commercial/redistribution basis or an approved Remotion-free distribution profile, and (2) configuring a trusted Windows signing identity/service without persisting private credentials in the repo; then create/verify a signed candidate. Do not tag, push a release, publish, or deploy before both gates PASS.
+- NEXT_EXACT_ACTION: Obtain the two remaining owner/provider inputs only: (1) an explicit Remotion eligibility/license basis (commercial intent alone is insufficient; operator/team eligibility must be stated or a paid basis supplied), and (2) a real trusted Windows signing certificate/service. For the certificate path, configure repository secrets `WIN_CSC_LINK` and `WIN_CSC_KEY_PASSWORD` out-of-band; then build and verify only the REL-007 signed candidate. Do not repeat REL-006 and do not publish before both gates PASS.
 - DO_NOT_REPEAT:
   - DISCOVER / original DEFINE / original RESEARCH;
   - completed DESIGN spikes and `TVE-FRZ-001`;

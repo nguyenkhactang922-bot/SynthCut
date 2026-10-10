@@ -205,7 +205,7 @@ Evidence: `docs/evidence/release/TVE-REL-007-BLOCKER.md`
 Required before public commercial-ready release:
 - explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
 - trusted Windows signing identity/service and signature verification.
-Current evidence: official Remotion terms checked 2026-10-10 allow commercial/automation Free License use for individuals or teams up to 3, but ADR-002 forbids inferring operator/team size and no owner eligibility declaration/license basis is recorded. Installer is `NotSigned`; no local code-signing certificate with private key or configured signing service variables were found. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+Current evidence: official Remotion terms checked 2026-10-10 allow commercial/automation Free License use for individuals or teams up to 3, but ADR-002 forbids inferring operator/team size and no explicit owner eligibility declaration/license basis is recorded. Repository signing integration is PREPARED/PASS: GitHub Actions now injects `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` secrets into electron-builder, fails fast for commercial tag publication when either is missing, and preserves mandatory post-build Authenticode verification; canonical release validator PASS / exit 0. No trusted certificate/service credential is actually configured yet and accepted installer remains `NotSigned`. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
 
 ## TVE-REL-008 — GitHub Release publication
 Status: BLOCKED BY REL-007
