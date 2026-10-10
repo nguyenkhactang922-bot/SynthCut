@@ -6,7 +6,7 @@
 - STATUS: `REL-006 PASS / REL-007 BLOCKED_EXTERNAL`
 - CURRENT_STAGE: `REL-007 ENTRY GATE — external Remotion basis + trusted Windows signing required`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `225a987dfb5490949ba107eac4c9e0dd0c74499b` (state/evidence update commit pending)
+- HEAD: resolve from current Git HEAD (Git is authoritative); REL-006 acceptance/state commit: `f297abb`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 - LAST_VERIFIED_CHECKPOINT: `TVE-REL-006 PASS` — NSIS+ZIP artifact integrity PASS; package manifest clean at `225a987`; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS; fork update metadata/hashes/provenance PASS. Evidence: `docs/evidence/release/TVE-REL-006.md`.
 - PROCESS_PID: `NONE` for SynthCut REL-006/007
