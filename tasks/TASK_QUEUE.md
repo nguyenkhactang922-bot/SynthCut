@@ -199,12 +199,13 @@ Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, 
 Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
 
 ## TVE-REL-007 — External commercial authorization gates
-Status: BLOCKED_EXTERNAL / ACTIVE ENTRY GATE
+Status: INTERRUPTED / BLOCKED_EXTERNAL / ACTIVE ENTRY GATE
 Dependencies: REL-006 PASS
+Evidence: `docs/evidence/release/TVE-REL-007-BLOCKER.md`
 Required before public commercial-ready release:
 - explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
 - trusted Windows signing identity/service and signature verification.
-Current evidence: installer is `NotSigned`; no qualifying Remotion commercial basis is recorded. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+Current evidence: official Remotion terms checked 2026-10-10 allow commercial/automation Free License use for individuals or teams up to 3, but ADR-002 forbids inferring operator/team size and no owner eligibility declaration/license basis is recorded. Installer is `NotSigned`; no local code-signing certificate with private key or configured signing service variables were found. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
 
 ## TVE-REL-008 — GitHub Release publication
 Status: BLOCKED BY REL-007

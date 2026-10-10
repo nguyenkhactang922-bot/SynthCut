@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 BLOCKED_EXTERNAL on Remotion commercial basis + trusted Windows signing`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 INTERRUPTED / BLOCKED_EXTERNAL at entry gate on Remotion eligibility/license basis + trusted Windows signing`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-007 — BLOCKED_EXTERNAL: Remotion commercial/redistribution basis + trusted Windows signing required`
+`TVE-REL-007 — INTERRUPTED / BLOCKED_EXTERNAL at entry gate: owner Remotion eligibility/license basis + trusted Windows signing required`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -305,6 +305,15 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Installer Authenticode remains `NotSigned`; this is a hard REL-007 gate, not a REL-006 failure.
 - `asar=false` was explicitly assessed. An ASAR smoke candidate packaged PASS, but current external MCP launch via a script path inside `app.asar` needs additional launcher/unpack work. Experimental ASAR source change was reverted and is deferred hardening, not part of the accepted candidate.
 - No tag/push/GitHub Release/npm publish/deploy occurred.
+
+## Latest TVE-REL-007 blocker verification
+- Status: `INTERRUPTED / BLOCKED_EXTERNAL` at entry gate; no REL-007 process is running or has completed PASS/FAIL.
+- Evidence: `docs/evidence/release/TVE-REL-007-BLOCKER.md`.
+- Official Remotion terms checked 2026-10-10: individuals and teams/organizations up to 3 are Free-License eligible for commercial/automation use; 4+ require the applicable Company License.
+- ADR-002 D-002-5 forbids inferring operator/team size or eligibility; no durable owner eligibility declaration or paid Remotion license basis is recorded.
+- Accepted installer remains `NotSigned`; no CurrentUser code-signing certificate with private key was found and signing/Azure environment variables are unset.
+- Therefore `REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_GATE=PASS` are both absent; `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+- No REL-006 stage was rerun and no tag/push/release/publish/deploy side effect occurred.
 
 ## NEXT_EXACT_ACTION
 Resolve TVE-REL-007 external gates: record an explicit valid Remotion commercial/redistribution basis (or approved Remotion-free package profile) and configure/verify a trusted Windows signing identity/service without persisting private credentials. Then create and verify a signed candidate. Do not publish before both gates PASS.
