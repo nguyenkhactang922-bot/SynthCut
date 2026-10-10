@@ -192,16 +192,19 @@ Evidence: `docs/evidence/release/TVE-REL-005.md`
 Result: version set aligned at `1.0.6`; manual workflow is read-only/non-publishing; tag publication is fork-only + commercial-gated; upstream npm namespace publication disabled; artifact/version/tag negative gates PASS.
 
 ## TVE-REL-006 — Local packaged acceptance
-Status: REPAIR COMMITTED — `fe6e27b`; AFFECTED RERUN PENDING
+Status: DONE / PASS
 Dependencies: REL-005 committed at `227535b`
-Last PASS checkpoints: clean-source validation; bundled resource staging; root build; NSIS+ZIP build; release artifact validation; ZIP/latest.yml/provenance inspection.
-Failed checkpoint: standalone packaged MCP could spawn core but `import_video` could not find bundled ffprobe because generated MCP env omitted bundled asset overrides. Repair now exposes approved bundled AIVE paths and merges them into packaged MCP config; focused contract verification PASS.
+Evidence: `docs/evidence/release/TVE-REL-006.md`
+Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, tracked dirty=false.
+Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
 
 ## TVE-REL-007 — External commercial authorization gates
-Status: BLOCKED BY REL-006
+Status: BLOCKED_EXTERNAL / ACTIVE ENTRY GATE
+Dependencies: REL-006 PASS
 Required before public commercial-ready release:
 - explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
 - trusted Windows signing identity/service and signature verification.
+Current evidence: installer is `NotSigned`; no qualifying Remotion commercial basis is recorded. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
 
 ## TVE-REL-008 — GitHub Release publication
 Status: BLOCKED BY REL-007
@@ -217,4 +220,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-006` repair is committed at `fe6e27b`. Commit the post-repair state checkpoint, verify tracked source clean, then rerun only affected staging/build/package/runtime acceptance. Do not repeat already-valid IMP/E2E gates and do not publish.
+`TVE-REL-007` is the next task but is BLOCKED_EXTERNAL. Resolve only the two external gates: (1) record an explicit valid Remotion commercial/redistribution basis or approved Remotion-free distribution profile; (2) configure and verify a trusted Windows signing identity/service without persisting private credentials. Then create/verify a signed candidate. Do not repeat REL-006 or earlier IMP/E2E gates and do not publish before both REL-007 gates PASS.

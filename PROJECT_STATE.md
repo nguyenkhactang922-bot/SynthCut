@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-006 repair COMMITTED fe6e27b; affected package/runtime rerun pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 BLOCKED_EXTERNAL on Remotion commercial basis + trusted Windows signing`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 package/artifact stages PASS but packaged MCP offline baseline FAIL; repair active; publication remains gated by REL-007
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 PASS with evidence `docs/evidence/release/TVE-REL-006.md`; REL-007 BLOCKED_EXTERNAL; publication remains prohibited
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-006 — REPAIR COMMITTED fe6e27b / AFFECTED RERUN PENDING`
+`TVE-REL-007 — BLOCKED_EXTERNAL: Remotion commercial/redistribution basis + trusted Windows signing required`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -102,6 +102,7 @@ Release baseline summary:
 - REL-003 provenance/source compliance is PASS/COMMITTED `e051b8d` with `docs/evidence/release/TVE-REL-003.md`;
 - REL-004 packaging/release-tool security hardening is PASS/COMMITTED `20c8ff9` with `docs/evidence/release/TVE-REL-004.md`;
 - REL-005 release workflow/version hardening is PASS/COMMITTED `227535b` with `docs/evidence/release/TVE-REL-005.md`;
+- REL-006 local packaged acceptance is PASS with `docs/evidence/release/TVE-REL-006.md`; accepted candidate manifest source commit is `225a987`, installer/ZIP integrity PASS, packaged MCP/core/resource resolution PASS, save/open PASS, representative H.264+AAC export PASS, installer exit 0 and installed launch PASS;
 - public commercial-ready publication is still fail-closed on Remotion license basis + trusted Windows signing at REL-007.
 
 ## Hard gate
@@ -289,24 +290,21 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Commit: `227535b`.
 - No push/tag/release/npm publication occurred.
 
-## REL-006 partial acceptance evidence
-- Clean release source validation on `e464502`: PASS.
-- Bundle staging: PASS / `REL006_STAGE_EXIT=0`; manifest sourceCommit `e464502...`, `sourceTrackedDirty=false`.
-- Root build: PASS.
-- NSIS + ZIP package: PASS / `REL006_DIST_EXIT=0`.
-- Real artifacts: installer 397,648,809 B; ZIP 505,854,857 B; blockmap/latest.yml/checksums emitted.
-- Release artifact validator: PASS / 10 files.
-- ZIP payload + latest.yml + provenance checks: PASS.
-- Installer Authenticode: `NotSigned` (expected REL-007 blocker, not this runtime failure).
-- Packaged standalone MCP smoke: FAIL as acceptance; MCP/core start, but `import_video` fails because bundled ffprobe env is not propagated. Marker `REL006_PACKAGED_MCP_BUNDLED_ENV_GAP_CONFIRMED`.
-
-## REL-006 repair checkpoint
-- `bundled-assets.cjs` now exposes only approved bundled `AIVE_*` paths via `getBundledAssetEnv()`.
-- Packaged `mcp:config` merges those paths alongside `ELECTRON_RUN_AS_NODE=1`.
-- `node --check` for both affected CJS files: PASS.
-- Focused env-contract smoke: PASS; marker `REL006_PACKAGED_MCP_ENV_CONTRACT_PASS`.
-- No package/release publication occurred.
-- Repair commit: `fe6e27b`.
+## Latest TVE-REL-006 verification
+- Status: PASS.
+- Evidence: `docs/evidence/release/TVE-REL-006.md`.
+- Accepted package manifest source: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, `sourceTrackedDirty=false`.
+- NSIS: `397,648,957` B; SHA-256 `754138d0e683cb10828f1b7fcc125ea71e1443c9a03b63e54a8e63f0c4442ab0`.
+- ZIP: `505,855,006` B; SHA-256 `59aa55f8aff9395f45408b93565385d8262e6610bb48da0848597b68231c7478`.
+- Blockmap/latest.yml/SHA256SUMS present; artifact validator and package provenance inspection PASS.
+- Packaged MCP/core/bundled-resource acceptance PASS after bundled AIVE env repair; `import_video` succeeded offline with restricted PATH.
+- Packaged project save/open PASS; representative export PASS: 4.000 s H.264 320x180@25fps + AAC, 250,897 B.
+- Installer acceptance PASS with durable marker `.tmp/rel006-install4-exit.json`: exit code 0 to project-local target `.tmp/rel006-installed4`.
+- Installed desktop launch PASS: main window + renderer + bundled core observed; test process tree closed cleanly.
+- `latest.yml` version/path/size metadata PASS; fork ownership retained from REL-002/005.
+- Installer Authenticode remains `NotSigned`; this is a hard REL-007 gate, not a REL-006 failure.
+- `asar=false` was explicitly assessed. An ASAR smoke candidate packaged PASS, but current external MCP launch via a script path inside `app.asar` needs additional launcher/unpack work. Experimental ASAR source change was reverted and is deferred hardening, not part of the accepted candidate.
+- No tag/push/GitHub Release/npm publish/deploy occurred.
 
 ## NEXT_EXACT_ACTION
-Commit this post-repair state checkpoint, verify tracked source clean, then rerun only affected REL-006 staging/build/package/runtime acceptance. Do not publish.
+Resolve TVE-REL-007 external gates: record an explicit valid Remotion commercial/redistribution basis (or approved Remotion-free package profile) and configure/verify a trusted Windows signing identity/service without persisting private credentials. Then create and verify a signed candidate. Do not publish before both gates PASS.
