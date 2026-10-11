@@ -18,4 +18,8 @@ contextBridge.exposeInMainWorld("aive", {
   reportProjectState: (state) => ipcRenderer.send("project:state", state),
   /** Ready-to-paste MCP client config for this exact install (no repo path guessing). */
   getMcpConfig: () => ipcRenderer.invoke("mcp:config"),
+  /** Commercial license status/activation live in the main process; no backend secret is exposed here. */
+  licenseStatus: () => ipcRenderer.invoke("license:status"),
+  activateLicense: (licenseKey) => ipcRenderer.invoke("license:activate", licenseKey),
+  forgetLicense: () => ipcRenderer.invoke("license:forget"),
 });

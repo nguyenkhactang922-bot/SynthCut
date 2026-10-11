@@ -145,17 +145,87 @@ Required integrated proof: 30-minute/~300 clips, UI+MCP same project, bounded re
 Artifact target: `docs/evidence/e2e/TVE-E2E-001.md`.
 
 ## MAIN VERIFIED
-Status: BLOCKED only by required push/PR/review/merge + verification on merged main; TVE-E2E-001 is PASS/COMMITTED `c921f9e`.
-Never claim MAIN VERIFIED from feature-branch tests alone.
+Status: DONE / PASS — `personal/main@af92f20` verified after PR #1 review+merge.
+Evidence: `docs/evidence/e2e/TVE-MAIN-VERIFICATION.md`.
+Merged-main root typecheck PASS; integrated E2E PASS / exit 0; merge tree equals reviewed feature tip. Upstream `origin/main` was not modified.
 
 ---
 
-# PHASE 7 — RELEASE & OPERATE — LOCKED
-Package → Release → Deploy (if applicable) → Monitor → Incident Handling.
-Unlock only after MAIN VERIFIED and an explicit release scope exists.
+# COMMERCIAL RELEASE RE-ENTRY — B + C — 2026-10-09
+
+## TVE-REL-001 — Commercial scope / license-security re-entry / ADR / Phase-7 plan
+Status: DONE / PASS
+Dependencies: MAIN VERIFIED + explicit user authorization `B + C`
+Artifacts:
+- `docs/define/COMMERCIAL_RELEASE_SCOPE_V1.md`
+- `docs/research/COMMERCIAL_REDISTRIBUTION_AUDIT_V1.md`
+- `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
+- `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
+Result: GPL commercial distribution path accepted with fail-closed Remotion, FFmpeg provenance, release-tool security, fork identity/updater and trusted-signing gates.
+
+# PHASE 7 — RELEASE & OPERATE — ACTIVE
+Canonical plan: `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
+Baseline retained: `personal/main@af92f20` MAIN VERIFIED.
+Branch: `chatgpt/phase7-commercial-release`.
+
+## TVE-REL-002 — Fork identity + updater ownership
+Status: DONE / PASS
+Dependencies: REL-001 PASS
+Evidence: `docs/evidence/release/TVE-REL-002.md`
+Result: fork display/app identity, installer identity and updater publish provider now use `Tang AI Video Editor` + `nguyenkhactang922-bot/SynthCut`; upstream visible logo/name removed from renderer bundle; typecheck/build/static scans PASS.
+
+## TVE-REL-003 — Third-party provenance + corresponding-source compliance
+Status: DONE / PASS / COMMITTED — `e051b8d`
+Evidence: `docs/evidence/release/TVE-REL-003.md`
+Result: exact Windows FFmpeg pin + fail-closed version/hash gate; source offer/notices/package-lock/distribution-doc hashes recorded; 36 staged files independently re-hashed PASS; root typecheck + diff check PASS.
+
+## TVE-REL-004 — Release-tool dependency security hardening
+Status: DONE / PASS / COMMITTED — `20c8ff9`
+Dependencies: REL-003 committed at `e051b8d`
+Evidence: `docs/evidence/release/TVE-REL-004.md`
+Result: electron-builder upgraded non-force from 25.1.8 to 26.15.3; full audit reduced 11 high + 1 critical to 8 documented build-only moderate findings; production audit 0; build/typecheck/unpacked package smoke PASS.
+
+## TVE-REL-005 — Release workflow + version metadata hardening
+Status: DONE / PASS / COMMITTED — `227535b`
+Dependencies: REL-004 committed at `20c8ff9`
+Evidence: `docs/evidence/release/TVE-REL-005.md`
+Result: version set aligned at `1.0.6`; manual workflow is read-only/non-publishing; tag publication is fork-only + commercial-gated; upstream npm namespace publication disabled; artifact/version/tag negative gates PASS.
+
+## TVE-REL-006 — Local packaged acceptance
+Status: DONE / PASS
+Dependencies: REL-005 committed at `227535b`
+Evidence: `docs/evidence/release/TVE-REL-006.md`
+Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, tracked dirty=false.
+Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
+
+## TVE-REL-007 — Commercial authorization / license strategy
+Status: DONE / PASS — owner-approved unsigned commercial lane
+Dependencies: REL-006 PASS
+Evidence: `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md` + `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md` + retained `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`
+Result:
+- `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE`.
+- `SUPABASE_LICENSE_BACKEND=PASS`; founder/admin key prefix `TAIVE-F3E3Y`, maxDevices=3, no expiry, activeDevices=0 after exact test cleanup; plaintext key is not stored in Git.
+- bounded DEFINE/ADR/PLAN amendment now explicitly permits the current unsigned commercial lane with owner-accepted Unknown-publisher/SmartScreen risk.
+- packaged desktop activation/restart persistence through real renderer/preload/main IPC PASS; same device remained activeDevices=1; persisted key encrypted via Electron `safeStorage`.
+- full 1.1.0 NSIS/ZIP dist PASS / exit 0; installer SHA-256 `867fb75aceecab263ad0a5b3914f55ce71772dfa6aa923749b689dc1ecad6451`; ZIP SHA-256 `2ff621e45d4c7d78211282beec983fecc66ea6f2f635f074aa8ece53d2d004f2`.
+- installer and packaged app both intentionally `NotSigned`; trusted signing remains optional future hardening.
+- no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
+
+## TVE-REL-008 — GitHub Release publication
+Status: FAIL / REPAIR VERIFIED LOCALLY / PR CI RERUN PENDING
+Dependencies: REL-007 PASS
+Target: `nguyenkhactang922-bot/SynthCut` only.
+PR: #2 OPEN. Initial CI run `38125686293` on `db00c89` failed only the jobs-progress smoke (`fraction=0.000` while running); preceding CI stages PASS. Bounded first-segment progress wiring was repaired; exact local jobs smoke PASS with observed fraction `0.005`; `tsc -b packages/core` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`.
+Next gate: commit/push only the repair + state, then monitor the new PR #2 CI run. Merge/publication remain prohibited until CI/review PASS.
+
+## TVE-REL-009 — Installed updater E2E + stable verification
+Status: BLOCKED BY REL-008
+
+## TVE-REL-010 — Monitor / incident handoff
+Status: BLOCKED BY REL-009
 
 # PHASE 8 — LEARN — FUTURE
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`MAIN verification gate` — inspect real remote/upstream/auth/PR state; push/review/merge if available and authorized, then verify the merged main commit. Never claim MAIN VERIFIED from feature-branch evidence. Preserve unrelated `packages/skill-installer/bin/synthcut.mjs` WIP and do not absorb `.spike-temp/`, `.tmp/`, or dataset scratch files.
+`TVE-REL-008`: review/stage/commit the bounded-export progress repair plus CI-repair evidence/state, verify remote feature head is still `db00c89`, push only to `personal`, and monitor the newly triggered PR #2 CI. If PASS, review/merge to personal `main`; then re-run tag/release collision/auth guards before creating `v1.1.0`. Do not rerun REL-007 package/license proofs.

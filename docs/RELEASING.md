@@ -1,132 +1,167 @@
-# Releasing & Auto-Update
+# Releasing & Auto-Update — Tang AI Video Editor
 
-How to ship a new version of SynthCut so that installed (Windows) users receive it
-**automatically**. This is the operator's guide to the auto-update pipeline wired
-via `electron-updater` + GitHub Releases.
+This fork releases the Windows desktop application only through GitHub Releases on
+`nguyenkhactang922-bot/SynthCut`. The release workflow is deliberately fail-closed:
+manual runs build and validate artifacts but **never publish**, while tag publication
+requires both external commercial gates to be explicitly enabled and the installer
+to pass trusted-signature verification.
 
----
+## Release authority and hard gates
 
-## TL;DR — cut a release
+The authorized release repository is:
 
-Releases are triggered by **pushing a git tag** — *not* by pushing code to `main`.
+`nguyenkhactang922-bot/SynthCut`
 
-```bash
-# 1. Bump the version in ALL FOUR package.json files (see list below) to X.Y.Z
-# 2. Commit the bump
-git commit -am "Release v0.1.2"
+Do not publish release artifacts to upstream `Relo-video/SynthCut` and do not
+publish the legacy `@relo-video/synthcut` npm package from this fork.
 
-# 3. Tag that commit and push the tag
-git tag v0.1.2
-git push --tags        # (also `git push` your commit)
-```
+A public/stable commercial release remains blocked until both repository variables
+are explicitly set to `true` after REL-007 evidence exists:
 
-Pushing the `v*` tag starts the **Release** workflow, which builds the Windows
-installer + the update feed and publishes a GitHub Release. Installed apps pick it
-up on their next launch.
+- `REMOTION_COMMERCIAL_BASIS_APPROVED`
+- `WINDOWS_SIGNING_APPROVED`
 
----
+The tag workflow also verifies the Windows installer has a valid Authenticode
+signature before the publication job can run. Setting variables alone is therefore
+not sufficient to ship an unsigned build.
 
-## What counts as "a new version"
+## Version contract
 
-Three things must line up or users get nothing:
-
-1. **The tag matches `v*`** — e.g. `v0.1.2`. That's the CI trigger.
-2. **The `package.json` version equals the tag** (minus the `v`) and is **higher
-   than what users have installed.** `electron-updater` compares the version in the
-   published `latest.yml` against the running app's version. Same version → no
-   update offered. So a tag alone is not enough — you must bump the version too.
-3. **The GitHub Release is _published_, not a draft.** `electron-updater` cannot
-   see draft releases. (Our workflow already sets `draft: false`.)
-
-### The five version files to bump
-
-Keep these in lockstep — the app's version is `apps/desktop/package.json`:
+Five package manifests stay in lockstep:
 
 | File | Package |
-|------|---------|
-| `package.json` | repo root |
+|---|---|
+| `package.json` | repository root |
 | `packages/core/package.json` | `@aive/core` |
 | `packages/mcp/package.json` | `@aive/mcp` |
-| `packages/skill-installer/package.json` | `@relo-video/synthcut` (the `npx @relo-video/synthcut` skill installer) |
-| `apps/desktop/package.json` | `synthcut-by-relo` ← **the one the updater compares** |
+| `packages/skill-installer/package.json` | legacy local workspace package `@relo-video/synthcut` |
+| `apps/desktop/package.json` | `synthcut-by-relo` desktop package |
 
-> Only `apps/desktop/package.json` strictly drives the update check, but bump all
-> five together so versions never diverge. The `@relo-video/synthcut` package additionally
-> ships to npm — after tagging, run `npm publish --workspace @relo-video/synthcut`
-> (that's what makes `npx @relo-video/synthcut add` work for users). It's a scoped
-> package: publishing requires owning the npm `relo` scope (an npm org or the
-> username), and `publishConfig.access: public` is already set in its package.json.
+`apps/desktop/package.json` is the version electron-updater compares against
+`latest.yml`. A release tag must be exactly `v<version>`, and the version must be
+higher than every existing release tag.
 
----
+Use the repository validator before any release candidate is accepted:
 
-## What the CI does (on a `v*` tag)
-
-Defined in [`../.github/workflows/release.yml`](../.github/workflows/release.yml):
-
-1. Checks out **the exact commit the tag points to**.
-2. `npm ci` → `npm run build` (core + mcp + renderer).
-3. `npm run dist -- --publish never` — electron-builder produces:
-   - `SynthCut by Relo <ver>.exe` — the installer
-   - `SynthCut by Relo <ver>.exe.blockmap` — the differential-download map
-   - `latest.yml` — **the update feed the app reads**
-   - `.zip` (portable) + `SHA256SUMS.txt`
-4. Attaches **all** of those to a **published** GitHub Release.
-
-> All three of `.exe`, `.exe.blockmap`, and `latest.yml` must be on the Release,
-> or auto-update breaks. The workflow globs them explicitly.
-
----
-
-## How the update reaches users
-
-```
-tag push ──► CI builds ──► published GitHub Release (exe + blockmap + latest.yml)
-                                        │
-        installed app launches ─────────┘
-                │
-                ├─ reads latest.yml → newer version?
-                │        no  → nothing happens
-                │        yes → downloads changed chunks in the background
-                │              (via .blockmap — not the full ~444 MB)
-                │
-                └─ "update-downloaded" → dialog "Restart now / Later"
-                        Restart now → installs immediately, relaunches
-                        Later       → installs on the next quit/launch
+```powershell
+npm run release:validate
 ```
 
-- Runs **only in the installed/packaged app** (guarded by `app.isPackaged`) — never
-  during `npm start`.
-- The stable `appId` (`com.relo.synthcut`) means updates upgrade in place — no
-  uninstall.
-- Unsigned is fine on Windows; SmartScreen only nags on the very first manual
-  install, not on self-updates.
-- **macOS/Linux:** no packaged build or auto-update yet. Those users run from source
-  and update with `git pull && npm run build` (see the README).
+CI runs the stronger clean-source form:
 
----
+```powershell
+node scripts/release/validate-release.mjs --require-clean
+```
 
-## Testing an update end-to-end
+The validator checks version alignment, fork updater ownership, tag/version parity,
+repository identity, the upstream npm-publication guard, workflow safety tokens and,
+when requested, a clean tracked worktree.
 
-1. Build + install an **older** version locally (e.g. v0.1.1):
-   `npm run dist --workspace @aive/desktop`, then run the installer.
-2. Bump to a **higher** version (v0.1.2), tag, and push → let CI publish the Release.
-3. Launch the installed **older** app → within a moment it downloads in the
-   background → the "Update ready" dialog appears.
-4. To watch the process, add `electron-log` and check the log at
-   `%APPDATA%\SynthCut by Relo\logs`.
+## Legacy npm namespace is intentionally non-publishing
 
----
+`packages/skill-installer/package.json` keeps the historical package name only so
+existing workspace/source references do not break. In this fork it is marked
+`private: true` and has no `publishConfig`.
 
-## Rolling back
+Use the installer directly from a checkout when needed:
 
-There's no "un-ship." To recover from a bad release: publish a **higher** version
-with the fix (e.g. `v0.1.3`). Users move forward to it on next launch. (Deleting the
-bad Release stops *new* downloads but doesn't downgrade anyone already updated.)
+```powershell
+node packages/skill-installer/bin/synthcut.mjs
+```
 
----
+There is no `npm publish --workspace @relo-video/synthcut` step in this fork's
+release process.
 
-## Who can trigger a release — and branches
+## Manual workflow — package validation only
 
-See the dedicated section in the README / your notes, but in short: the trigger is
-the **tag**, not the branch, and only people with **push access to this repo** can
-publish to your users. A tag pushed to a **fork** publishes to that fork, not to you.
+A manual `workflow_dispatch` run executes the `windows` build job with
+`contents: read` permission. It:
+
+1. checks out the exact source commit with full tag history;
+2. validates release identity/version/source state;
+3. runs `npm ci` and the root build;
+4. installs Chocolatey FFmpeg **6.1.1** and passes its explicit paths into
+   `prepare-bundle.ts`;
+5. lets REL-003's version/hash gate reject any FFmpeg bytes that do not exactly
+   match the tracked Gyan 6.1.1 pin;
+6. stages Whisper, YuNet, font and provenance resources;
+7. builds NSIS + ZIP with `--publish never`;
+8. assembles and validates the complete release artifact set;
+9. uploads that set only as a GitHub Actions artifact.
+
+A manual run has no job with `contents: write` and cannot create a GitHub Release.
+
+## Validated artifact set
+
+The workflow requires all of the following before artifact upload:
+
+- Windows installer `.exe`;
+- installer `.exe.blockmap`;
+- `latest.yml` update feed;
+- portable `.zip`;
+- `SHA256SUMS.txt`;
+- `BUNDLE_MANIFEST.json` copied from the staged provenance manifest;
+- `LICENSE`;
+- `THIRD_PARTY_LICENSES.md`;
+- `SOURCE_OFFER.md`;
+- `RELEASE_METADATA.json` generated by the release validator.
+
+Missing any required build/update/integrity/compliance artifact fails the build.
+
+## Tag path — publication only after external gates
+
+Pushing a `v*` tag triggers the same read-only Windows build job first. The
+`publish-release` job is separate and has `contents: write` only when all conditions
+below are true:
+
+1. the ref is a `v*` tag;
+2. `github.repository` is exactly `nguyenkhactang922-bot/SynthCut`;
+3. `REMOTION_COMMERCIAL_BASIS_APPROVED == 'true'`;
+4. `WINDOWS_SIGNING_APPROVED == 'true'`;
+5. the build job succeeds;
+6. trusted Authenticode verification of the installer succeeds.
+
+The publication job downloads the already-validated Actions artifact and attaches
+that exact set to the GitHub Release. It does not rebuild or substitute files.
+
+## Auto-update behavior
+
+Packaged builds use electron-updater with the publish provider configured in
+`apps/desktop/package.json`:
+
+- provider: GitHub;
+- owner: `nguyenkhactang922-bot`;
+- repo: `SynthCut`;
+- stable Windows app id: `com.tang.aivideoeditor`.
+
+Installed builds check the fork's published `latest.yml`. A same-version tag cannot
+produce an update; the next release must always use a higher semver.
+
+## Release candidate sequence
+
+The normal release lane is:
+
+```text
+REL-005 workflow/version validation
+→ REL-006 local NSIS + ZIP acceptance
+→ REL-007 Remotion + trusted-signing authorization
+→ merge/reviewed release source
+→ create exact v<version> tag
+→ tag build
+→ signature verification
+→ REL-008 GitHub Release publication
+→ REL-009 installed updater E2E
+```
+
+Do not create/push the release tag before REL-007 passes and the final reviewed
+release source commit is known.
+
+## Recovery
+
+Published auto-update releases move forward only. If a published build is bad,
+release a higher fixed version; deleting an existing release does not downgrade
+users who already installed it.
+
+Before retrying any tag push or GitHub Release action, inspect the real remote tag
+and release state first. Never blindly retry a release side effect after a lost
+chat/browser/network stream.

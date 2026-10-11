@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { CoreApi } from "./api";
+import { LicenseGate } from "./LicenseGate";
 import "./styles.css";
 
 // The core port + session token are passed by the Electron main process as
@@ -12,11 +13,23 @@ const port = Number(params.get("port")) || 4789;
 const token = params.get("token") ?? "";
 
 const api = new CoreApi(port, token);
-api.connect();
+let apiConnected = false;
+
+function LicensedEditor() {
+  useEffect(() => {
+    if (!apiConnected) {
+      apiConnected = true;
+      api.connect();
+    }
+  }, []);
+  return <App api={api} />;
+}
 
 const root = createRoot(document.getElementById("root")!);
 root.render(
   <React.StrictMode>
-    <App api={api} />
+    <LicenseGate>
+      <LicensedEditor />
+    </LicenseGate>
   </React.StrictMode>,
 );

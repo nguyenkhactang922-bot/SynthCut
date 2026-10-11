@@ -2747,6 +2747,7 @@ export class EditorEngine extends EventEmitter {
     settings: ExportSettings | undefined,
     hw: string | null,
     signal?: AbortSignal,
+    onProgress?: (fraction: number) => void,
   ): Promise<string> {
     const dir = join(this.dataDir, "cache", "export-segments");
     await mkdir(dir, { recursive: true });
@@ -2770,12 +2771,12 @@ export class EditorEngine extends EventEmitter {
       const primary = render(hw);
       this.recordBoundedCommand(primary.args);
       try {
-        await runFfmpeg(primary.args, { cwd, signal, totalDuration: primary.totalDuration });
+        await runFfmpeg(primary.args, { cwd, signal, totalDuration: primary.totalDuration, onProgress });
       } catch (err) {
         if (signal?.aborted || !hw) throw err;
         const fallback = render(null);
         this.recordBoundedCommand(fallback.args);
-        await runFfmpeg(fallback.args, { cwd, signal, totalDuration: fallback.totalDuration });
+        await runFfmpeg(fallback.args, { cwd, signal, totalDuration: fallback.totalDuration, onProgress });
       }
       await rename(tmp, path);
       this.renderStats.segmentRenders += 1;
@@ -2872,8 +2873,11 @@ export class EditorEngine extends EventEmitter {
     const audioPaths: string[] = [];
     const totalUnits = Math.max(1, segments.length * 2 + 3);
     let doneUnits = 0;
+    let lastPublishedFraction = 0;
     const publish = (sub = 0) => {
-      const fraction = Math.max(0, Math.min(1, (doneUnits + sub) / totalUnits));
+      const computed = Math.max(0, Math.min(1, (doneUnits + sub) / totalUnits));
+      const fraction = Math.max(lastPublishedFraction, computed);
+      lastPublishedFraction = fraction;
       onProgress(fraction);
       this.emit("progress", { job: mode, fraction });
     };
@@ -2883,7 +2887,17 @@ export class EditorEngine extends EventEmitter {
         if (signal.aborted) throw new Error(`${mode === "preview" ? "Preview render" : "Export"} canceled`);
         const videoPath = mode === "preview"
           ? await this.ensureSegmentRendered(staged, cwd, canvas, seg, mtimes, hw, signal)
-          : await this.ensureExportVideoSegmentRendered(staged, cwd, canvas, seg, mtimes, settings, hw, signal);
+          : await this.ensureExportVideoSegmentRendered(
+              staged,
+              cwd,
+              canvas,
+              seg,
+              mtimes,
+              settings,
+              hw,
+              signal,
+              (fraction) => publish(fraction),
+            );
         videoPaths.push(videoPath);
         doneUnits += 1;
         publish();

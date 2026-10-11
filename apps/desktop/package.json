@@ -1,10 +1,10 @@
 {
   "name": "synthcut-by-relo",
-  "version": "1.0.5",
-  "description": "Electron + React desktop UI for the AI-Native Video Editor. Shows the timeline, clip library and preview; reflects AI edits live.",
+  "version": "1.1.0",
+  "description": "Tang AI Video Editor desktop UI on the SynthCut GPL base. Shows the timeline, clip library and preview; reflects AI edits live.",
   "license": "GPL-3.0-or-later",
   "private": true,
-  "author": "AI-Native Video Editor contributors",
+  "author": "Tang AI Video Editor contributors",
   "main": "electron/main.cjs",
   "scripts": {
     "build:renderer": "vite build",
@@ -14,7 +14,8 @@
     "electron": "electron .",
     "prepare:bundle": "node scripts/prepare-bundle.ts",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "dist:commercial": "electron-builder --win --config electron-builder.commercial.cjs"
   },
   "dependencies": {
     "@aive/core": "*",
@@ -28,21 +29,21 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^42.4.1",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.15.3",
     "typescript": "^5.7.3",
     "vite": "^6.0.7"
   },
   "build": {
-    "appId": "com.relo.synthcut",
-    "productName": "SynthCut by Relo",
+    "appId": "com.tang.aivideoeditor",
+    "productName": "Tang AI Video Editor",
     "publish": [
       {
         "provider": "github",
-        "owner": "Relo-video",
+        "owner": "nguyenkhactang922-bot",
         "repo": "SynthCut"
       }
     ],
-    "copyright": "Copyright © 2026 Relo",
+    "copyright": "Copyright © 2026 Tang AI Video Editor contributors; SynthCut portions retain upstream notices",
     "electronVersion": "42.4.1",
     "npmRebuild": false,
     "asar": false,
@@ -61,8 +62,16 @@
         "to": "aive"
       },
       {
+        "from": "../../LICENSE",
+        "to": "LICENSE"
+      },
+      {
         "from": "../../THIRD_PARTY_LICENSES.md",
         "to": "THIRD_PARTY_LICENSES.md"
+      },
+      {
+        "from": "../../release/compliance/SOURCE_OFFER.md",
+        "to": "SOURCE_OFFER.md"
       }
     ],
     "afterAllArtifactBuild": "build/afterbuild.cjs",
@@ -71,15 +80,15 @@
         "nsis",
         "zip"
       ],
-      "artifactName": "SynthCut-${version}.${ext}"
+      "artifactName": "Tang-AI-Video-Editor-${version}.${ext}"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "SynthCut by Relo",
-      "uninstallDisplayName": "SynthCut by Relo",
+      "shortcutName": "Tang AI Video Editor",
+      "uninstallDisplayName": "Tang AI Video Editor",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",

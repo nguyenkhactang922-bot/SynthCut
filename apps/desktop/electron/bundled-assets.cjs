@@ -22,6 +22,23 @@ function withExe(name) {
   return process.platform === "win32" ? `${name}.exe` : name;
 }
 
+const BUNDLED_ENV_KEYS = [
+  "AIVE_FFMPEG",
+  "AIVE_FFPROBE",
+  "AIVE_WHISPER_BIN",
+  "AIVE_YUNET_MODEL",
+  "AIVE_FONT",
+];
+
+/** Return only the non-secret bundled resource overrides safe to hand to MCP. */
+function getBundledAssetEnv() {
+  const env = {};
+  for (const key of BUNDLED_ENV_KEYS) {
+    if (process.env[key]) env[key] = process.env[key];
+  }
+  return env;
+}
+
 // Only set an override if the caller hasn't already (explicit env wins) and the
 // bundled file actually exists — so a partial/!staged bundle degrades to the
 // normal download path instead of pointing at a missing file.
@@ -81,4 +98,4 @@ function applyBundledAssetEnv(app) {
   return { applied: true, root, vars: applied };
 }
 
-module.exports = { applyBundledAssetEnv };
+module.exports = { applyBundledAssetEnv, getBundledAssetEnv };

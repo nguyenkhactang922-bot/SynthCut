@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "platform": "win32-x64",
+  "provider": "gyan.dev / GyanD/codexffmpeg",
+  "distributionChannel": "Chocolatey community package ffmpeg",
+  "packageName": "ffmpeg",
+  "packageVersion": "6.1.1",
+  "buildVariant": "essentials_build",
+  "expectedVersionToken": "6.1.1-essentials_build-www.gyan.dev",
+  "archiveUrl": "https://github.com/GyanD/codexffmpeg/releases/download/6.1.1/ffmpeg-6.1.1-essentials_build.7z",
+  "archiveSha256": "9e1ddfab8eb16c30690eb769fab1301380139dd00026c8da5c667c7aad7e5cc9",
+  "expectedFiles": {
+    "ffmpeg.exe": {
+      "sha256": "04e1307997530f9cf2fe35cba2ca7e8875ca91da02f89d6c7243df819c94ad00"
+    },
+    "ffprobe.exe": {
+      "sha256": "3a7e2dc003dc2cd1472827e4c7c4f056ae1ae0ae7c5bbc580c99b49827351ba4"
+    }
+  },
+  "providerReleaseUrl": "https://github.com/GyanD/codexffmpeg/releases/tag/6.1.1",
+  "providerInfoUrl": "https://www.gyan.dev/ffmpeg/builds/",
+  "packageRecordUrl": "https://community.chocolatey.org/packages/ffmpeg/6.1.1",
+  "upstreamVersion": "6.1.1",
+  "upstreamTag": "n6.1.1",
+  "upstreamSourceUrl": "https://github.com/FFmpeg/FFmpeg/archive/refs/tags/n6.1.1.tar.gz",
+  "license": "GPL-3.0",
+  "notes": "Release staging must fail closed if the observed version token or extracted ffmpeg/ffprobe SHA-256 differs from this pin. The archive hash is the Chocolatey community package verification hash for the pinned Gyan essentials archive."
+}
