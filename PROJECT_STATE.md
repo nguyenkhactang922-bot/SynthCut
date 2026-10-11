@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL only until corrected Release publication PASS; provenance repair reviewed by PR #8 CI SUCCESS and MERGED to personal main ce31bfdd with tree parity PASS; guarded tag retry pending`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 RUNNING in tag-triggered Release run 38137052906 on reviewed personal main ce31bfdd after all tag guards PASS`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; PR #7 CI PASSed and merged to personal `main@f9ea9ab`; guarded `v1.1.0` points there; run `38134667267` PASSed through package and the post-package clean gate, then FAILed only because the previously generated bundle manifest recorded `sourceTrackedDirty=true`; narrow pre-provenance clean gate + ordering contract repaired locally; publication remains blocked pending reviewed hotfix + guarded tag retry
+- RELEASE & OPERATE: ACTIVE - REL-001..007 PASS retained; PR #8 CI `38136588599` SUCCESS and PR #8 MERGED to personal `main@ce31bfdd` with merge-tree parity PASS; auth + GitHub Release absence + exact tag/main + no-active-run guards PASS; guarded `v1.1.0` move triggered Release run `38137052906`, now RUNNING on exact `ce31bfdd`
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / provenance repair PR #8 CI SUCCESS + MERGED to personal main ce31bfdd with tree parity PASS; guarded v1.1.0 tag retry pending`
+`TVE-REL-008 - RUNNING / Release run 38137052906 IN_PROGRESS on exact reviewed personal main ce31bfdd; do not restart/retag/manual-release`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -400,6 +400,9 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - No full build/package/release rerun was performed locally; retained PASS stages remain retained.
 - Repair implementation/evidence/state commit: `9ec5ccd4065ec9949152f513d6ac6bc747bafeec`; push to `personal/chatgpt/phase7-commercial-release` PASS. No open hotfix PR existed at the push checkpoint.
 - PR #8 automatic CI run `38136588599`: SUCCESS on exact reviewed head `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968`; PR #8 MERGED at `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS (`ce31bfdd^{tree} == 5a54315^{tree}`).
+- Tag retry side-effect guard PASS: GitHub auth valid; GitHub Release `v1.1.0` absent/404; personal `main=ce31bfdd`; prior tag peel `f9ea9ab`; no active Release run. Existing `v1.1.0` was guarded-moved once to `ce31bfdd`.
+- New Release run `38137052906` was triggered exactly once on `headSha=ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb` and is RUNNING. Initial validation/dependencies/build and the new pre-provenance tracked-clean gate have PASSed in the live run.
+- Active read-only watcher: `pty_478d803b5e985b72f52d31d7d198b53fff2d` / PID `123720`; do not restart, retag, or create a manual Release while the run is active.
 
 ## NEXT_EXACT_ACTION
-Commit/push this PR #8 merge checkpoint on the release branch; then verify GitHub auth, GitHub Release `v1.1.0` absence, exact current remote tag peel, personal `main@ce31bfdd`, and absence of active Release runs. Only if all guards PASS, guarded-move existing `v1.1.0` to `ce31bfdd` and monitor only the newly triggered Release run. Never manually create a duplicate Release, never publish upstream, and do not rerun REL-001..007 or retained PASS stages.
+Monitor existing Release run `38137052906` only. If RUNNING, continue the same run without restart/tag retry/manual Release. If PASS, verify GitHub Release `v1.1.0`, exact artifact set/update metadata/source SHA and provenance, then sync REL-008 PASS and advance automatically to REL-009 updater E2E. If FAIL, retain every preceding PASS checkpoint and repair only the exact failed stage lineage. Never publish upstream.

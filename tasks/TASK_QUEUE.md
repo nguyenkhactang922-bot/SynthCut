@@ -212,12 +212,12 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: FAIL / PR #8 CI + MERGE + TREE PARITY PASS / GUARDED TAG RETRY PENDING
+Status: RUNNING / RELEASE RUN 38137052906 IN_PROGRESS ON REVIEWED MAIN ce31bfdd
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
 PR #7 automatic CI PASSed and PR #7 MERGED to personal `main@f9ea9ab`; remote `v1.1.0` currently peels to that commit. Release run `38134667267` PASSed release validation, dependencies, build, pinned FFmpeg, provenance staging command, commercial gates, intentionally unsigned package, and the post-package tracked-clean restore gate, then FAILed only during artifact provenance validation inside `Assemble and validate release artifact set`.
 Exact failure: `BUNDLE_MANIFEST.json` recorded `sourceTrackedDirty=true` because `prepare:bundle` sampled tracked state before the known workspace-bin mutation was restored. The in-stage `validate-release --require-clean` PASSed, so this is a provenance-timing defect, not a failed post-package clean gate. Narrow local repair adds the same fail-closed exact-path restore immediately before provenance manifest generation, retains the post-package gate, and makes the release validator enforce ordering `pre-provenance clean < provenance staging < post-package clean < assemble`. Targeted timing/negative smokes + tag-mode validator + `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
-Repair commit `9ec5ccd4065ec9949152f513d6ac6bc747bafeec` plus state checkpoint `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968` were pushed. PR #8 automatic CI run `38136588599` SUCCESS; PR #8 MERGED to personal `main@ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS. Next gate: commit/push this merge-state checkpoint, then guard Release absence/tag/auth/no-active-run before any tag move. Do not rerun REL-001..007 or manually duplicate retained PASS stages/runs.
+Repair commit `9ec5ccd4065ec9949152f513d6ac6bc747bafeec` plus state checkpoint `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968` were pushed. PR #8 automatic CI run `38136588599` SUCCESS; PR #8 MERGED to personal `main@ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS. Tag guards PASSed (auth, Release absent, old peel f9ea9ab, reviewed main ce31bfdd, no active Release run). Existing `v1.1.0` was guarded-moved once to `ce31bfdd`, triggering exactly one Release run `38137052906`, now RUNNING. Do not rerun REL-001..007 or duplicate tag/Release side effects.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -229,4 +229,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: commit/push this PR #8 merge-state checkpoint, then guard GitHub Release absence, exact current tag peel, GitHub auth, reviewed personal main `ce31bfdd`, and no active Release run. If all PASS, guarded-move existing `v1.1.0` to `ce31bfdd` and monitor only the new Release run. Do not duplicate tag moves, Release creation, CI, PR, or prior Release runs.
+`TVE-REL-008`: monitor existing Release run `38137052906` only. If RUNNING, keep the same run. If PASS, verify GitHub Release `v1.1.0`, artifact/update metadata/source SHA/provenance, sync REL-008 PASS, then auto-claim REL-009 updater E2E. If FAIL, retain all earlier PASS checkpoints and repair only the exact failed stage lineage. Do not retag/restart/manual-release while the run is active.
