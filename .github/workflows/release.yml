@@ -50,6 +50,26 @@ jobs:
           "AIVE_FFMPEG=$ffmpeg" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "AIVE_FFPROBE=$ffprobe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Restore known workspace-bin mutation before provenance manifest
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $allowedPath = 'packages/skill-installer/bin/synthcut.mjs'
+          $dirty = @(git status --porcelain=v1 --untracked-files=no)
+          foreach ($line in $dirty) {
+            if ($line.Length -lt 4 -or $line.Substring(3) -ne $allowedPath) {
+              throw "Unexpected tracked mutation before provenance staging: $line"
+            }
+          }
+          if ($dirty.Count -gt 1) { throw "Expected at most one known workspace-bin mutation before provenance staging, found $($dirty.Count)" }
+          if ($dirty.Count -eq 1) {
+            git restore --source=HEAD --worktree -- $allowedPath
+            if ($LASTEXITCODE -ne 0) { throw "Failed to restore known workspace-bin mutation before provenance staging: $allowedPath" }
+          }
+          $remaining = @(git status --porcelain=v1 --untracked-files=no)
+          if ($remaining.Count -ne 0) { throw "Tracked worktree remains dirty before provenance staging: $($remaining -join '; ')" }
+          'PRE_PROVENANCE_TRACKED_CLEAN_GATE=PASS' | Write-Output
+
       - name: Stage verified FFmpeg, Whisper, YuNet, font and provenance
         run: npm run prepare:bundle --workspace synthcut-by-relo
 

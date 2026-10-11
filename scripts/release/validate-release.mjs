@@ -106,6 +106,8 @@ const requiredWorkflowTokens = [
   "3f088403139505ddfb0ed3b56b72893f92c865f98b382753a1e1c695a5cece35",
   "eSignerCKATool.exe",
   "npm run dist:commercial --workspace synthcut-by-relo",
+  "Restore known workspace-bin mutation before provenance manifest",
+  "PRE_PROVENANCE_TRACKED_CLEAN_GATE=PASS",
   "Restore known workspace-bin mutation before post-package clean gate",
   "packages/skill-installer/bin/synthcut.mjs",
   "POST_PACKAGE_TRACKED_CLEAN_GATE=PASS",
@@ -121,6 +123,13 @@ const requiredWorkflowTokens = [
 ];
 for (const token of requiredWorkflowTokens) {
   if (!workflow.includes(token)) fail(`release workflow is missing required token: ${token}`);
+}
+const preProvenanceCleanIndex = workflow.indexOf("Restore known workspace-bin mutation before provenance manifest");
+const provenanceStageIndex = workflow.indexOf("Stage verified FFmpeg, Whisper, YuNet, font and provenance");
+const postPackageCleanIndex = workflow.indexOf("Restore known workspace-bin mutation before post-package clean gate");
+const assembleStageIndex = workflow.indexOf("Assemble and validate release artifact set");
+if (!(preProvenanceCleanIndex < provenanceStageIndex && provenanceStageIndex < postPackageCleanIndex && postPackageCleanIndex < assembleStageIndex)) {
+  fail("release workflow tracked-clean gates must bracket provenance staging and post-package artifact assembly in order");
 }
 const requiredCommercialConfigTokens = [
   "WINDOWS_SIGN_CERT_SHA1",
