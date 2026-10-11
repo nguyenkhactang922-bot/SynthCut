@@ -212,13 +212,12 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: FAIL / VALIDATOR CONTRACT STAGE REPAIRED LOCALLY / VALIDATOR HOTFIX PR PENDING
+Status: FAIL / POST-PACKAGE CLEAN-GATE STAGE REPAIRED LOCALLY / HOTFIX PR PENDING
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
-PR #2..#5 are MERGED on the personal fork. Current personal main is `f79ef1096ea0282f3dfe6617825ca147136b4dbc`; remote `v1.1.0` peels to that commit; GitHub Release `v1.1.0` is ABSENT.
-Release run `38131284821` failed only `Validate release identity, versions and source state`. Exact failure: validator still required removed workflow token `npm run dist --workspace synthcut-by-relo -- --publish never`; all later stages were skipped.
-Narrow validator repair is local: workflow validation now requires non-forwarding package calls, rejects `-- --publish never`, and requires desktop `dist`/`dist:commercial` scripts to embed `--publish never`. Tag-mode validator simulation PASS. Evidence: `docs/evidence/release/TVE-REL-008-VALIDATOR-CONTRACT-REPAIR.md`.
-Next gate: review/commit/push validator hotfix, PR CI PASS, merge + tree parity, then guard Release absence/tag/auth/no-active-run and only then move existing `v1.1.0` to repaired personal main. Do not rerun REL-001..007 or previous failed Release workflows.
+PR #6 CI/merge/tree parity remain PASS and personal main is `bbab9a06`; remote `v1.1.0` currently peels to that commit. Release run `38133316488` PASSed all stages through the intentionally unsigned Windows NSIS + ZIP package stage, then FAILed only `Assemble and validate release artifact set`.
+Exact failure: post-package `validate-release --require-clean` observed only `packages/skill-installer/bin/synthcut.mjs` dirty, preventing `RELEASE_METADATA.json`; publish job was skipped. Narrow local repair adds a fail-closed restore gate that allows at most that exact non-desktop workspace-bin path, restores it from `HEAD`, then requires tracked cleanliness before the existing validator. Positive/negative targeted smokes PASS. Evidence: `docs/evidence/release/TVE-REL-008-POST-PACKAGE-CLEAN-GATE-REPAIR.md`.
+Next gate: review/commit/push only this clean-gate hotfix + evidence/state, open one PR, obtain automatic CI PASS, merge + verify tree parity, then perform Release absence/tag/auth/no-active-run guard before any tag move. Do not rerun REL-001..007 or manually duplicate prior Release runs.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -230,4 +229,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: review/commit/push only the validator-contract hotfix + evidence/state, open validator hotfix PR and monitor automatic CI, merge if PASS, then repeat personal-fork Release/tag/auth/no-active-run guard. If Release remains absent, guarded-force-move `v1.1.0` to repaired reviewed personal main and monitor only the new Release workflow. Do not rerun REL-001..007 or previous failed Release runs.
+`TVE-REL-008`: review/commit/push only the post-package clean-gate hotfix + evidence/state, open one hotfix PR and monitor its automatic CI. If PASS, merge + verify tree parity, then guard Release absence/tag/auth/no-active-run before any tag move. If FAIL, repair only the exact failed CI stage. Do not duplicate tag moves, Release creation, CI, PR, or prior Release runs.

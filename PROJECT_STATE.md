@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at stale release-validator contract after package hotfix #5 merged; validator repaired locally; validator hotfix PR/merge + guarded tag move pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at Assemble and validate release artifact set in run 38133316488 after package PASS; exact post-package tracked-clean defect repaired locally; hotfix PR/merge + guarded tag retry pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; PR #5 merged to personal main `f79ef109`; Release run `38131284821` failed only initial release validation because validator required removed npm publish-forwarding syntax; validator now enforces the stronger embedded `--publish never` package-script contract and passes tag-mode simulation; publication remains blocked pending reviewed validator hotfix + guarded tag move
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; run `38133316488` PASSed through the intentionally unsigned Windows package stage, then FAILed only post-package assemble clean validation because `packages/skill-installer/bin/synthcut.mjs` was the sole tracked dirty path; narrow fail-closed restore gate repaired locally; publication remains blocked pending reviewed hotfix + guarded tag retry
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / Release run 38131284821 failed only stale validator contract; validator repair locally PASS; validator hotfix PR pending`
+`TVE-REL-008 — FAIL / run 38133316488 failed only post-package assemble clean gate after package PASS; fail-closed known workspace-bin restore repair locally PASS; hotfix PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -372,5 +372,19 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-008-VALIDATOR-CONTRACT-REPAIR.md`.
 - No package/release pipeline was rerun locally; REL-001..007 remain PASS.
 
+## Latest TVE-REL-008 post-package clean-gate failure / repair
+- PR #6 CI run `38133008905` SUCCESS on exact validator-repair head `868cde9`; PR #6 MERGED to personal `main@bbab9a06` with merge-tree parity PASS.
+- After auth + Release absence + no-active-Release-run guard PASS, `v1.1.0` was guarded-moved to peel to `bbab9a06`.
+- Release run `38133316488` retained PASS through release validation, dependencies, build, pinned FFmpeg, provenance staging, commercial gates, and `Package intentionally unsigned Windows NSIS + ZIP for current commercial lane`.
+- FAIL only at `Assemble and validate release artifact set`.
+- Exact root failure: post-package `validate-release --require-clean` observed only tracked path `packages/skill-installer/bin/synthcut.mjs` dirty, so `RELEASE_METADATA.json` was not written. The following artifact-validator missing-metadata error is downstream fallout.
+- `publish-release` was skipped; no GitHub Release was created by the failed run.
+- Narrow repair: a post-package fail-closed gate allows at most the exact known workspace-bin path, restores only that path from `HEAD`, verifies zero remaining tracked dirt, then leaves the existing `--require-clean` validator in force. Any other tracked mutation still fails.
+- Release validator now requires the restore-step name, exact allowed path and `POST_PACKAGE_TRACKED_CLEAN_GATE=PASS` marker.
+- Targeted disposable-repo smokes: `REL008_ALLOWED_DIRTY_RESTORE=PASS`; `REL008_UNEXPECTED_DIRTY_REJECT=PASS`.
+- Tag-mode static validator: PASS / `REL005_RELEASE_VALIDATION_PASS ... cleanRequired=false`.
+- Evidence: `docs/evidence/release/TVE-REL-008-POST-PACKAGE-CLEAN-GATE-REPAIR.md`.
+- No local package/build rerun was performed for this repair.
+
 ## NEXT_EXACT_ACTION
-Review/commit only the release-validator contract repair + evidence/state, push only to personal, obtain validator-hotfix PR CI PASS, merge to personal main, and verify merged-tree parity. Then re-check GitHub Release absence, current `v1.1.0` tag target, GitHub auth, and active Release runs. If clean, guarded-force-move existing `v1.1.0` to repaired reviewed personal main and monitor only the newly triggered Release workflow. Do not rerun REL-001..007 or previous failed Release runs; never publish upstream.
+Review/commit only the post-package clean-gate repair + evidence/state, push only to personal, open one hotfix PR and monitor its automatic CI. If CI PASSes, merge to personal main and verify merge-tree parity. Then re-check GitHub Release `v1.1.0` absence, exact current tag target, GitHub auth and absence of active Release runs before any guarded tag move. Never manually create a duplicate Release, never publish upstream, and do not manually rerun REL-001..007 or retained PASS stages from run `38133316488`.
