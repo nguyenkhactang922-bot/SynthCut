@@ -1,10 +1,13 @@
 # TVE-REL-009 — Updater Identity Repair
 
-Status: **COMMIT PASS / PUSH + PR PENDING**
+Status: **CI + REVIEW + MERGE PASS / RELEASE-FORWARD PENDING**
 Date: 2026-10-12
 Branch: `chatgpt/phase7-commercial-release`
 Baseline checkpoint: `34dd22f3238f45367e7cbb1584a25046cebeaf5f`
 Repair commit: `d1dc00f1a160ae2e6a667f908b58735b1c6cae35`
+Final PR head: `41ee10b6886cf46228d0b9a92cfd8ecd1afb0f66`
+PR #9 CI run: `38161023407` — SUCCESS
+Merged personal main: `f071f817608344401f9d9deb25ecb1bf9c2b715b` — tree parity PASS
 Dependency retained: `TVE-REL-008=PASS`
 
 ## Input
@@ -66,7 +69,7 @@ Targeted current-source verification PASS / exit 0:
 A locally verified `1.1.1` release-forward candidate with fork-owned updater cache identity and personal-fork update feed.
 
 ## Exit Gate
-**COMMIT PASS.** The updater identity defect found by REL-009 preflight is repaired, verified, and committed at `d1dc00f1a160ae2e6a667f908b58735b1c6cae35`. This repair is not yet MAIN VERIFIED and `v1.1.1` is not published yet. Push/PR/CI/review/merge and normal tag/release side-effect guards remain required.
+**CI + MERGE PASS.** The updater identity defect is repaired and reviewed in personal `main@f071f817608344401f9d9deb25ecb1bf9c2b715b`. PR #9 CI run `38161023407` passed all typecheck/build/smoke stages and merge-tree parity with head `41ee10b` is exact. `v1.1.1` is not published yet; normal tag/release side-effect guards remain required before updater E2E.
 
 ## Artifact
 `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
