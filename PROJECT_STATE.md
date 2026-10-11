@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS; TVE-REL-008 PR CI + merge PASS on personal main; durable state sync precedes final tag/release guard and publication`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at tag-triggered Release provenance staging; failed stage repaired locally; hotfix PR/merge + guarded tag move pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS; REL-008 PR #2 CI/review/merge PASS on personal fork; `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS`; `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`; trusted signing remains optional future hardening; durable state sync + final tag/release/auth guard remain before publication
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; REL-008 Release run `38127692348` failed only provenance staging because Node 22.12 invoked a `.ts` script without type stripping; narrow launcher repair passes locally; publication remains blocked pending reviewed hotfix + guarded tag move
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — PR #2 CI/review/merge PASS on personal fork; personal/main@622af29 tree equals tested a27c78f; durable state-sync follow-up precedes final v1.1.0 tag/release guard`
+`TVE-REL-008 — FAIL / Release run 38127692348 failed at provenance staging; launcher repair locally PASS; hotfix PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -337,5 +337,18 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Upstream `origin/main` remains `96b1ca0e8b9935cc0d9561a3bc020f29bf9e88a0`; no upstream mutation occurred.
 - Post-merge guard: personal `v1.1.0` tag ABSENT; GitHub Release `v1.1.0` ABSENT; no active SynthCut process.
 
+## Latest TVE-REL-008 Release workflow failure / launcher repair
+- Release tag `v1.1.0` was pushed to personal fork and pointed to `beeb8152331c172b728b96c34f3b4df22b472351`.
+- Tag-triggered Release run `38127692348` completed `FAILURE`.
+- PASS retained before failure: checkout, Node 22.12 setup, release identity/version/source validation, lockfile install, core+MCP+renderer build, pinned FFmpeg 6.1.1 install.
+- FAIL stage only: `Stage verified FFmpeg, Whisper, YuNet, font and provenance`.
+- Exact failure: `ERR_UNKNOWN_FILE_EXTENSION` for `apps/desktop/scripts/prepare-bundle.ts` because package script used plain `node scripts/prepare-bundle.ts` under Node 22.12.
+- Later commercial/package/artifact/upload/publish stages were skipped; GitHub Release `v1.1.0` is absent.
+- Narrow repair: `prepare:bundle` now uses `node --experimental-strip-types scripts/prepare-bundle.ts`; no provenance logic or release policy changed.
+- Targeted failed-stage verification PASS / exit 0 using project-local verified FFmpeg/ffprobe: FFmpeg 6.1.1, Whisper, YuNet, Noto Sans and `bundle-manifest.json` staged; bundle size 313.0 MB.
+- A temporary `tsx` experiment was fully reverted; `package-lock.json` returned to original bytes and no new dependency remains.
+- Evidence: `docs/evidence/release/TVE-REL-008-RELEASE-WORKFLOW-REPAIR.md`.
+- Side-effect guard: remote `v1.1.0` tag exists; Release absent. Do not blindly recreate/re-push tag. Move it only after hotfix merge and a fresh no-Release guard.
+
 ## NEXT_EXACT_ACTION
-Commit and merge this durable state/evidence sync only, without rerunning REL-007 or the already-PASS PR #2 verification. Then recheck personal-main HEAD, GitHub auth, local/remote `v1.1.0` tag absence, and existing GitHub Release absence. If all guards remain clean, create the fork-only `v1.1.0` release path on `nguyenkhactang922-bot/SynthCut` and monitor the release workflow. Never publish upstream.
+Review/commit only the REL-008 launcher repair + evidence/state, push only to personal, obtain hotfix PR CI PASS, merge to personal main, then re-run auth/tag/release side-effect guard. If GitHub Release remains absent, deliberately move existing `v1.1.0` to repaired reviewed main and monitor the newly triggered Release workflow. Do not rerun prior PASS release/package stages and never publish upstream.
