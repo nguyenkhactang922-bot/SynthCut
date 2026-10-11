@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — GitHub Release publication; REL-007 PASS, awaiting reviewed committed source + fork/tag/release/auth side-effect guard`
+`TVE-REL-008 — PR #2 CI verification FAIL at jobs-progress stage on db00c89; root cause repaired locally; targeted jobs smoke + core compile PASS; new CI rerun pending after repair commit/push`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -321,5 +321,15 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Supabase licensing does not satisfy Authenticode; the release remains intentionally unsigned and carries explicit Unknown-publisher/SmartScreen risk acceptance.
 - No tag, push, PR, merge, GitHub Release, or updater side effect was performed by REL-007.
 
+## Latest TVE-REL-008 PR CI repair
+- PR #2 exists on `nguyenkhactang922-bot/SynthCut`, base `main`, head `chatgpt/phase7-commercial-release`.
+- Initial CI run `38125686293` on head `db00c89` FAILed only `Smoke — jobs (background export, progress, cancel)`; setup/install/typecheck/build/compositor/CLIP/security stages PASS and are retained.
+- Failure evidence: running background export remained `fraction=0.000` during the observation window; cancel/cleanup/blocking export/recovery all PASS.
+- Root cause: bounded export did not forward first video-segment FFmpeg progress to JobManager until that segment completed.
+- Repair: `ensureExportVideoSegmentRendered` now forwards segment FFmpeg progress to bounded aggregate progress; aggregate fraction is monotonic across retry/fallback.
+- Exact failed smoke rerun with already-bundled candidate FFmpeg/ffprobe: PASS / exit 0; observed running fraction `0.005`; marker `JOBS SMOKE TEST PASSED`.
+- Narrow compile after repair: `tsc -b packages/core` PASS / exit 0.
+- Evidence: `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`.
+
 ## NEXT_EXACT_ACTION
-Review and commit the REL-007 source/governance/evidence changes, then run the REL-008 side-effect guard: inspect fork remote/auth, branch/PR state, `v1.1.0` local+remote tag state, and existing GitHub Releases. If collision/auth checks PASS, continue the repository Git workflow and publish only to `nguyenkhactang922-bot/SynthCut`; never publish upstream.
+Review/stage only the bounded-export progress repair + REL-008 evidence/state, commit, verify the remote feature branch still points to `db00c89`, push only to `personal`, then monitor the newly triggered PR #2 CI run. If CI PASSes, review/merge PR #2 to personal main and perform merged-main/tag/release side-effect checks before any `v1.1.0` tag or GitHub Release publication.

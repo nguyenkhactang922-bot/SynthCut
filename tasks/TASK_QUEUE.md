@@ -212,10 +212,11 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: ELIGIBLE / PRE-PUBLICATION GUARD
+Status: FAIL / REPAIR VERIFIED LOCALLY / PR CI RERUN PENDING
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
-Next gate: reviewed committed source; verify branch/remote auth, existing PR state, local+remote `v1.1.0` tag absence, and GitHub Release collision absence before any push/tag/release side effect.
+PR: #2 OPEN. Initial CI run `38125686293` on `db00c89` failed only the jobs-progress smoke (`fraction=0.000` while running); preceding CI stages PASS. Bounded first-segment progress wiring was repaired; exact local jobs smoke PASS with observed fraction `0.005`; `tsc -b packages/core` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`.
+Next gate: commit/push only the repair + state, then monitor the new PR #2 CI run. Merge/publication remain prohibited until CI/review PASS.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -227,4 +228,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: review/commit the REL-007 changes, then run the fork-only Git/tag/release side-effect guard. If no collision exists and GitHub write authority is valid, continue the repository Git workflow and create the `v1.1.0` release on `nguyenkhactang922-bot/SynthCut` only. Do not rerun REL-007 runtime/package proofs.
+`TVE-REL-008`: review/stage/commit the bounded-export progress repair plus CI-repair evidence/state, verify remote feature head is still `db00c89`, push only to `personal`, and monitor the newly triggered PR #2 CI. If PASS, review/merge to personal `main`; then re-run tag/release collision/auth guards before creating `v1.1.0`. Do not rerun REL-007 package/license proofs.

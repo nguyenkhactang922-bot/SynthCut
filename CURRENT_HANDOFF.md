@@ -3,49 +3,35 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-008 — GitHub Release publication`
-- STATUS: `REL-007 PASS / REL-008 ELIGIBLE — pre-publication review + side-effect guard required`
-- CURRENT_STAGE: `REL-007 unsigned-commercial amendment, Supabase desktop entitlement integration, packaged runtime persistence proof, and full 1.1.0 unsigned NSIS/ZIP proof are PASS; no public release has been created yet`
+- STATUS: `FAIL (PR CI run 38125686293) / FAILED STAGE REPAIRED LOCALLY — PR CI RERUN PENDING`
+- CURRENT_STAGE: `PR #2 verification. Original head db00c89 failed only Smoke — jobs because bounded export stayed fraction=0 during first segment; source repair + exact local smoke + core compile now PASS and await commit/push/new CI.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: resolve from current Git HEAD (Git is authoritative); pre-REL-007 baseline was `1b28fd47c8354e9061e502eb0af350edc2ae4b80`
-- HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
-- LAST_VERIFIED_CHECKPOINT: `TVE-REL-007=PASS` for the owner-approved unsigned commercial lane. Evidence: `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md`.
-- PROCESS_PID: `NONE` for SynthCut build/package/release task
+- HEAD: resolve from Git; current committed head before repair commit is `db00c8972671c758dce7eba97966315279efa2b2`
+- HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` before Phase-7 changes)
+- LAST_VERIFIED_CHECKPOINT: `TVE-REL-008 failed-stage local repair PASS` — exact `smoke-jobs` rerun observed running fraction `0.005` and marker `JOBS SMOKE TEST PASSED`; `tsc -b packages/core` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`.
+- PROCESS_PID: `NONE` — targeted local smoke exited 0
 - PROCESS_COMMAND: `NONE`
-- PTY_SESSION: prior full 1.1.0 dist PTY completed with exit code 0; no active SynthCut release PTY remains
-- LATEST_LOG: `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md`
-- LAST_EXIT_CODE: `0` for full `1.1.0` unsigned `npm run dist -- --publish never`; artifact/signature/hash verification also PASS / exit 0
+- PTY_SESSION: `pty_b2dccf8893811eb5f43045502b23a3ffd390` exited 0 for targeted jobs smoke
+- LATEST_LOG: `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`
+- LAST_EXIT_CODE: `0` targeted jobs smoke after repair; prior GitHub CI run `38125686293` concluded failure only at jobs-progress assertion
 - ARTIFACTS:
-  - `apps/desktop/build/dist/Tang-AI-Video-Editor-1.1.0.exe` — 397,651,986 B — SHA-256 `867fb75aceecab263ad0a5b3914f55ce71772dfa6aa923749b689dc1ecad6451`
-  - `apps/desktop/build/dist/Tang-AI-Video-Editor-1.1.0.zip` — 505,858,328 B — SHA-256 `2ff621e45d4c7d78211282beec983fecc66ea6f2f635f074aa8ece53d2d004f2`
-  - `apps/desktop/build/dist/Tang-AI-Video-Editor-1.1.0.exe.blockmap`
-  - `apps/desktop/build/dist/latest.yml`
-  - `apps/desktop/build/dist/SHA256SUMS.txt`
-  - `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md`
-  - `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`
-  - Supabase Edge Function `tve-license-authority` (project `ljygpbxkxmsuhdfpfgml`)
-- BLOCKERS: `NONE` for REL-007. REL-008 still requires reviewed committed source plus side-effect guard proving no existing `v1.1.0` tag/release collision and valid GitHub write auth before any push/tag/release action.
-- NEXT_EXACT_ACTION: review the exact REL-007 diff, run final diff/static checks without rerunning already-PASS runtime/package stages, commit the REL-007 lane, then inspect remote branch/tag/release/auth state. Only if collision/auth checks PASS, push/review/merge according to repository workflow and create the fork-only `v1.1.0` release path. Never publish to upstream `Relo-video/SynthCut`.
+  - PR `nguyenkhactang922-bot/SynthCut#2`
+  - CI run `38125686293` failed head `db00c89` with all preceding CI stages PASS
+  - `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`
+  - retained REL-007 1.1.0 installer/ZIP artifacts and evidence; do not rebuild them for this CI repair
+- BLOCKERS: `REL-008 cannot merge/publish until repaired commit is pushed and a new PR CI run PASSes.` No tag/release collision existed at the last REL-008 side-effect guard; recheck immediately before tagging/publishing.
+- NEXT_EXACT_ACTION: review/stage only the bounded-export progress repair + REL-008 evidence/state, commit, verify remote feature branch still points to `db00c89`, push only to `personal`, then monitor the newly triggered PR #2 CI run. If it PASSes, review/merge PR #2 to personal main; do not tag or publish before merged-main and collision checks.
 - DO_NOT_REPEAT:
-  - DISCOVER / original DEFINE / original RESEARCH;
-  - completed DESIGN spikes and `TVE-FRZ-001`;
-  - TVE-PLAN-001..004;
-  - TVE-IMP-001..011;
-  - TVE-E2E-001 feature/main verification;
-  - PR #1 push/review/merge/main verification;
-  - TVE-REL-001..006;
-  - REL-007 Remotion, Supabase backend provisioning, signing-provider research, desktop entitlement runtime activation/restart proof, and full 1.1.0 local dist;
-  - unrelated `.spike-temp/`, `.tmp/`, historical rel006 build outputs, dataset scratch, or other project PTYs.
+  - TVE-REL-001..007, including full 1.1.0 package/license activation/restart proofs;
+  - CI stages already PASS in run 38125686293 except normal GitHub CI will rerun automatically after the repair push;
+  - unrelated `.spike-temp/`, `.tmp/`, historical build directories, datasets, or other-project PTYs.
 
 ## Lifecycle law
-All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20 ten-field contract.
+All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20.
 
 ## Hard gates
-- Prior product/runtime baseline remains `MAIN_VERIFIED=true` at `personal/main@af92f20`.
-- `TVE-REL-001..007=PASS` for the current unsigned commercial lane.
-- `REMOTION_LICENSE_GATE=PASS`.
-- `SUPABASE_LICENSE_BACKEND=PASS`.
-- `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`.
-- Installer and packaged application are intentionally `NotSigned`; owner accepts `Unknown publisher` / SmartScreen risk.
-- Trusted Windows signing remains optional future hardening and is not the current lane gate.
-- `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=true` only through the frozen unsigned lane and only after REL-008 entry checks (reviewed commit, fork-only target, no collision, valid GitHub auth) pass.
-- REL-009 remains blocked until REL-008 publishes a valid update feed/release.
+- `TVE-REL-001..007=PASS` for the owner-approved unsigned commercial lane.
+- PR #2 exists on personal fork only; upstream `origin` must not be modified.
+- Current release line is `1.1.0`; unsigned/SmartScreen acceptance and Supabase entitlement gates remain PASS.
+- `TVE-REL-008` remains NOT PASS until PR CI/review/merge plus GitHub Release publication are verified.
+- REL-009 remains blocked by REL-008.
