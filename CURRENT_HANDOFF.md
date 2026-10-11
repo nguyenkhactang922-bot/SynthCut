@@ -2,50 +2,46 @@
 
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
-- ACTIVE_TASK: `TVE-REL-008 — GitHub Release publication`
-- STATUS: `RUNNING / RELEASE RUN 38137052906 IN PROGRESS`
-- CURRENT_STAGE: `All tag guards PASSed; existing v1.1.0 was force-moved once from prior peel f9ea9ab to reviewed personal main ce31bfdd. GitHub Actions Release run 38137052906 is IN_PROGRESS on exact head ce31bfdd. Latest observed stage: setup-node after checkout PASS; new pre-provenance and post-package clean gates are present in this run.`
+- ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
+- STATUS: `FAIL / UPDATER IDENTITY PREFLIGHT — BOUNDED LOOPBACK TO REL-002 + REL-005 RELEASE-FORWARD`
+- CURRENT_STAGE: `REL-008 is PASS and publicly verified. REL-009 preflight found a real updater identity collision before any updater side effect: both the fork build and upstream derive updaterCacheDirName=synthcut-by-relo-updater from package name synthcut-by-relo. Repair only updater identity + live workspace/release metadata, release-forward as 1.1.1, then resume the updater E2E.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: resolve from current Git HEAD; reviewed PR #8 head `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968`; personal main `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`
+- HEAD: resolve from current Git HEAD; latest durable state commit before this checkpoint `5b0db9f5b4dfa04187723f13b48b1e19b687555f`; reviewed/published personal main `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-008 PR #8 MERGE + TREE PARITY PASS` — CI run `38136588599` SUCCESS on `5a54315`; merge commit `ce31bfdd`; `ce31bfdd^{tree} == 5a54315^{tree}`. Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
-- PROCESS_PID: `123720` — local read-only gh run watcher; authoritative release execution is GitHub Actions run `38137052906`
-- PROCESS_COMMAND: `gh run watch 38137052906 --repo nguyenkhactang922-bot/SynthCut --exit-status --interval 3`
-- PTY_SESSION: `pty_478d803b5e985b72f52d31d7d198b53fff2d` monitors only Release run `38137052906`. Other workspace PTYs belong to unrelated projects/processes and must not be touched.
-- LATEST_LOG: `https://github.com/nguyenkhactang922-bot/SynthCut/actions/runs/38137052906`
-- LAST_EXIT_CODE: `Release run 38137052906 = IN_PROGRESS / no exit yet`; prior failed run `38134667267` retained as historical evidence only
+- LAST_VERIFIED_CHECKPOINT: `TVE-REL-008=PASS` — Release run `38137052906` SUCCESS, GitHub Release `v1.1.0` published on personal fork, public EXE/ZIP hashes independently verified. Evidence: `docs/evidence/release/TVE-REL-008.md`.
+- PROCESS_PID: `NONE` for active SynthCut release/updater work
+- PROCESS_COMMAND: `NONE`
+- PTY_SESSION: `NONE` — public artifact hash PTY `pty_6f83b95dbab96a0926b64970654a12575571` exited `0`; do not restart it
+- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`; prior successful release run: `https://github.com/nguyenkhactang922-bot/SynthCut/actions/runs/38137052906`
+- LAST_EXIT_CODE: `REL-008 release run=SUCCESS`; public download hash verification=`0/PASS`; REL-009 identity preflight=`FAIL` before updater process start
 - ARTIFACTS:
-  - provenance-timing repair commit `9ec5ccd4065ec9949152f513d6ac6bc747bafeec` — COMMITTED + PUSHED to personal feature branch
-  - PR #8 — CI run `38136588599` SUCCESS; MERGED to personal main `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS
-  - guarded `v1.1.0` tag move — auth/Release-absence/tag/main/no-active-run guards PASS; new Release run `38137052906` created on exact `ce31bfdd`
-  - hotfix commit `ee10c86aa93ee35112da6dfe93356881e05f3a7c` — prior post-package clean-gate repair
-  - PR #7 — CI PASS and MERGED to personal main at `f9ea9ab3278c2158593508feec21fbf92f7e1ce7`
-  - remote annotated tag `v1.1.0` was guarded-moved and now peels to reviewed personal `main@ce31bfdd`
-  - Release run `38137052906` — IN_PROGRESS on exact reviewed head `ce31bfdd`
-  - prior Release run `38134667267` — FAILURE retained as historical evidence
-  - GitHub Release `v1.1.0` — ABSENT / API 404 after failed run
-  - `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`
-  - `docs/evidence/release/TVE-REL-008-POST-PACKAGE-CLEAN-GATE-REPAIR.md`
+  - GitHub Release `https://github.com/nguyenkhactang922-bot/SynthCut/releases/tag/v1.1.0` — PUBLISHED / VERIFIED
+  - release source/tag peel/personal main: `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`
+  - public EXE: `397652429` bytes, SHA-256 `6c7c0691505413c3c793d231e570f3ab8cd96a2691eeadcf2ae25b4088c04da5`
+  - public ZIP: `505859296` bytes, SHA-256 `ace00154ce63479a93d3838c382e57ad449373888afdaf0d0e9200a5d25891fa`
+  - `.tmp/rel008-public-download/` — project-local public-download verification copies
+  - `docs/evidence/release/TVE-REL-008.md`
+  - retained older installed fork build: `.tmp/rel006-installed4` / version `1.0.6`
+  - `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
 - BLOCKERS:
-  - `REL-008` cannot PASS until the existing Release run `38137052906` completes successfully and the resulting GitHub Release/artifact set/source SHA are verified.
-  - Existing remote `v1.1.0` is now a durable side effect at `ce31bfdd`. Do not move/re-push it or manually create a Release while run `38137052906` is RUNNING.
-- NEXT_EXACT_ACTION: monitor existing Release run `38137052906` only. If RUNNING, continue monitoring the same run without restart/tag retry/manual Release. If PASS, verify GitHub Release `v1.1.0`, exact artifact set/update metadata/source SHA, then sync REL-008 PASS and advance automatically to REL-009 updater E2E. If FAIL, retain every preceding PASS checkpoint and repair only the exact failed stage lineage. Never publish upstream.
+  - REL-009 exit gate forbids updater identity collision. Current/old fork build uses `updaterCacheDirName: synthcut-by-relo-updater`; upstream uses the same package name `synthcut-by-relo`, and electron-builder derives the cache namespace from that name.
+  - Published `v1.1.0` must not be overwritten or silently replaced. Corrective updater-identity release must move forward to a higher version (`1.1.1`).
+- NEXT_EXACT_ACTION: execute the bounded updater-identity repair only: change the private desktop workspace identity from `synthcut-by-relo` to unique fork-owned `tang-ai-video-editor`; update live root workspace selectors, release workflow/validator/current release docs and lockfile consistently; bump the release line to `1.1.1`; verify generated `app-update.yml` points only to `nguyenkhactang922-bot/SynthCut` and uses `tang-ai-video-editor-updater`; run narrow tests then CI/PR/review/merge; guarded-publish `v1.1.1`; resume only REL-009 updater E2E from installed `1.0.6`. Do not alter published `v1.1.0`.
 - DO_NOT_REPEAT:
-  - TVE-REL-001..007;
-  - PR #2..#7 completed CI/merge work;
-  - PASS stages through `Restore known workspace-bin mutation before post-package clean gate` in run `38134667267`;
-  - prior failed Release runs `38133316488`, `38131284821`, `38128610356`, `38127692348`;
-  - prior validator/package/provenance/post-package-clean hotfixes;
-  - current targeted provenance timing smokes already PASS;
-  - unrelated `.spike-temp/`, `.tmp/`, historical build dirs, datasets, or other-project PTYs.
+  - TVE-REL-001..008 substantive work and REL-008 Release publication;
+  - Release run `38137052906` and public artifact downloads/hashes;
+  - PR #2..#8 completed CI/merge work;
+  - prior failed Release runs and their repaired stages;
+  - REL-006 installed-build acceptance or rebuild of old `1.0.6`;
+  - REL-007 Remotion/Supabase/unsigned authorization;
+  - unrelated `.spike-temp/`, historical `.tmp/` evidence, build dirs, datasets, or other-project processes.
 
 ## Lifecycle law
 All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20.
 
 ## Hard gates
-- `TVE-REL-001..007=PASS` retained.
-- PR #2..#8 are MERGED on personal fork; upstream remains untouched.
-- Current release line remains `1.1.0`; unsigned/SmartScreen acceptance, Remotion basis and Supabase entitlement gates remain PASS.
-- `v1.1.0` now peels to reviewed personal `main@ce31bfdd`; Release run `38137052906` is authoritative and RUNNING; no GitHub Release existed immediately before the guarded tag move.
-- `TVE-REL-008` remains FAIL until corrected Release workflow + publication verification PASS.
-- REL-009 remains blocked by REL-008.
+- `TVE-REL-001..008=PASS` retained; `v1.1.0` is a real published historical release and must not be mutated in place.
+- Upstream `origin=https://github.com/Relo-video/SynthCut.git` remains read-only/non-publication target; personal release target is `nguyenkhactang922-bot/SynthCut` only.
+- Current unsigned/SmartScreen acceptance, Remotion basis and Supabase entitlement gates remain PASS.
+- `TVE-REL-009=FAIL` at updater identity preflight; no updater download/install/relaunch side effect was started after the collision was found.
+- `TVE-REL-010` remains blocked by REL-009.

@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 RUNNING in tag-triggered Release run 38137052906 on reviewed personal main ce31bfdd after all tag guards PASS`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; TVE-REL-009 FAIL at updater identity preflight with bounded loopback to REL-002/REL-005 release-forward repair`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE - REL-001..007 PASS retained; PR #8 CI `38136588599` SUCCESS and PR #8 MERGED to personal `main@ce31bfdd` with merge-tree parity PASS; auth + GitHub Release absence + exact tag/main + no-active-run guards PASS; guarded `v1.1.0` move triggered Release run `38137052906`, now RUNNING on exact `ce31bfdd`
+- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` is published and cryptographically verified on personal `main@ce31bfdd`; REL-009 FAILed only at updater identity preflight because fork/upstream share updater cache namespace `synthcut-by-relo-updater`; bounded REL-002/REL-005 release-forward repair is ACTIVE
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 - RUNNING / Release run 38137052906 IN_PROGRESS on exact reviewed personal main ce31bfdd; do not restart/retag/manual-release`
+`TVE-REL-009 - FAIL / updater identity preflight found colliding cache namespace; bounded REL-002 + REL-005 release-forward repair ACTIVE`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -401,8 +401,18 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Repair implementation/evidence/state commit: `9ec5ccd4065ec9949152f513d6ac6bc747bafeec`; push to `personal/chatgpt/phase7-commercial-release` PASS. No open hotfix PR existed at the push checkpoint.
 - PR #8 automatic CI run `38136588599`: SUCCESS on exact reviewed head `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968`; PR #8 MERGED at `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS (`ce31bfdd^{tree} == 5a54315^{tree}`).
 - Tag retry side-effect guard PASS: GitHub auth valid; GitHub Release `v1.1.0` absent/404; personal `main=ce31bfdd`; prior tag peel `f9ea9ab`; no active Release run. Existing `v1.1.0` was guarded-moved once to `ce31bfdd`.
-- New Release run `38137052906` was triggered exactly once on `headSha=ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb` and is RUNNING. Initial validation/dependencies/build and the new pre-provenance tracked-clean gate have PASSed in the live run.
-- Active read-only watcher: `pty_478d803b5e985b72f52d31d7d198b53fff2d` / PID `123720`; do not restart, retag, or create a manual Release while the run is active.
+- Release run `38137052906` completed SUCCESS on exact `headSha=ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; both `windows` and `publish-release` jobs PASSed.
+- GitHub Release `v1.1.0` is published on `nguyenkhactang922-bot/SynthCut`; release id `409639821`; published at `2026-10-11T11:59:06Z`.
+- `BUNDLE_MANIFEST.json`: `sourceCommit=ce31bfdd...`, `sourceTrackedDirty=false`; `RELEASE_METADATA.json.status=PASS`; `latest.yml` points to version `1.1.0` / EXE size `397652429`.
+- Public-download verification under `.tmp/rel008-public-download`: EXE SHA-256 `6c7c0691505413c3c793d231e570f3ab8cd96a2691eeadcf2ae25b4088c04da5`; ZIP SHA-256 `ace00154ce63479a93d3838c382e57ad449373888afdaf0d0e9200a5d25891fa`; both exactly match `SHA256SUMS.txt` and GitHub asset digests. REL-008=PASS. Evidence: `docs/evidence/release/TVE-REL-008.md`.
+
+## Latest TVE-REL-009 updater identity preflight
+- Retained installed old fork build `.tmp/rel006-installed4` is version `1.0.6` and its `app-update.yml` correctly targets `nguyenkhactang922-bot/SynthCut` but uses `updaterCacheDirName: synthcut-by-relo-updater`.
+- Current desktop package name remains `synthcut-by-relo`; current generated app-update.yml therefore uses the same cache namespace.
+- Upstream `origin/main:apps/desktop/package.json` also uses package name `synthcut-by-relo`.
+- Installed electron-builder code derives updater cache identity as `sanitizedName.toLowerCase() + "-updater"` and NSIS uses it for update installer/package storage.
+- REL-009 exit gate explicitly forbids identity collision; therefore REL-009 FAILed at preflight before any updater download/install/relaunch side effect. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`.
+- Bounded loopback: repair only updater identity + dependent live workspace/release metadata, release-forward as `1.1.1`, then resume REL-009 updater E2E from retained installed `1.0.6`. Published `v1.1.0` remains immutable historical PASS evidence.
 
 ## NEXT_EXACT_ACTION
-Monitor existing Release run `38137052906` only. If RUNNING, continue the same run without restart/tag retry/manual Release. If PASS, verify GitHub Release `v1.1.0`, exact artifact set/update metadata/source SHA and provenance, then sync REL-008 PASS and advance automatically to REL-009 updater E2E. If FAIL, retain every preceding PASS checkpoint and repair only the exact failed stage lineage. Never publish upstream.
+Execute the bounded REL-009 identity repair: rename the private desktop workspace package to `tang-ai-video-editor`; synchronize live root workspace selectors, release workflow/validator/current release docs and lockfile; bump the release line to `1.1.1`; verify generated `app-update.yml` uses personal fork feed + unique `tang-ai-video-editor-updater`; run narrow tests, CI/PR/review/merge, then guarded-publish `v1.1.1` and resume only the updater E2E. Do not rerun REL-001..008 from scratch and do not mutate published `v1.1.0`.

@@ -212,15 +212,18 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: RUNNING / RELEASE RUN 38137052906 IN_PROGRESS ON REVIEWED MAIN ce31bfdd
+Status: DONE / PASS / PUBLISHED / VERIFIED
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
-PR #7 automatic CI PASSed and PR #7 MERGED to personal `main@f9ea9ab`; remote `v1.1.0` currently peels to that commit. Release run `38134667267` PASSed release validation, dependencies, build, pinned FFmpeg, provenance staging command, commercial gates, intentionally unsigned package, and the post-package tracked-clean restore gate, then FAILed only during artifact provenance validation inside `Assemble and validate release artifact set`.
-Exact failure: `BUNDLE_MANIFEST.json` recorded `sourceTrackedDirty=true` because `prepare:bundle` sampled tracked state before the known workspace-bin mutation was restored. The in-stage `validate-release --require-clean` PASSed, so this is a provenance-timing defect, not a failed post-package clean gate. Narrow local repair adds the same fail-closed exact-path restore immediately before provenance manifest generation, retains the post-package gate, and makes the release validator enforce ordering `pre-provenance clean < provenance staging < post-package clean < assemble`. Targeted timing/negative smokes + tag-mode validator + `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
-Repair commit `9ec5ccd4065ec9949152f513d6ac6bc747bafeec` plus state checkpoint `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968` were pushed. PR #8 automatic CI run `38136588599` SUCCESS; PR #8 MERGED to personal `main@ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS. Tag guards PASSed (auth, Release absent, old peel f9ea9ab, reviewed main ce31bfdd, no active Release run). Existing `v1.1.0` was guarded-moved once to `ce31bfdd`, triggering exactly one Release run `38137052906`, now RUNNING. Do not rerun REL-001..007 or duplicate tag/Release side effects.
+Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
+Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: BLOCKED BY REL-008
+Status: FAIL / UPDATER IDENTITY PREFLIGHT / BOUNDED LOOPBACK TO REL-002 + REL-005
+Dependencies: REL-008 PASS
+Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
+Preflight result: installed fork `1.0.6` correctly points updater feed to `nguyenkhactang922-bot/SynthCut`, but both fork and upstream use package name `synthcut-by-relo`, producing the same `updaterCacheDirName: synthcut-by-relo-updater`. REL-009 exit gate explicitly forbids identity collision. No updater download/install/relaunch side effect was started after this finding.
+Repair lane: change private desktop package identity to unique fork-owned `tang-ai-video-editor`; update live workspace selectors/workflow/validator/current release docs + lockfile; release-forward as `1.1.1`; verify generated `app-update.yml` has fork feed + `tang-ai-video-editor-updater`; CI/review/merge/publish under normal guards; then rerun only REL-009 updater transition from retained installed `1.0.6`.
 
 ## TVE-REL-010 — Monitor / incident handoff
 Status: BLOCKED BY REL-009
@@ -229,4 +232,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: monitor existing Release run `38137052906` only. If RUNNING, keep the same run. If PASS, verify GitHub Release `v1.1.0`, artifact/update metadata/source SHA/provenance, sync REL-008 PASS, then auto-claim REL-009 updater E2E. If FAIL, retain all earlier PASS checkpoints and repair only the exact failed stage lineage. Do not retag/restart/manual-release while the run is active.
+`TVE-REL-009 identity repair`: preserve REL-008/v1.1.0 as PASS/historical shipped evidence; repair only updater cache identity and required live workspace/release metadata, bump forward to `1.1.1`, verify/CI/PR/merge/publish under side-effect guards, then resume the true updater E2E. Do not rerun REL-001..008 from scratch and do not mutate published `v1.1.0`.
