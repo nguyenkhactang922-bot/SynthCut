@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 PARTIAL PASS — REMOTION_LICENSE_GATE=PASS / WINDOWS_SIGNING_GATE BLOCKED_EXTERNAL`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 PARTIAL PASS — REMOTION_LICENSE_GATE=PASS / WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS / WINDOWS_SIGNING_GATE BLOCKED_EXTERNAL`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 PASS with evidence `docs/evidence/release/TVE-REL-006.md`; REL-007 Remotion sub-gate PASS / Windows signing BLOCKED_EXTERNAL; publication remains prohibited
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 PASS with evidence `docs/evidence/release/TVE-REL-006.md`; REL-007 Remotion sub-gate PASS + SSL.com IV/eSigner provider integration PASS / external certificate issuance and real signed candidate BLOCKED_EXTERNAL; publication remains prohibited
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-007 — PARTIAL PASS: REMOTION_LICENSE_GATE=PASS; WINDOWS_SIGNING_GATE BLOCKED_EXTERNAL`
+`TVE-REL-007 — PARTIAL PASS: REMOTION_LICENSE_GATE=PASS; WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS; WINDOWS_SIGNING_GATE BLOCKED_EXTERNAL`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -103,7 +103,7 @@ Release baseline summary:
 - REL-004 packaging/release-tool security hardening is PASS/COMMITTED `20c8ff9` with `docs/evidence/release/TVE-REL-004.md`;
 - REL-005 release workflow/version hardening is PASS/COMMITTED `227535b` with `docs/evidence/release/TVE-REL-005.md`;
 - REL-006 local packaged acceptance is PASS with `docs/evidence/release/TVE-REL-006.md`; accepted candidate manifest source commit is `225a987`, installer/ZIP integrity PASS, packaged MCP/core/resource resolution PASS, save/open PASS, representative H.264+AAC export PASS, installer exit 0 and installed launch PASS;
-- `REMOTION_LICENSE_GATE=PASS` with evidence `docs/evidence/release/TVE-REL-007-REMOTION.md`; public commercial-ready publication is now fail-closed only on trusted Windows signing at REL-007.
+- `REMOTION_LICENSE_GATE=PASS` with evidence `docs/evidence/release/TVE-REL-007-REMOTION.md`; SSL.com IV + eSigner provider/repository integration is PREPARED/PASS with `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`; public commercial-ready publication is now fail-closed only on external certificate/eSigner issuance plus a real signed-candidate verification at REL-007.
 
 ## Hard gate
 `RELEASE_IMPLEMENTATION_ALLOWED=true` for dependency-ready REL-002..006 tasks.
@@ -307,15 +307,17 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - No tag/push/GitHub Release/npm publish/deploy occurred.
 
 ## Latest TVE-REL-007 blocker verification
-- Status: `PARTIAL PASS / BLOCKED_EXTERNAL` — Remotion sub-gate PASS; Windows signing sub-gate pending.
-- Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`.
-- Official Remotion terms rechecked 2026-10-11: individuals and teams/organizations up to 3 are Free-License eligible for commercial/automation use; 4+ require the applicable Company License.
-- Product owner explicitly declared on 2026-10-11 that the Tang AI Video Editor operator has at most 3 people and uses the current Remotion Free License; this satisfies ADR-002 D-002-5 without inference.
-- Repository signing integration is now PREPARED/PASS: `.github/workflows/release.yml` injects `secrets.WIN_CSC_LINK` + `secrets.WIN_CSC_KEY_PASSWORD` into electron-builder for Windows packaging, commercial tag runs fail fast when either secret is absent, and post-build Authenticode verification remains mandatory. Canonical release validator PASS / exit 0 after this change.
-- Accepted installer remains `NotSigned`; no real trusted signing certificate/service credential is configured yet.
+- Status: `PARTIAL PASS / BLOCKED_EXTERNAL` — Remotion sub-gate PASS; SSL.com IV + eSigner provider/repository integration PASS; real certificate issuance/signed candidate still pending.
+- Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`.
 - `REMOTION_LICENSE_GATE=PASS` / basis `FREE_LICENSE_ELIGIBLE`; durable evidence is `docs/evidence/release/TVE-REL-007-REMOTION.md`.
+- Selected signing provider path: SSL.com Individual Validated Code Signing + eSigner Cloud Signing. Repository integration is PREPARED/PASS and does not persist a private signing key.
+- `.github/workflows/release.yml` is fail-closed for release tags, pins eSigner CKA `v1.1.2` by SHA-256, loads the issued certificate into the runner certificate store, and requires a commercial electron-builder config with `forceCodeSigning=true`.
+- Verification PASS: canonical release validator; positive commercial signing-config load; missing-input fail-closed test; workflow YAML parse; official eSigner CKA installer SHA-256 match and Authenticode `Valid` signed by SSL Corp.
+- GitHub repository variables are configured: `REMOTION_COMMERCIAL_BASIS_APPROVED=true`, `WINDOWS_SIGNING_PROVIDER=sslcom-esigner`, `WINDOWS_SIGNING_APPROVED=false`.
+- External issuance is still absent: no issued SSL.com IV/eSigner publisher certificate and therefore no `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`, or issued `WINDOWS_SIGN_PUBLISHER_NAME` is available to CI.
+- Accepted REL-006 installer remains `NotSigned`; no real signed candidate was built.
 - `WINDOWS_SIGNING_GATE=PASS` is still absent, so `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
 - No REL-006 stage was rerun and no tag/push/release/publish/deploy side effect occurred.
 
 ## NEXT_EXACT_ACTION
-Continue only the remaining TVE-REL-007 Windows signing sub-gate: configure/verify a trusted Windows signing identity/service without persisting private credentials, then create and verify the signed candidate with valid Authenticode status. Do not repeat REL-006 or the Remotion sub-gate, and do not publish before `WINDOWS_SIGNING_GATE=PASS`.
+Product owner completes SSL.com IV Code Signing + eSigner purchase and individual identity validation. After issuance, configure GitHub Actions secrets `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`, set `WINDOWS_SIGN_PUBLISHER_NAME` from the issued certificate, then set `WINDOWS_SIGNING_APPROVED=true` and execute only the REL-007 signed-candidate path. Verify installer + packaged app Authenticode `Valid`, expected publisher, and RFC3161 timestamp before REL-007 PASS. Do not repeat REL-006, Remotion, provider research, or provider integration; do not publish before `WINDOWS_SIGNING_GATE=PASS`.

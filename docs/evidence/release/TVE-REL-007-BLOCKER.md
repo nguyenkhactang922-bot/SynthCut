@@ -111,3 +111,30 @@ Result:
 - Durable evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md`
 
 REL-007 remains incomplete only because `WINDOWS_SIGNING_GATE` is still `BLOCKED_EXTERNAL`. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until a real trusted signing identity/service is configured and the signed candidate verifies with valid Authenticode status.
+
+## 2026-10-11 signing provider selection / repository preparation
+The Windows signing blocker has been narrowed from an unspecified trusted-signing credential to one concrete provider path: **SSL.com Individual Validated Code Signing + eSigner Cloud Signing**.
+
+Repository/provider preparation completed:
+- added `apps/desktop/electron-builder.commercial.cjs` with `forceCodeSigning=true`, SHA-256 signing, certificate thumbprint/publisher selection and SSL.com RFC3161 timestamping;
+- added desktop `dist:commercial` script;
+- release-tag workflow now fails closed on Remotion approval, Windows signing approval, provider identity, publisher name and eSigner secrets;
+- eSigner CKA release `v1.1.2` is pinned by SHA-256 `3f088403139505ddfb0ed3b56b72893f92c865f98b382753a1e1c695a5cece35`;
+- CI loads the issued certificate into the CurrentUser certificate store and requires exactly one code-signing certificate matching `WINDOWS_SIGN_PUBLISHER_NAME`;
+- post-build verification requires Authenticode `Valid`, expected publisher and an RFC3161 timestamp for both the NSIS installer and packaged application executable.
+
+Verification PASS:
+- canonical release validator / exit 0;
+- positive commercial signing-config load / exit 0;
+- missing-input fail-closed signing-config test / exit 0;
+- release workflow YAML parse / exit 0;
+- official eSigner CKA installer download: pinned SHA-256 MATCH, Authenticode `Valid`, signer `SSL Corp`.
+
+GitHub repository variables were configured and read back:
+- `REMOTION_COMMERCIAL_BASIS_APPROVED=true`;
+- `WINDOWS_SIGNING_PROVIDER=sslcom-esigner`;
+- `WINDOWS_SIGNING_APPROVED=false`.
+
+The remaining blocker is genuinely external. No SSL.com IV certificate/eSigner account has been purchased/issued, so the repository does not have `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`, or an issued `WINDOWS_SIGN_PUBLISHER_NAME`. No real signed candidate can be produced yet and `WINDOWS_SIGNING_GATE=PASS` is **not** claimed.
+
+Exact resume action: product owner completes SSL.com IV + eSigner purchase and individual identity validation; after issuance configure those three GitHub Secrets plus the non-secret publisher-name variable, set `WINDOWS_SIGNING_APPROVED=true`, and execute only the REL-007 signed-candidate path. Do not repeat REL-006, Remotion, provider selection, or provider integration. No tag/GitHub Release publication occurred in this preparation step.

@@ -14,7 +14,8 @@
     "electron": "electron .",
     "prepare:bundle": "node scripts/prepare-bundle.ts",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "dist:commercial": "electron-builder --win --config electron-builder.commercial.cjs"
   },
   "dependencies": {
     "@aive/core": "*",

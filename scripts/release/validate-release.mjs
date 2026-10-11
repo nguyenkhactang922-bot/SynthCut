@@ -78,16 +78,23 @@ if (requireClean) {
 }
 
 const workflow = readFileSync(resolve(ROOT, ".github/workflows/release.yml"), "utf8");
+const commercialConfig = readFileSync(resolve(ROOT, "apps/desktop/electron-builder.commercial.cjs"), "utf8");
 const requiredWorkflowTokens = [
   "contents: read",
   "contents: write",
   "github.repository == 'nguyenkhactang922-bot/SynthCut'",
-  "vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true'",
-  "vars.WINDOWS_SIGNING_APPROVED == 'true'",
-  "secrets.WIN_CSC_LINK",
-  "secrets.WIN_CSC_KEY_PASSWORD",
-  "Missing WIN_CSC_LINK secret for trusted Windows signing",
-  "Missing WIN_CSC_KEY_PASSWORD secret for trusted Windows signing",
+  "REMOTION_COMMERCIAL_BASIS_APPROVED must be true",
+  "WINDOWS_SIGNING_APPROVED must be true",
+  "WINDOWS_SIGNING_PROVIDER must be sslcom-esigner",
+  "vars.WINDOWS_SIGN_PUBLISHER_NAME",
+  "secrets.ESIGNER_USERNAME",
+  "secrets.ESIGNER_PASSWORD",
+  "secrets.ESIGNER_TOTP_SECRET",
+  "ESIGNER_CKA_VERSION: \"1.1.2\"",
+  "3f088403139505ddfb0ed3b56b72893f92c865f98b382753a1e1c695a5cece35",
+  "eSignerCKATool.exe",
+  "npm run dist:commercial --workspace synthcut-by-relo",
+  "WINDOWS_SIGNING_GATE=PASS",
   "actions/upload-artifact@v4",
   "actions/download-artifact@v4",
   "latest.yml",
@@ -99,6 +106,21 @@ const requiredWorkflowTokens = [
 ];
 for (const token of requiredWorkflowTokens) {
   if (!workflow.includes(token)) fail(`release workflow is missing required token: ${token}`);
+}
+const requiredCommercialConfigTokens = [
+  "WINDOWS_SIGN_CERT_SHA1",
+  "WINDOWS_SIGN_PUBLISHER_NAME",
+  "forceCodeSigning: true",
+  "certificateSha1",
+  "publisherName",
+  "signingHashAlgorithms: [\"sha256\"]",
+  "rfc3161TimeStampServer: \"http://ts.ssl.com\"",
+];
+for (const token of requiredCommercialConfigTokens) {
+  if (!commercialConfig.includes(token)) fail(`commercial signing config is missing required token: ${token}`);
+}
+if (desktop.scripts?.["dist:commercial"] !== "electron-builder --win --config electron-builder.commercial.cjs") {
+  fail("desktop dist:commercial script must use electron-builder.commercial.cjs");
 }
 if (/npm\s+publish/.test(workflow)) fail("release workflow must not publish npm packages");
 

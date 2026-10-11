@@ -1,12 +1,16 @@
 name: Release
 
-# Manual runs are non-publishing package validation. A tag can publish only from
-# the authorized personal fork and only after both external commercial gates are
-# explicitly enabled. Build and publish permissions are intentionally separated.
+# Manual runs remain non-publishing package validation. A release tag is fail-closed:
+# Remotion basis + trusted Windows signing provider + signed artifact verification
+# must all pass before the fork-only publish job can run.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+
+env:
+  ESIGNER_CKA_VERSION: "1.1.2"
+  ESIGNER_CKA_INSTALLER_SHA256: "3f088403139505ddfb0ed3b56b72893f92c865f98b382753a1e1c695a5cece35"
 
 jobs:
   windows:
@@ -48,22 +52,75 @@ jobs:
       - name: Stage verified FFmpeg, Whisper, YuNet, font and provenance
         run: npm run prepare:bundle --workspace synthcut-by-relo
 
-      - name: Require trusted signing credentials for commercial tag publication
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED == 'true' }}
+      - name: Enforce external commercial gates for release tags
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
         shell: pwsh
         env:
-          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          REMOTION_COMMERCIAL_BASIS_APPROVED: ${{ vars.REMOTION_COMMERCIAL_BASIS_APPROVED }}
+          WINDOWS_SIGNING_APPROVED: ${{ vars.WINDOWS_SIGNING_APPROVED }}
+          WINDOWS_SIGNING_PROVIDER: ${{ vars.WINDOWS_SIGNING_PROVIDER }}
+          WINDOWS_SIGN_PUBLISHER_NAME: ${{ vars.WINDOWS_SIGN_PUBLISHER_NAME }}
         run: |
           $ErrorActionPreference = 'Stop'
-          if ([string]::IsNullOrWhiteSpace($env:WIN_CSC_LINK)) { throw 'Missing WIN_CSC_LINK secret for trusted Windows signing' }
-          if ([string]::IsNullOrWhiteSpace($env:WIN_CSC_KEY_PASSWORD)) { throw 'Missing WIN_CSC_KEY_PASSWORD secret for trusted Windows signing' }
+          if ($env:REMOTION_COMMERCIAL_BASIS_APPROVED -ne 'true') { throw 'REMOTION_COMMERCIAL_BASIS_APPROVED must be true before a release tag can build' }
+          if ($env:WINDOWS_SIGNING_APPROVED -ne 'true') { throw 'WINDOWS_SIGNING_APPROVED must be true before a release tag can build' }
+          if ($env:WINDOWS_SIGNING_PROVIDER -ne 'sslcom-esigner') { throw 'WINDOWS_SIGNING_PROVIDER must be sslcom-esigner for the frozen commercial release path' }
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PUBLISHER_NAME)) { throw 'WINDOWS_SIGN_PUBLISHER_NAME repository variable is required' }
 
-      - name: Package Windows NSIS + ZIP without publishing
+      - name: Configure SSL.com eSigner CKA for trusted release signing
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
+        shell: pwsh
         env:
-          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          ESIGNER_USERNAME: ${{ secrets.ESIGNER_USERNAME }}
+          ESIGNER_PASSWORD: ${{ secrets.ESIGNER_PASSWORD }}
+          ESIGNER_TOTP_SECRET: ${{ secrets.ESIGNER_TOTP_SECRET }}
+          WINDOWS_SIGN_PUBLISHER_NAME: ${{ vars.WINDOWS_SIGN_PUBLISHER_NAME }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($name in @('ESIGNER_USERNAME', 'ESIGNER_PASSWORD', 'ESIGNER_TOTP_SECRET', 'WINDOWS_SIGN_PUBLISHER_NAME')) {
+            if ([string]::IsNullOrWhiteSpace((Get-Item "Env:$name").Value)) { throw "Missing required signing input: $name" }
+          }
+
+          $installer = Join-Path $env:RUNNER_TEMP "SSL.COM.eSigner.CKA_$env:ESIGNER_CKA_VERSION.exe"
+          $url = "https://github.com/SSLcom/eSignerCKA/releases/download/v$env:ESIGNER_CKA_VERSION/SSL.COM.eSigner.CKA_1.1.2_build_202600624.exe"
+          Invoke-WebRequest -Uri $url -OutFile $installer
+          $actualHash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualHash -ne $env:ESIGNER_CKA_INSTALLER_SHA256) {
+            throw "eSigner CKA installer hash mismatch: $actualHash"
+          }
+
+          $installDir = Join-Path $env:RUNNER_TEMP 'esigner-cka'
+          New-Item -ItemType Directory -Path $installDir -Force | Out-Null
+          $proc = Start-Process -FilePath $installer -ArgumentList @('/CURRENTUSER','/VERYSILENT','/SUPPRESSMSGBOXES',"/DIR=`"$installDir`"") -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "eSigner CKA installer failed with exit code $($proc.ExitCode)" }
+
+          $tool = Get-ChildItem $installDir -Recurse -File -Filter 'eSignerCKATool.exe' | Select-Object -First 1
+          if (-not $tool) { throw 'eSignerCKATool.exe was not installed' }
+          $masterKey = Join-Path $env:RUNNER_TEMP 'esigner-master.key'
+
+          & $tool.FullName config -mode PROD -user $env:ESIGNER_USERNAME -pass $env:ESIGNER_PASSWORD -totp $env:ESIGNER_TOTP_SECRET -key $masterKey -r
+          if ($LASTEXITCODE -ne 0) { throw "eSigner CKA config failed with exit code $LASTEXITCODE" }
+          & $tool.FullName unload
+          if ($LASTEXITCODE -ne 0) { throw "eSigner CKA unload failed with exit code $LASTEXITCODE" }
+          & $tool.FullName load
+          if ($LASTEXITCODE -ne 0) { throw "eSigner CKA load failed with exit code $LASTEXITCODE" }
+
+          $nameType = [System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName
+          $matches = @(Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Where-Object {
+            $_.HasPrivateKey -and $_.GetNameInfo($nameType, $false) -eq $env:WINDOWS_SIGN_PUBLISHER_NAME
+          })
+          if ($matches.Count -ne 1) { throw "Expected exactly one eSigner code-signing certificate for publisher '$env:WINDOWS_SIGN_PUBLISHER_NAME', found $($matches.Count)" }
+          $cert = $matches[0]
+          "WINDOWS_SIGN_CERT_SHA1=$($cert.Thumbprint)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "WINDOWS_SIGN_PUBLISHER_NAME=$env:WINDOWS_SIGN_PUBLISHER_NAME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Package unsigned Windows NSIS + ZIP for manual validation
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         run: npm run dist --workspace synthcut-by-relo -- --publish never
+
+      - name: Package trusted-signed Windows NSIS + ZIP for release tag
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
+        run: npm run dist:commercial --workspace synthcut-by-relo -- --publish never
 
       - name: Assemble and validate release artifact set
         shell: pwsh
@@ -88,17 +145,29 @@ jobs:
           node scripts/release/validate-release.mjs --require-clean --metadata apps/desktop/build/release-artifacts/RELEASE_METADATA.json
           node scripts/release/validate-artifacts.mjs apps/desktop/build/release-artifacts
 
-      - name: Verify trusted installer signature when commercial publication is enabled
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED == 'true' }}
+      - name: Verify trusted publisher, timestamp and Authenticode on release tag
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
         shell: pwsh
+        env:
+          WINDOWS_SIGN_PUBLISHER_NAME: ${{ vars.WINDOWS_SIGN_PUBLISHER_NAME }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $installers = Get-ChildItem 'apps/desktop/build/release-artifacts' -File -Filter '*.exe'
-          if (-not $installers) { throw 'No installer executable available for signature verification' }
-          foreach ($installer in $installers) {
-            $sig = Get-AuthenticodeSignature $installer.FullName
-            if ($sig.Status -ne 'Valid') { throw "Trusted signature verification failed for $($installer.Name): $($sig.Status)" }
+          $targets = @()
+          $targets += Get-ChildItem 'apps/desktop/build/release-artifacts' -File -Filter '*.exe'
+          $appExe = Get-Item 'apps/desktop/build/dist/win-unpacked/Tang AI Video Editor.exe' -ErrorAction Stop
+          $targets += $appExe
+          if ($targets.Count -lt 2) { throw 'Expected installer and packaged application executable for signature verification' }
+
+          $nameType = [System.Security.Cryptography.X509Certificates.X509NameType]::SimpleName
+          foreach ($target in $targets) {
+            $sig = Get-AuthenticodeSignature $target.FullName
+            if ($sig.Status -ne 'Valid') { throw "Trusted signature verification failed for $($target.Name): $($sig.Status)" }
+            if (-not $sig.SignerCertificate) { throw "Signer certificate missing for $($target.Name)" }
+            $publisher = $sig.SignerCertificate.GetNameInfo($nameType, $false)
+            if ($publisher -ne $env:WINDOWS_SIGN_PUBLISHER_NAME) { throw "Unexpected signer for $($target.Name): $publisher" }
+            if (-not $sig.TimeStamperCertificate) { throw "RFC3161 timestamp missing for $($target.Name)" }
           }
+          'WINDOWS_SIGNING_GATE=PASS' | Write-Output
 
       - name: Upload validated non-publishing release artifacts
         uses: actions/upload-artifact@v4
@@ -110,7 +179,7 @@ jobs:
 
   publish-release:
     needs: windows
-    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED == 'true' }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write

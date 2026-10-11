@@ -199,13 +199,13 @@ Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, 
 Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
 
 ## TVE-REL-007 — External commercial authorization gates
-Status: PARTIAL PASS / BLOCKED_EXTERNAL — REMOTION PASS / WINDOWS SIGNING PENDING
+Status: PARTIAL PASS / BLOCKED_EXTERNAL — REMOTION PASS / SSL.COM ESIGNER INTEGRATION PASS / EXTERNAL CERTIFICATE ISSUANCE PENDING
 Dependencies: REL-006 PASS
-Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`
+Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`
 Required before public commercial-ready release:
 - explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
 - trusted Windows signing identity/service and signature verification.
-Current evidence: `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE` based on the owner declaration dated 2026-10-11 that the operator has at most 3 people and uses the current Remotion Free License; official current Remotion terms were rechecked and permit commercial/automation use for this eligibility class. Repository signing integration is PREPARED/PASS: GitHub Actions injects `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` secrets into electron-builder, fails fast for commercial tag publication when either is missing, and preserves mandatory post-build Authenticode verification; canonical release validator PASS / exit 0. No trusted certificate/service credential is actually configured yet and accepted installer remains `NotSigned`. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until `WINDOWS_SIGNING_GATE=PASS`.
+Current evidence: `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE`. Signing provider path is now frozen to SSL.com IV Code Signing + eSigner Cloud Signing and `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS`: release-tag workflow is fail-closed, eSigner CKA `v1.1.2` is SHA-256 pinned, the commercial electron-builder config forces SHA-256 code signing with RFC3161 timestamping, and final verification requires installer + packaged app Authenticode `Valid`, expected publisher, and timestamp. Static/negative/YAML/pinned-installer verification PASS. GitHub variables are set to `REMOTION_COMMERCIAL_BASIS_APPROVED=true`, `WINDOWS_SIGNING_PROVIDER=sslcom-esigner`, `WINDOWS_SIGNING_APPROVED=false`. A real SSL.com IV/eSigner certificate/account has not yet been purchased/issued, so no real signed candidate exists and `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until `WINDOWS_SIGNING_GATE=PASS`.
 
 ## TVE-REL-008 — GitHub Release publication
 Status: BLOCKED BY REL-007
@@ -221,4 +221,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-007` remains the next task but only the Windows signing sub-gate is BLOCKED_EXTERNAL. `REMOTION_LICENSE_GATE=PASS` is complete and must not be repeated. Configure and verify a trusted Windows signing identity/service without persisting private credentials, then create/verify the signed candidate. Do not repeat REL-006 or earlier IMP/E2E gates and do not publish before `WINDOWS_SIGNING_GATE=PASS`.
+`TVE-REL-007` remains the next task and only external SSL.com certificate/eSigner issuance is BLOCKED_EXTERNAL. `REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS` are complete and must not be repeated. Product owner completes SSL.com IV + eSigner purchase/individual identity validation; after issuance configure `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`, set `WINDOWS_SIGN_PUBLISHER_NAME`, then set `WINDOWS_SIGNING_APPROVED=true` and execute only the signed-candidate path. Do not repeat REL-006, provider selection/integration, or earlier IMP/E2E gates; do not publish before `WINDOWS_SIGNING_GATE=PASS`.
