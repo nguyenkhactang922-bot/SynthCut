@@ -242,7 +242,7 @@ node apps/desktop/scripts/prepare-bundle.ts      # needs ffmpeg/ffprobe on PATH
 
 # 2. Build the renderer + the NSIS installer  (output: apps/desktop/build/dist)
 npm run build
-npm run dist --workspace synthcut-by-relo
+npm run dist --workspace apps/desktop
 ```
 
 The bundled binaries are reused from the engine's own `~/.aive` cache when present, so the slow downloads happen at most once. The packaged app points the engine at the bundled copies via env overrides (`AIVE_FFMPEG`, `AIVE_WHISPER_BIN`, …) — the same variables you can set by hand for a source checkout.

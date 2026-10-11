@@ -1,6 +1,6 @@
 # TVE-REL-008 — Provenance clean-gate timing failure / narrow repair evidence
 
-Status: **FAIL STAGE REPAIRED + COMMITTED + PUSHED — hotfix PR pending**
+Status: **RUNNING — provenance repair reviewed/merged; guarded Release run 38137052906 in progress on ce31bfdd**
 Date: 2026-10-11
 Target repository: `nguyenkhactang922-bot/SynthCut`
 Release tag: `v1.1.0`
@@ -90,9 +90,17 @@ Tag-mode static release validator PASSed against the repaired workflow contract:
 - Push to `personal/chatgpt/phase7-commercial-release`: PASS; remote branch advanced from `ee10c86` to `9ec5ccd`.
 - No open hotfix PR existed at the push checkpoint.
 - Canonical state sync is committed/pushed before PR creation so automatic PR CI runs only on the final reviewed head.
+- State checkpoint commit `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968` was pushed before PR creation.
+- PR #8 automatic CI run `38136588599`: SUCCESS.
+- PR #8 MERGED to personal `main` at `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`.
+- Merge-tree parity PASS: `ce31bfdd^{tree}` equals reviewed head `5a54315^{tree}` (`115bcfc87809544fda213a8b62866a56dcf20236`).
+- Tag retry guard PASS: GitHub auth valid; GitHub Release `v1.1.0` absent/404; reviewed personal `main=ce31bfdd`; previous remote tag peel `f9ea9ab`; no active Release run.
+- Existing annotated `v1.1.0` was guarded-moved once to `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`, triggering exactly one new Release run `38137052906`.
+- Run `38137052906` is RUNNING on exact source SHA `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; initial release validation, dependency install, build, pinned FFmpeg, and `Restore known workspace-bin mutation before provenance manifest` have PASSed in the live run.
+- Read-only watcher: `pty_478d803b5e985b72f52d31d7d198b53fff2d` / PID `123720`. Do not restart, retag, or create a manual Release while the run is active.
 
 ## Exit gate for this repair
-Before another tag-triggered Release run:
+Current exit gate: monitor only existing Release run `38137052906`. If it PASSes, verify the published GitHub Release, exact artifact set/update metadata/source SHA/provenance and unsigned gate evidence before marking REL-008 PASS. If it FAILs, retain all preceding PASS checkpoints and repair only the exact failed stage lineage.
 1. review only workflow + release validator + this evidence/state delta;
 2. commit and push only to personal feature branch;
 3. open exactly one hotfix PR and monitor its automatic CI;

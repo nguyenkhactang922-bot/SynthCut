@@ -1,11 +1,11 @@
 # Windows Commercial Signing — SSL.com IV + eSigner
 
-Status: **PROVIDER SELECTED / REPOSITORY INTEGRATION PREPARED**
+Status: **OPTIONAL FUTURE HARDENING / DEFERRED BY OWNER**
 Date: 2026-10-11
 Owner: Tang AI Video Editor product owner
 
 ## Selected path
-Use **SSL.com Individual Validated (IV) Code Signing + eSigner Cloud Signing** for the first public commercial Windows release.
+If the owner later enables a trusted-signed lane, the prepared option is **SSL.com Individual Validated (IV) Code Signing + eSigner Cloud Signing**. The current public commercial lane remains intentionally unsigned and does not depend on this provider.
 
 Why this path:
 - supports an individual publisher without requiring business registration;
@@ -41,8 +41,10 @@ Do not place identity documents, payment information, passwords, TOTP seeds, pri
 ## GitHub repository configuration
 Already set:
 - `REMOTION_COMMERCIAL_BASIS_APPROVED=true`
-- `WINDOWS_SIGNING_PROVIDER=sslcom-esigner`
+- `WINDOWS_SIGNING_PROVIDER=deferred`
 - `WINDOWS_SIGNING_APPROVED=false`
+
+When the owner explicitly re-enables the optional signed lane, set `WINDOWS_SIGNING_PROVIDER=sslcom-esigner` only after the provider credentials/certificate are actually available.
 
 After issuance, configure these GitHub Actions secrets out-of-band:
 - `ESIGNER_USERNAME`
@@ -64,7 +66,7 @@ Only after the eSigner account/certificate can actually be loaded by CI, set:
 5. load the code-signing certificate into the Windows CurrentUser certificate store;
 6. require exactly one code-signing certificate matching `WINDOWS_SIGN_PUBLISHER_NAME`;
 7. export its SHA-1 thumbprint only as ephemeral CI environment state;
-8. run `npm run dist:commercial --workspace synthcut-by-relo -- --publish never`;
+8. run `npm run dist:commercial --workspace apps/desktop` (the script itself enforces `--publish never`);
 9. use `apps/desktop/electron-builder.commercial.cjs` with `forceCodeSigning=true`, SHA-256 signing and SSL.com's RFC3161 timestamp server;
 10. verify the installer and packaged application executable have `Authenticode Status=Valid`, the expected publisher, and a timestamp before publication can run.
 
@@ -87,4 +89,4 @@ Local verification on 2026-10-11:
 - RFC3161 timestamp present;
 - artifact validator/provenance checks remain PASS.
 
-No tag/GitHub Release publication is allowed before this gate passes.
+This gate is required only for the optional signed lane. The owner-approved unsigned commercial lane uses its separate Remotion + Supabase + unsigned-risk acceptance gates and must verify Authenticode status exactly `NotSigned`.

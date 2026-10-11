@@ -2,9 +2,7 @@
 
 This fork releases the Windows desktop application only through GitHub Releases on
 `nguyenkhactang922-bot/SynthCut`. The release workflow is deliberately fail-closed:
-manual runs build and validate artifacts but **never publish**, while tag publication
-requires both external commercial gates to be explicitly enabled and the installer
-to pass trusted-signature verification.
+manual runs build and validate artifacts but **never publish**. The current tag publication lane is intentionally unsigned and fail-closed on Remotion eligibility, Supabase entitlement readiness, explicit owner acceptance of Unknown-publisher/SmartScreen risk, and an exact `NotSigned` verification. Trusted signing remains optional future hardening.
 
 ## Release authority and hard gates
 
@@ -15,15 +13,14 @@ The authorized release repository is:
 Do not publish release artifacts to upstream `Relo-video/SynthCut` and do not
 publish the legacy `@relo-video/synthcut` npm package from this fork.
 
-A public/stable commercial release remains blocked until both repository variables
-are explicitly set to `true` after REL-007 evidence exists:
+The current unsigned commercial lane requires these repository variables after REL-007 evidence exists:
 
-- `REMOTION_COMMERCIAL_BASIS_APPROVED`
-- `WINDOWS_SIGNING_APPROVED`
+- `REMOTION_COMMERCIAL_BASIS_APPROVED=true`
+- `SUPABASE_LICENSE_BACKEND_APPROVED=true`
+- `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`
+- `WINDOWS_SIGNING_APPROVED=false`
 
-The tag workflow also verifies the Windows installer has a valid Authenticode
-signature before the publication job can run. Setting variables alone is therefore
-not sufficient to ship an unsigned build.
+The tag workflow verifies the installer and packaged application are exactly `NotSigned`, publishes an unsigned-release notice, and warns that Windows may show Unknown publisher / SmartScreen. The optional trusted-signed lane is separate and may be enabled later.
 
 ## Version contract
 
@@ -35,7 +32,7 @@ Five package manifests stay in lockstep:
 | `packages/core/package.json` | `@aive/core` |
 | `packages/mcp/package.json` | `@aive/mcp` |
 | `packages/skill-installer/package.json` | legacy local workspace package `@relo-video/synthcut` |
-| `apps/desktop/package.json` | `synthcut-by-relo` desktop package |
+| `apps/desktop/package.json` | `tang-ai-video-editor` private desktop package |
 
 `apps/desktop/package.json` is the version electron-updater compares against
 `latest.yml`. A release tag must be exactly `v<version>`, and the version must be
@@ -53,9 +50,7 @@ CI runs the stronger clean-source form:
 node scripts/release/validate-release.mjs --require-clean
 ```
 
-The validator checks version alignment, fork updater ownership, tag/version parity,
-repository identity, the upstream npm-publication guard, workflow safety tokens and,
-when requested, a clean tracked worktree.
+The validator checks version alignment, the fork-owned desktop package identity, lockfile/workspace-selector consistency, fork updater ownership, tag/version parity, repository identity, the upstream npm-publication guard, workflow safety tokens and, when requested, a clean tracked worktree.
 
 ## Legacy npm namespace is intentionally non-publishing
 
@@ -117,9 +112,11 @@ below are true:
 1. the ref is a `v*` tag;
 2. `github.repository` is exactly `nguyenkhactang922-bot/SynthCut`;
 3. `REMOTION_COMMERCIAL_BASIS_APPROVED == 'true'`;
-4. `WINDOWS_SIGNING_APPROVED == 'true'`;
-5. the build job succeeds;
-6. trusted Authenticode verification of the installer succeeds.
+4. `SUPABASE_LICENSE_BACKEND_APPROVED == 'true'`;
+5. `UNSIGNED_COMMERCIAL_RELEASE_APPROVED == 'true'`;
+6. `WINDOWS_SIGNING_APPROVED != 'true'`;
+7. the build job succeeds;
+8. installer and packaged application both verify exactly `NotSigned`.
 
 The publication job downloads the already-validated Actions artifact and attaches
 that exact set to the GitHub Release. It does not rebuild or substitute files.
@@ -132,7 +129,8 @@ Packaged builds use electron-updater with the publish provider configured in
 - provider: GitHub;
 - owner: `nguyenkhactang922-bot`;
 - repo: `SynthCut`;
-- stable Windows app id: `com.tang.aivideoeditor`.
+- stable Windows app id: `com.tang.aivideoeditor`;
+- fork-owned updater cache namespace: `tang-ai-video-editor-updater`.
 
 Installed builds check the fork's published `latest.yml`. A same-version tag cannot
 produce an update; the next release must always use a higher semver.
@@ -144,11 +142,11 @@ The normal release lane is:
 ```text
 REL-005 workflow/version validation
 → REL-006 local NSIS + ZIP acceptance
-→ REL-007 Remotion + trusted-signing authorization
+→ REL-007 Remotion + Supabase entitlement + owner-approved unsigned-risk authorization
 → merge/reviewed release source
 → create exact v<version> tag
 → tag build
-→ signature verification
+→ intentional `NotSigned` verification
 → REL-008 GitHub Release publication
 → REL-009 installed updater E2E
 ```

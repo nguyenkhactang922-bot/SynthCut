@@ -71,7 +71,7 @@ jobs:
           'PRE_PROVENANCE_TRACKED_CLEAN_GATE=PASS' | Write-Output
 
       - name: Stage verified FFmpeg, Whisper, YuNet, font and provenance
-        run: npm run prepare:bundle --workspace synthcut-by-relo
+        run: npm run prepare:bundle --workspace apps/desktop
 
       - name: Enforce commercial gates for release tags
         if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
@@ -143,15 +143,15 @@ jobs:
 
       - name: Package unsigned Windows NSIS + ZIP for manual validation
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        run: npm run dist --workspace synthcut-by-relo
+        run: npm run dist --workspace apps/desktop
 
       - name: Package trusted-signed Windows NSIS + ZIP for signed release tag
         if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
-        run: npm run dist:commercial --workspace synthcut-by-relo
+        run: npm run dist:commercial --workspace apps/desktop
 
       - name: Package intentionally unsigned Windows NSIS + ZIP for current commercial lane
         if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED != 'true' && vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED == 'true' }}
-        run: npm run dist --workspace synthcut-by-relo
+        run: npm run dist --workspace apps/desktop
 
       - name: Restore known workspace-bin mutation before post-package clean gate
         shell: pwsh

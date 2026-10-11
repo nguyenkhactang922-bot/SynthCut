@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at artifact provenance validation in run 38134667267 after package + post-package clean gate PASS; provenance clean-gate timing repair committed as 9ec5ccd and pushed to personal feature branch; hotfix PR/merge + guarded tag retry pending`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; TVE-REL-009 updater identity repair COMMITTED at d1dc00f / push+PR pending; full updater E2E still pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; PR #7 CI PASSed and merged to personal `main@f9ea9ab`; guarded `v1.1.0` points there; run `38134667267` PASSed through package and the post-package clean gate, then FAILed only because the previously generated bundle manifest recorded `sourceTrackedDirty=true`; narrow pre-provenance clean gate + ordering contract repaired locally; publication remains blocked pending reviewed hotfix + guarded tag retry
+- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` remains immutable published evidence; REL-009 updater identity repair is COMMITTED at `d1dc00f` on release-forward `1.1.1`, with push/PR/CI/review/merge and the true installed updater E2E still pending
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / run 38134667267 failed only artifact provenance validation after package + post-package clean gate PASS; provenance-timing repair commit 9ec5ccd PUSHED to personal feature branch; hotfix PR pending`
+`TVE-REL-009 - updater identity repair COMMITTED d1dc00f / push+PR pending; full installed updater E2E remains pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -399,6 +399,21 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
 - No full build/package/release rerun was performed locally; retained PASS stages remain retained.
 - Repair implementation/evidence/state commit: `9ec5ccd4065ec9949152f513d6ac6bc747bafeec`; push to `personal/chatgpt/phase7-commercial-release` PASS. No open hotfix PR existed at the push checkpoint.
+- PR #8 automatic CI run `38136588599`: SUCCESS on exact reviewed head `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968`; PR #8 MERGED at `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; merge-tree parity PASS (`ce31bfdd^{tree} == 5a54315^{tree}`).
+- Tag retry side-effect guard PASS: GitHub auth valid; GitHub Release `v1.1.0` absent/404; personal `main=ce31bfdd`; prior tag peel `f9ea9ab`; no active Release run. Existing `v1.1.0` was guarded-moved once to `ce31bfdd`.
+- Release run `38137052906` completed SUCCESS on exact `headSha=ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; both `windows` and `publish-release` jobs PASSed.
+- GitHub Release `v1.1.0` is published on `nguyenkhactang922-bot/SynthCut`; release id `409639821`; published at `2026-10-11T11:59:06Z`.
+- `BUNDLE_MANIFEST.json`: `sourceCommit=ce31bfdd...`, `sourceTrackedDirty=false`; `RELEASE_METADATA.json.status=PASS`; `latest.yml` points to version `1.1.0` / EXE size `397652429`.
+- Public-download verification under `.tmp/rel008-public-download`: EXE SHA-256 `6c7c0691505413c3c793d231e570f3ab8cd96a2691eeadcf2ae25b4088c04da5`; ZIP SHA-256 `ace00154ce63479a93d3838c382e57ad449373888afdaf0d0e9200a5d25891fa`; both exactly match `SHA256SUMS.txt` and GitHub asset digests. REL-008=PASS. Evidence: `docs/evidence/release/TVE-REL-008.md`.
+
+## Latest TVE-REL-009 updater identity preflight
+- Retained installed old fork build `.tmp/rel006-installed4` is version `1.0.6` and its `app-update.yml` correctly targets `nguyenkhactang922-bot/SynthCut` but uses `updaterCacheDirName: synthcut-by-relo-updater`.
+- Current desktop package name remains `synthcut-by-relo`; current generated app-update.yml therefore uses the same cache namespace.
+- Upstream `origin/main:apps/desktop/package.json` also uses package name `synthcut-by-relo`.
+- Installed electron-builder code derives updater cache identity as `sanitizedName.toLowerCase() + "-updater"` and NSIS uses it for update installer/package storage.
+- Bounded updater-identity repair completed locally: desktop private package `tang-ai-video-editor`, release-forward version `1.1.1`, live workspace selectors switched to `--workspace apps/desktop`, lockfile identity/version synchronized, validator hardened against stale upstream desktop identity.
+- Recovered existing full package evidence instead of rebuilding: `rel009-identity-dist` contains 1.1.1 EXE/ZIP/blockmap/latest.yml/SHA256SUMS; generated `app-update.yml` targets `nguyenkhactang922-bot/SynthCut` with `updaterCacheDirName: tang-ai-video-editor-updater`.
+- Verification PASS: EXE SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`; ZIP SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`; both match SHA256SUMS; installer/app `NotSigned`; tag-mode validator v1.1.1 PASS; root typecheck PASS; root build PASS; `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`.
 
 ## NEXT_EXACT_ACTION
-Commit/push this state-sync checkpoint before PR creation, verify no duplicate open PR, then open exactly one hotfix PR and monitor its automatic CI. If CI PASSes, merge to personal main and verify merge-tree parity. Then re-check GitHub Release `v1.1.0` absence, exact current tag target, GitHub auth and absence of active Release runs before any guarded tag move. Never manually create a duplicate Release, never publish upstream, and do not manually rerun REL-001..007 or retained PASS stages from run `38134667267`.
+Identity repair commit `d1dc00f1a160ae2e6a667f908b58735b1c6cae35` is PASS locally. Create a state-only checkpoint, then use side-effect guards before personal-fork push/PR. After CI/review/merge PASS, release-forward only as `v1.1.1` under normal guards, then resume REL-009 updater E2E from retained installed `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.

@@ -8,6 +8,7 @@ const ROOT = resolve(import.meta.dirname, "..", "..");
 const EXPECTED_REPOSITORY = "nguyenkhactang922-bot/SynthCut";
 const EXPECTED_PRODUCT = "Tang AI Video Editor";
 const EXPECTED_APP_ID = "com.tang.aivideoeditor";
+const EXPECTED_DESKTOP_PACKAGE = "tang-ai-video-editor";
 const VERSION_FILES = [
   "package.json",
   "packages/core/package.json",
@@ -43,7 +44,9 @@ if (versions.size !== 1) {
 const version = [...versions][0];
 if (!/^\d+\.\d+\.\d+$/.test(version)) fail(`version must be stable semver X.Y.Z, got ${version}`);
 
+const rootManifest = manifests["package.json"];
 const desktop = manifests["apps/desktop/package.json"];
+if (desktop.name !== EXPECTED_DESKTOP_PACKAGE) fail(`unexpected desktop package name ${desktop.name}`);
 if (desktop.build?.productName !== EXPECTED_PRODUCT) fail(`unexpected productName ${desktop.build?.productName}`);
 if (desktop.build?.appId !== EXPECTED_APP_ID) fail(`unexpected appId ${desktop.build?.appId}`);
 const providers = desktop.build?.publish;
@@ -51,6 +54,24 @@ if (!Array.isArray(providers) || providers.length !== 1) fail("desktop publish p
 if (providers[0].provider !== "github" || providers[0].owner !== "nguyenkhactang922-bot" || providers[0].repo !== "SynthCut") {
   fail(`desktop updater/publish provider must target ${EXPECTED_REPOSITORY}`);
 }
+for (const scriptName of ["build", "typecheck", "start"]) {
+  const script = rootManifest.scripts?.[scriptName] || "";
+  if (!script.includes("--workspace apps/desktop") || script.includes("synthcut-by-relo")) {
+    fail(`root ${scriptName} script must select the desktop workspace by path`);
+  }
+}
+
+const lock = readJson("package-lock.json");
+if (lock.version !== version || lock.packages?.[""]?.version !== version) {
+  fail("package-lock root version must match release version");
+}
+const lockedDesktop = lock.packages?.["apps/desktop"];
+if (lockedDesktop?.name !== EXPECTED_DESKTOP_PACKAGE || lockedDesktop?.version !== version) {
+  fail("package-lock desktop identity/version is out of sync");
+}
+if (lock.packages?.["node_modules/synthcut-by-relo"]) fail("package-lock retains upstream desktop workspace link");
+const desktopLink = lock.packages?.[`node_modules/${EXPECTED_DESKTOP_PACKAGE}`];
+if (!desktopLink?.link || desktopLink?.resolved !== "apps/desktop") fail("package-lock is missing the fork-owned desktop workspace link");
 
 const skill = manifests["packages/skill-installer/package.json"];
 if (skill.name !== "@relo-video/synthcut") fail(`unexpected legacy skill package name ${skill.name}`);
@@ -91,7 +112,8 @@ const requiredWorkflowTokens = [
   "UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true",
   "vars.SUPABASE_LICENSE_BACKEND_APPROVED",
   "vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED",
-  "npm run dist --workspace synthcut-by-relo",
+  "npm run prepare:bundle --workspace apps/desktop",
+  "npm run dist --workspace apps/desktop",
   "Get-AuthenticodeSignature",
   "NotSigned",
   "UNSIGNED_WINDOWS_RELEASE_GATE=PASS",
@@ -105,7 +127,7 @@ const requiredWorkflowTokens = [
   "ESIGNER_CKA_VERSION: \"1.1.2\"",
   "3f088403139505ddfb0ed3b56b72893f92c865f98b382753a1e1c695a5cece35",
   "eSignerCKATool.exe",
-  "npm run dist:commercial --workspace synthcut-by-relo",
+  "npm run dist:commercial --workspace apps/desktop",
   "Restore known workspace-bin mutation before provenance manifest",
   "PRE_PROVENANCE_TRACKED_CLEAN_GATE=PASS",
   "Restore known workspace-bin mutation before post-package clean gate",
@@ -179,6 +201,8 @@ const result = {
   repository: EXPECTED_REPOSITORY,
   productName: EXPECTED_PRODUCT,
   appId: EXPECTED_APP_ID,
+  desktopPackageName: EXPECTED_DESKTOP_PACKAGE,
+  updaterCacheDirName: `${EXPECTED_DESKTOP_PACKAGE}-updater`,
   sourceCommit,
   trackedCleanRequired: requireClean,
   workflowRef: ref || null,

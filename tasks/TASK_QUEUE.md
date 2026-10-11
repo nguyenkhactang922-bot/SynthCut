@@ -212,15 +212,18 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: FAIL / PROVENANCE CLEAN-GATE TIMING REPAIR COMMITTED + PUSHED / HOTFIX PR PENDING
+Status: DONE / PASS / PUBLISHED / VERIFIED
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
-PR #7 automatic CI PASSed and PR #7 MERGED to personal `main@f9ea9ab`; remote `v1.1.0` currently peels to that commit. Release run `38134667267` PASSed release validation, dependencies, build, pinned FFmpeg, provenance staging command, commercial gates, intentionally unsigned package, and the post-package tracked-clean restore gate, then FAILed only during artifact provenance validation inside `Assemble and validate release artifact set`.
-Exact failure: `BUNDLE_MANIFEST.json` recorded `sourceTrackedDirty=true` because `prepare:bundle` sampled tracked state before the known workspace-bin mutation was restored. The in-stage `validate-release --require-clean` PASSed, so this is a provenance-timing defect, not a failed post-package clean gate. Narrow local repair adds the same fail-closed exact-path restore immediately before provenance manifest generation, retains the post-package gate, and makes the release validator enforce ordering `pre-provenance clean < provenance staging < post-package clean < assemble`. Targeted timing/negative smokes + tag-mode validator + `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
-Repair commit `9ec5ccd4065ec9949152f513d6ac6bc747bafeec` was pushed to `personal/chatgpt/phase7-commercial-release`; no open hotfix PR existed at the push checkpoint. Next gate: commit/push the state-sync checkpoint, open exactly one PR, obtain automatic CI PASS, merge + verify tree parity, then perform Release absence/tag/auth/no-active-run guard before any tag move. Do not rerun REL-001..007 or manually duplicate retained PASS stages/runs.
+Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
+Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: BLOCKED BY REL-008
+Status: IDENTITY REPAIR COMMITTED `d1dc00f` / PUSH + PR PENDING / E2E NOT YET RUN
+Dependencies: REL-008 PASS
+Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+Repair result: desktop package identity `tang-ai-video-editor`; release-forward version `1.1.1`; root/workflow selectors use `--workspace apps/desktop`; package-lock desktop link and validator contracts are synchronized. Existing full `rel009-identity-dist` artifacts verify generated feed `nguyenkhactang922-bot/SynthCut`, cache `tang-ai-video-editor-updater`, matching hashes, and intentional `NotSigned`. Tag-mode validator, root typecheck/build and diff-check PASS. Do not rerun package before commit/CI.
+Next: state-checkpoint then guarded push/PR/CI/review/merge of committed repair `d1dc00f`; guarded-publish `v1.1.1`; then resume only the installed updater transition from retained `1.0.6`.
 
 ## TVE-REL-010 — Monitor / incident handoff
 Status: BLOCKED BY REL-009
@@ -229,4 +232,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: commit/push this state-sync checkpoint, verify no duplicate open PR, open exactly one hotfix PR and monitor its automatic CI. If PASS, merge + verify tree parity, then guard Release absence/tag/auth/no-active-run before any tag move. If FAIL, repair only the exact failed CI stage. Do not duplicate tag moves, Release creation, CI, PR, or prior Release runs.
+`TVE-REL-009 identity repair delivery`: repair commit `d1dc00f` exists locally; create/push the state checkpoint with it after guards, open one PR to personal main, monitor its existing CI, merge only after PASS, guarded-publish `v1.1.1` without mutating `v1.1.0`, then run only the true updater E2E from retained installed `1.0.6`.
