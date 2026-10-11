@@ -91,7 +91,7 @@ const requiredWorkflowTokens = [
   "UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true",
   "vars.SUPABASE_LICENSE_BACKEND_APPROVED",
   "vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED",
-  "npm run dist --workspace synthcut-by-relo -- --publish never",
+  "npm run dist --workspace synthcut-by-relo",
   "Get-AuthenticodeSignature",
   "NotSigned",
   "UNSIGNED_WINDOWS_RELEASE_GATE=PASS",
@@ -131,8 +131,14 @@ const requiredCommercialConfigTokens = [
 for (const token of requiredCommercialConfigTokens) {
   if (!commercialConfig.includes(token)) fail(`commercial signing config is missing required token: ${token}`);
 }
-if (desktop.scripts?.["dist:commercial"] !== "electron-builder --win --config electron-builder.commercial.cjs") {
-  fail("desktop dist:commercial script must use electron-builder.commercial.cjs");
+if (workflow.includes("-- --publish never")) {
+  fail("release workflow must not forward --publish through npm; package scripts own the non-publishing gate");
+}
+if (desktop.scripts?.dist !== "electron-builder --win --publish never") {
+  fail("desktop dist script must disable electron-builder publishing explicitly");
+}
+if (desktop.scripts?.["dist:commercial"] !== "electron-builder --win --config electron-builder.commercial.cjs --publish never") {
+  fail("desktop dist:commercial script must use electron-builder.commercial.cjs and disable publishing explicitly");
 }
 const licenseClientTokens = [
   "https://ljygpbxkxmsuhdfpfgml.supabase.co/functions/v1/tve-license-authority",

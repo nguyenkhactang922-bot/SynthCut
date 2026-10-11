@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at tag-triggered unsigned package command; npm forwarding defect repaired locally; second hotfix PR/merge + guarded tag move pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at stale release-validator contract after package hotfix #5 merged; validator repaired locally; validator hotfix PR/merge + guarded tag move pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; REL-008 Release run `38128610356` reached PASS through provenance + commercial gates, then failed only unsigned packaging because npm forwarded `never` without `--publish`; narrow non-publishing package-command repair is local; publication remains blocked pending reviewed hotfix + guarded tag move
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; PR #5 merged to personal main `f79ef109`; Release run `38131284821` failed only initial release validation because validator required removed npm publish-forwarding syntax; validator now enforces the stronger embedded `--publish never` package-script contract and passes tag-mode simulation; publication remains blocked pending reviewed validator hotfix + guarded tag move
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / Release run 38128610356 failed only unsigned package command; package-argument repair locally PASS by static checks; second hotfix PR pending`
+`TVE-REL-008 — FAIL / Release run 38131284821 failed only stale validator contract; validator repair locally PASS; validator hotfix PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -361,5 +361,16 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`.
 - No full package/release rerun was performed locally; prior REL-001..007 and run-38128610356 PASS stages remain retained.
 
+## Latest TVE-REL-008 validator contract failure / repair
+- PR #5 MERGED to personal `main` at `f79ef1096ea0282f3dfe6617825ca147136b4dbc`; merge-tree parity PASS against CI-PASS head `bc45331a76f6a43f02fe05901fc5d127b40e1a94`.
+- Remote annotated tag `v1.1.0` was guarded-moved to peel to `f79ef109` only after GitHub auth PASS, Release absence, and no active Release run were verified.
+- Release run `38131284821` on exact SHA `f79ef109` completed FAILURE at `Validate release identity, versions and source state`; checkout/setup PASS and all later stages were skipped.
+- Exact failure: validator required removed token `npm run dist --workspace synthcut-by-relo -- --publish never`.
+- Root cause: stale validator contract after the package-argument hotfix, not a packaging regression.
+- Repair: validator now requires non-forwarding workflow calls, rejects any `-- --publish never`, and requires `dist`/`dist:commercial` scripts to embed `--publish never`.
+- Tag-mode local validator simulation PASS / exit 0 with marker `REL005_RELEASE_VALIDATION_PASS version=1.1.0 tag=v1.1.0 repo=nguyenkhactang922-bot/SynthCut cleanRequired=false`.
+- Evidence: `docs/evidence/release/TVE-REL-008-VALIDATOR-CONTRACT-REPAIR.md`.
+- No package/release pipeline was rerun locally; REL-001..007 remain PASS.
+
 ## NEXT_EXACT_ACTION
-Review/commit only the package-command repair + evidence/state, push only to personal, obtain hotfix PR CI PASS, merge to personal main, and verify merged-tree parity. Then re-check GitHub Release absence, current tag target, auth, and active Release runs. If no Release exists and no Release workflow is running, guarded-force-move existing `v1.1.0` to repaired reviewed personal main and monitor only the newly triggered Release workflow. Do not rerun REL-001..007 or any retained PASS stage; never publish upstream.
+Review/commit only the release-validator contract repair + evidence/state, push only to personal, obtain validator-hotfix PR CI PASS, merge to personal main, and verify merged-tree parity. Then re-check GitHub Release absence, current `v1.1.0` tag target, GitHub auth, and active Release runs. If clean, guarded-force-move existing `v1.1.0` to repaired reviewed personal main and monitor only the newly triggered Release workflow. Do not rerun REL-001..007 or previous failed Release runs; never publish upstream.

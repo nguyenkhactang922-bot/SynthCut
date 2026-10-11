@@ -212,13 +212,13 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: FAIL / PACKAGE ARGUMENT STAGE REPAIRED LOCALLY / SECOND HOTFIX PR PENDING
+Status: FAIL / VALIDATOR CONTRACT STAGE REPAIRED LOCALLY / VALIDATOR HOTFIX PR PENDING
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
-PR #2/#3/#4 are MERGED on the personal fork. Current personal main is `14912c71d3ff2f43a036de1a31909e3c2882f21c`; remote `v1.1.0` peels to that commit; GitHub Release `v1.1.0` is ABSENT.
-Release run `38128610356` retained PASS through release identity, dependencies, build, pinned FFmpeg, provenance staging, and commercial gates, then failed only `Package intentionally unsigned Windows NSIS + ZIP for current commercial lane`. GitHub log shows npm converted `--publish never` forwarding into `electron-builder --win never`, causing `Unknown target: never`.
-Narrow repair is local: `dist` and `dist:commercial` embed `--publish never`; workflow package steps call those scripts without forwarding publish arguments. Static validation PASS; evidence: `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`.
-Next gate: review/commit/push second hotfix, PR CI PASS, merge + tree parity, then guard Release absence/tag/auth/no-active-run and only then move existing `v1.1.0` to repaired personal main. Do not rerun REL-001..007 or retained PASS stages.
+PR #2..#5 are MERGED on the personal fork. Current personal main is `f79ef1096ea0282f3dfe6617825ca147136b4dbc`; remote `v1.1.0` peels to that commit; GitHub Release `v1.1.0` is ABSENT.
+Release run `38131284821` failed only `Validate release identity, versions and source state`. Exact failure: validator still required removed workflow token `npm run dist --workspace synthcut-by-relo -- --publish never`; all later stages were skipped.
+Narrow validator repair is local: workflow validation now requires non-forwarding package calls, rejects `-- --publish never`, and requires desktop `dist`/`dist:commercial` scripts to embed `--publish never`. Tag-mode validator simulation PASS. Evidence: `docs/evidence/release/TVE-REL-008-VALIDATOR-CONTRACT-REPAIR.md`.
+Next gate: review/commit/push validator hotfix, PR CI PASS, merge + tree parity, then guard Release absence/tag/auth/no-active-run and only then move existing `v1.1.0` to repaired personal main. Do not rerun REL-001..007 or previous failed Release workflows.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -230,4 +230,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: review/commit/push only the package-command hotfix + evidence/state, open the second hotfix PR and monitor automatic CI, merge if PASS, then repeat the personal-fork release/tag/auth/no-active-run guard. If Release remains absent, guarded-force-move `v1.1.0` to repaired reviewed personal main and monitor only the new Release workflow. Do not rerun REL-001..007 or retained PASS release stages.
+`TVE-REL-008`: review/commit/push only the validator-contract hotfix + evidence/state, open validator hotfix PR and monitor automatic CI, merge if PASS, then repeat personal-fork Release/tag/auth/no-active-run guard. If Release remains absent, guarded-force-move `v1.1.0` to repaired reviewed personal main and monitor only the new Release workflow. Do not rerun REL-001..007 or previous failed Release runs.
