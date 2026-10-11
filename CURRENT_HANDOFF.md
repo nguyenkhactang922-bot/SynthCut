@@ -3,45 +3,39 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `FAIL / UPDATER IDENTITY PREFLIGHT — BOUNDED LOOPBACK TO REL-002 + REL-005 RELEASE-FORWARD`
-- CURRENT_STAGE: `REL-008 is PASS and publicly verified. REL-009 preflight found a real updater identity collision before any updater side effect: both the fork build and upstream derive updaterCacheDirName=synthcut-by-relo-updater from package name synthcut-by-relo. Repair only updater identity + live workspace/release metadata, release-forward as 1.1.1, then resume the updater E2E.`
+- STATUS: `PASS / UPDATER IDENTITY REPAIR VERIFIED LOCALLY — COMMIT/PR PENDING`
+- CURRENT_STAGE: `REL-008 remains PASS/published. The REL-009 identity preflight failure has been repaired locally: desktop private package identity is tang-ai-video-editor, release-forward line is 1.1.1, generated app-update.yml targets nguyenkhactang922-bot/SynthCut and uses tang-ai-video-editor-updater. Existing full 1.1.1 package artifacts were recovered and verified; no package rerun was needed.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: resolve from current Git HEAD; latest durable state commit before this checkpoint `5b0db9f5b4dfa04187723f13b48b1e19b687555f`; reviewed/published personal main `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`
+- HEAD: `34dd22f3238f45367e7cbb1584a25046cebeaf5f` before committing current repair WIP
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `TVE-REL-008=PASS` — Release run `38137052906` SUCCESS, GitHub Release `v1.1.0` published on personal fork, public EXE/ZIP hashes independently verified. Evidence: `docs/evidence/release/TVE-REL-008.md`.
-- PROCESS_PID: `NONE` for active SynthCut release/updater work
+- LAST_VERIFIED_CHECKPOINT: `REL-009 updater identity repair LOCAL PASS` — evidence `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+- PROCESS_PID: `NONE` for SynthCut
 - PROCESS_COMMAND: `NONE`
-- PTY_SESSION: `NONE` — public artifact hash PTY `pty_6f83b95dbab96a0926b64970654a12575571` exited `0`; do not restart it
-- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`; prior successful release run: `https://github.com/nguyenkhactang922-bot/SynthCut/actions/runs/38137052906`
-- LAST_EXIT_CODE: `REL-008 release run=SUCCESS`; public download hash verification=`0/PASS`; REL-009 identity preflight=`FAIL` before updater process start
+- PTY_SESSION: `NONE` for SynthCut; visible FileMCP PTYs belong to other projects and must not be touched
+- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+- LAST_EXIT_CODE: `release validator=0; root typecheck=0; root build=0; artifact/hash/signature verification=PASS`
 - ARTIFACTS:
-  - GitHub Release `https://github.com/nguyenkhactang922-bot/SynthCut/releases/tag/v1.1.0` — PUBLISHED / VERIFIED
-  - release source/tag peel/personal main: `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`
-  - public EXE: `397652429` bytes, SHA-256 `6c7c0691505413c3c793d231e570f3ab8cd96a2691eeadcf2ae25b4088c04da5`
-  - public ZIP: `505859296` bytes, SHA-256 `ace00154ce63479a93d3838c382e57ad449373888afdaf0d0e9200a5d25891fa`
-  - `.tmp/rel008-public-download/` — project-local public-download verification copies
-  - `docs/evidence/release/TVE-REL-008.md`
-  - retained older installed fork build: `.tmp/rel006-installed4` / version `1.0.6`
-  - `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
+  - immutable published `v1.1.0` / REL-008 evidence: `docs/evidence/release/TVE-REL-008.md`
+  - preflight failure evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
+  - repair evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+  - `apps/desktop/build/rel009-identity-smoke/`
+  - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.exe` — 397652177 bytes — SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`
+  - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.zip` — 505858966 bytes — SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`
+  - generated `app-update.yml`: personal fork feed + `tang-ai-video-editor-updater`
 - BLOCKERS:
-  - REL-009 exit gate forbids updater identity collision. Current/old fork build uses `updaterCacheDirName: synthcut-by-relo-updater`; upstream uses the same package name `synthcut-by-relo`, and electron-builder derives the cache namespace from that name.
-  - Published `v1.1.0` must not be overwritten or silently replaced. Corrective updater-identity release must move forward to a higher version (`1.1.1`).
-- NEXT_EXACT_ACTION: execute the bounded updater-identity repair only: change the private desktop workspace identity from `synthcut-by-relo` to unique fork-owned `tang-ai-video-editor`; update live root workspace selectors, release workflow/validator/current release docs and lockfile consistently; bump the release line to `1.1.1`; verify generated `app-update.yml` points only to `nguyenkhactang922-bot/SynthCut` and uses `tang-ai-video-editor-updater`; run narrow tests then CI/PR/review/merge; guarded-publish `v1.1.1`; resume only REL-009 updater E2E from installed `1.0.6`. Do not alter published `v1.1.0`.
+  - no local technical blocker for committing/reviewing the identity repair;
+  - REL-009 runtime updater E2E remains pending until repaired source is committed, CI/reviewed/merged and release-forward `v1.1.1` is published under normal side-effect guards.
+- NEXT_EXACT_ACTION: review/stage exactly the updater-identity repair + evidence/state; commit; verify personal remote/PR state before push; push only personal feature branch; create one PR to personal main; monitor existing CI without duplicate reruns; merge only after CI/review PASS; guarded-publish new tag/release `v1.1.1` without altering `v1.1.0`; then resume only the true REL-009 updater transition from retained installed `1.0.6`, including feed/download/hash/NotSigned/install/relaunch/project-state/license verification.
 - DO_NOT_REPEAT:
-  - TVE-REL-001..008 substantive work and REL-008 Release publication;
-  - Release run `38137052906` and public artifact downloads/hashes;
-  - PR #2..#8 completed CI/merge work;
-  - prior failed Release runs and their repaired stages;
-  - REL-006 installed-build acceptance or rebuild of old `1.0.6`;
-  - REL-007 Remotion/Supabase/unsigned authorization;
-  - unrelated `.spike-temp/`, historical `.tmp/` evidence, build dirs, datasets, or other-project processes.
-
-## Lifecycle law
-All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20.
+  - REL-001..008 substantive work or published `v1.1.0`;
+  - REL-006 rebuild of old `1.0.6`;
+  - REL-009 preflight discovery;
+  - current `1.1.1` package build already evidenced by `rel009-identity-dist`;
+  - unrelated project PTYs/artifacts.
 
 ## Hard gates
-- `TVE-REL-001..008=PASS` retained; `v1.1.0` is a real published historical release and must not be mutated in place.
-- Upstream `origin=https://github.com/Relo-video/SynthCut.git` remains read-only/non-publication target; personal release target is `nguyenkhactang922-bot/SynthCut` only.
-- Current unsigned/SmartScreen acceptance, Remotion basis and Supabase entitlement gates remain PASS.
-- `TVE-REL-009=FAIL` at updater identity preflight; no updater download/install/relaunch side effect was started after the collision was found.
-- `TVE-REL-010` remains blocked by REL-009.
+- `TVE-REL-001..008=PASS` retained.
+- `v1.1.0` is immutable published historical evidence.
+- Current repair is only LOCAL PASS until commit/CI/review/merge.
+- Upstream `Relo-video/SynthCut` remains read-only/non-publication target.
+- `TVE-REL-010` remains blocked by full REL-009 E2E.

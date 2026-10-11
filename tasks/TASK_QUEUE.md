@@ -219,11 +219,11 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: FAIL / UPDATER IDENTITY PREFLIGHT / BOUNDED LOOPBACK TO REL-002 + REL-005
+Status: IDENTITY REPAIR LOCAL PASS / COMMIT + PR PENDING / E2E NOT YET RUN
 Dependencies: REL-008 PASS
-Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
-Preflight result: installed fork `1.0.6` correctly points updater feed to `nguyenkhactang922-bot/SynthCut`, but both fork and upstream use package name `synthcut-by-relo`, producing the same `updaterCacheDirName: synthcut-by-relo-updater`. REL-009 exit gate explicitly forbids identity collision. No updater download/install/relaunch side effect was started after this finding.
-Repair lane: change private desktop package identity to unique fork-owned `tang-ai-video-editor`; update live workspace selectors/workflow/validator/current release docs + lockfile; release-forward as `1.1.1`; verify generated `app-update.yml` has fork feed + `tang-ai-video-editor-updater`; CI/review/merge/publish under normal guards; then rerun only REL-009 updater transition from retained installed `1.0.6`.
+Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+Repair result: desktop package identity `tang-ai-video-editor`; release-forward version `1.1.1`; root/workflow selectors use `--workspace apps/desktop`; package-lock desktop link and validator contracts are synchronized. Existing full `rel009-identity-dist` artifacts verify generated feed `nguyenkhactang922-bot/SynthCut`, cache `tang-ai-video-editor-updater`, matching hashes, and intentional `NotSigned`. Tag-mode validator, root typecheck/build and diff-check PASS. Do not rerun package before commit/CI.
+Next: commit/review/push/PR/CI/merge this bounded repair; guarded-publish `v1.1.1`; then resume only the installed updater transition from retained `1.0.6`.
 
 ## TVE-REL-010 — Monitor / incident handoff
 Status: BLOCKED BY REL-009
@@ -232,4 +232,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 identity repair`: preserve REL-008/v1.1.0 as PASS/historical shipped evidence; repair only updater cache identity and required live workspace/release metadata, bump forward to `1.1.1`, verify/CI/PR/merge/publish under side-effect guards, then resume the true updater E2E. Do not rerun REL-001..008 from scratch and do not mutate published `v1.1.0`.
+`TVE-REL-009 identity repair delivery`: commit the locally verified repair + evidence/state; guard personal remote/PR before push; open one PR to personal main; monitor its existing CI; merge only after PASS; guarded-publish `v1.1.1` without mutating `v1.1.0`; then run only the true updater E2E from retained installed `1.0.6`.

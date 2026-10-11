@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; TVE-REL-009 FAIL at updater identity preflight with bounded loopback to REL-002/REL-005 release-forward repair`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; TVE-REL-009 updater identity repair LOCAL PASS / commit+PR pending; full updater E2E still pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` is published and cryptographically verified on personal `main@ce31bfdd`; REL-009 FAILed only at updater identity preflight because fork/upstream share updater cache namespace `synthcut-by-relo-updater`; bounded REL-002/REL-005 release-forward repair is ACTIVE
+- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` remains immutable published evidence; REL-009 updater identity repair is LOCAL PASS on release-forward `1.1.1`, with commit/PR/CI/review/merge and the true installed updater E2E still pending
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - FAIL / updater identity preflight found colliding cache namespace; bounded REL-002 + REL-005 release-forward repair ACTIVE`
+`TVE-REL-009 - updater identity repair LOCAL PASS / commit+PR pending; full installed updater E2E remains pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -411,8 +411,9 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Current desktop package name remains `synthcut-by-relo`; current generated app-update.yml therefore uses the same cache namespace.
 - Upstream `origin/main:apps/desktop/package.json` also uses package name `synthcut-by-relo`.
 - Installed electron-builder code derives updater cache identity as `sanitizedName.toLowerCase() + "-updater"` and NSIS uses it for update installer/package storage.
-- REL-009 exit gate explicitly forbids identity collision; therefore REL-009 FAILed at preflight before any updater download/install/relaunch side effect. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`.
-- Bounded loopback: repair only updater identity + dependent live workspace/release metadata, release-forward as `1.1.1`, then resume REL-009 updater E2E from retained installed `1.0.6`. Published `v1.1.0` remains immutable historical PASS evidence.
+- Bounded updater-identity repair completed locally: desktop private package `tang-ai-video-editor`, release-forward version `1.1.1`, live workspace selectors switched to `--workspace apps/desktop`, lockfile identity/version synchronized, validator hardened against stale upstream desktop identity.
+- Recovered existing full package evidence instead of rebuilding: `rel009-identity-dist` contains 1.1.1 EXE/ZIP/blockmap/latest.yml/SHA256SUMS; generated `app-update.yml` targets `nguyenkhactang922-bot/SynthCut` with `updaterCacheDirName: tang-ai-video-editor-updater`.
+- Verification PASS: EXE SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`; ZIP SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`; both match SHA256SUMS; installer/app `NotSigned`; tag-mode validator v1.1.1 PASS; root typecheck PASS; root build PASS; `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`.
 
 ## NEXT_EXACT_ACTION
-Execute the bounded REL-009 identity repair: rename the private desktop workspace package to `tang-ai-video-editor`; synchronize live root workspace selectors, release workflow/validator/current release docs and lockfile; bump the release line to `1.1.1`; verify generated `app-update.yml` uses personal fork feed + unique `tang-ai-video-editor-updater`; run narrow tests, CI/PR/review/merge, then guarded-publish `v1.1.1` and resume only the updater E2E. Do not rerun REL-001..008 from scratch and do not mutate published `v1.1.0`.
+Review/stage exactly the updater identity repair + evidence/state, commit it, then use side-effect guards before personal-fork push/PR. After CI/review/merge PASS, release-forward only as `v1.1.1` under normal guards, then resume REL-009 updater E2E from retained installed `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.
