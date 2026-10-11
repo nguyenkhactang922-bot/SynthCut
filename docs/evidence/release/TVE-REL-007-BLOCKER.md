@@ -1,6 +1,6 @@
 # TVE-REL-007 — External Commercial Authorization Blocker Evidence
 
-Status: **INTERRUPTED / BLOCKED_EXTERNAL**
+Status: **PARTIAL PASS / BLOCKED_EXTERNAL — REMOTION PASS / WINDOWS SIGNING PENDING**
 Date: 2026-10-10
 Branch: `chatgpt/phase7-commercial-release`
 Observed Git HEAD at verification: `513bafcb5a6711bb1fcbd9fd911d7332808bbdf4`
@@ -99,3 +99,15 @@ Verification:
 External gate status is unchanged:
 - `REMOTION_LICENSE_GATE` still requires an explicit owner eligibility/license basis; commercial intent alone does not establish operator/team headcount.
 - `WINDOWS_SIGNING_GATE` still requires a real trusted certificate/service and non-secret signature evidence. The workflow is ready to consume credentials, but none is available yet.
+
+## 2026-10-11 Remotion sub-gate resolution
+The product owner explicitly declared: `Tôi xác nhận operator của Tang AI Video Editor có tối đa 3 người và dùng Remotion theo Free License hiện hành.`
+
+Current official Remotion pricing/FAQ were rechecked on 2026-10-11 and remain consistent with this declaration: individuals and organizations/teams of up to 3 people are eligible for the Free License, including commercial use and automation.
+
+Result:
+- `REMOTION_LICENSE_GATE=PASS`
+- Basis: `FREE_LICENSE_ELIGIBLE`
+- Durable evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md`
+
+REL-007 remains incomplete only because `WINDOWS_SIGNING_GATE` is still `BLOCKED_EXTERNAL`. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until a real trusted signing identity/service is configured and the signed candidate verifies with valid Authenticode status.

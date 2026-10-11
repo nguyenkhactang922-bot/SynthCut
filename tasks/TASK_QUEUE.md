@@ -199,13 +199,13 @@ Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, 
 Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
 
 ## TVE-REL-007 — External commercial authorization gates
-Status: INTERRUPTED / BLOCKED_EXTERNAL / ACTIVE ENTRY GATE
+Status: PARTIAL PASS / BLOCKED_EXTERNAL — REMOTION PASS / WINDOWS SIGNING PENDING
 Dependencies: REL-006 PASS
-Evidence: `docs/evidence/release/TVE-REL-007-BLOCKER.md`
+Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`
 Required before public commercial-ready release:
 - explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
 - trusted Windows signing identity/service and signature verification.
-Current evidence: official Remotion terms checked 2026-10-10 allow commercial/automation Free License use for individuals or teams up to 3, but ADR-002 forbids inferring operator/team size and no explicit owner eligibility declaration/license basis is recorded. Repository signing integration is PREPARED/PASS: GitHub Actions now injects `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` secrets into electron-builder, fails fast for commercial tag publication when either is missing, and preserves mandatory post-build Authenticode verification; canonical release validator PASS / exit 0. No trusted certificate/service credential is actually configured yet and accepted installer remains `NotSigned`. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+Current evidence: `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE` based on the owner declaration dated 2026-10-11 that the operator has at most 3 people and uses the current Remotion Free License; official current Remotion terms were rechecked and permit commercial/automation use for this eligibility class. Repository signing integration is PREPARED/PASS: GitHub Actions injects `WIN_CSC_LINK` + `WIN_CSC_KEY_PASSWORD` secrets into electron-builder, fails fast for commercial tag publication when either is missing, and preserves mandatory post-build Authenticode verification; canonical release validator PASS / exit 0. No trusted certificate/service credential is actually configured yet and accepted installer remains `NotSigned`. `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until `WINDOWS_SIGNING_GATE=PASS`.
 
 ## TVE-REL-008 — GitHub Release publication
 Status: BLOCKED BY REL-007
@@ -221,4 +221,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-007` is the next task but is BLOCKED_EXTERNAL. Resolve only the two external gates: (1) record an explicit valid Remotion commercial/redistribution basis or approved Remotion-free distribution profile; (2) configure and verify a trusted Windows signing identity/service without persisting private credentials. Then create/verify a signed candidate. Do not repeat REL-006 or earlier IMP/E2E gates and do not publish before both REL-007 gates PASS.
+`TVE-REL-007` remains the next task but only the Windows signing sub-gate is BLOCKED_EXTERNAL. `REMOTION_LICENSE_GATE=PASS` is complete and must not be repeated. Configure and verify a trusted Windows signing identity/service without persisting private credentials, then create/verify the signed candidate. Do not repeat REL-006 or earlier IMP/E2E gates and do not publish before `WINDOWS_SIGNING_GATE=PASS`.

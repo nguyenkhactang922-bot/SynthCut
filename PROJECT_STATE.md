@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 INTERRUPTED / BLOCKED_EXTERNAL at entry gate on Remotion eligibility/license basis + trusted Windows signing`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-006 PASS; TVE-REL-007 PARTIAL PASS — REMOTION_LICENSE_GATE=PASS / WINDOWS_SIGNING_GATE BLOCKED_EXTERNAL`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 PASS with evidence `docs/evidence/release/TVE-REL-006.md`; REL-007 BLOCKED_EXTERNAL; publication remains prohibited
+- RELEASE & OPERATE: ACTIVE — REL-001/002 PASS; REL-003 COMMITTED `e051b8d`; REL-004 COMMITTED `20c8ff9`; REL-005 COMMITTED `227535b`; REL-006 PASS with evidence `docs/evidence/release/TVE-REL-006.md`; REL-007 Remotion sub-gate PASS / Windows signing BLOCKED_EXTERNAL; publication remains prohibited
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-007 — INTERRUPTED / BLOCKED_EXTERNAL at entry gate: owner Remotion eligibility/license basis + trusted Windows signing required`
+`TVE-REL-007 — PARTIAL PASS: REMOTION_LICENSE_GATE=PASS; WINDOWS_SIGNING_GATE BLOCKED_EXTERNAL`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -103,7 +103,7 @@ Release baseline summary:
 - REL-004 packaging/release-tool security hardening is PASS/COMMITTED `20c8ff9` with `docs/evidence/release/TVE-REL-004.md`;
 - REL-005 release workflow/version hardening is PASS/COMMITTED `227535b` with `docs/evidence/release/TVE-REL-005.md`;
 - REL-006 local packaged acceptance is PASS with `docs/evidence/release/TVE-REL-006.md`; accepted candidate manifest source commit is `225a987`, installer/ZIP integrity PASS, packaged MCP/core/resource resolution PASS, save/open PASS, representative H.264+AAC export PASS, installer exit 0 and installed launch PASS;
-- public commercial-ready publication is still fail-closed on Remotion license basis + trusted Windows signing at REL-007.
+- `REMOTION_LICENSE_GATE=PASS` with evidence `docs/evidence/release/TVE-REL-007-REMOTION.md`; public commercial-ready publication is now fail-closed only on trusted Windows signing at REL-007.
 
 ## Hard gate
 `RELEASE_IMPLEMENTATION_ALLOWED=true` for dependency-ready REL-002..006 tasks.
@@ -307,15 +307,15 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - No tag/push/GitHub Release/npm publish/deploy occurred.
 
 ## Latest TVE-REL-007 blocker verification
-- Status: `INTERRUPTED / BLOCKED_EXTERNAL` at entry gate; no REL-007 process is running or has completed PASS/FAIL.
-- Evidence: `docs/evidence/release/TVE-REL-007-BLOCKER.md`.
-- Official Remotion terms checked 2026-10-10: individuals and teams/organizations up to 3 are Free-License eligible for commercial/automation use; 4+ require the applicable Company License.
-- ADR-002 D-002-5 forbids inferring operator/team size or eligibility; no durable owner eligibility declaration or paid Remotion license basis is recorded.
+- Status: `PARTIAL PASS / BLOCKED_EXTERNAL` — Remotion sub-gate PASS; Windows signing sub-gate pending.
+- Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`.
+- Official Remotion terms rechecked 2026-10-11: individuals and teams/organizations up to 3 are Free-License eligible for commercial/automation use; 4+ require the applicable Company License.
+- Product owner explicitly declared on 2026-10-11 that the Tang AI Video Editor operator has at most 3 people and uses the current Remotion Free License; this satisfies ADR-002 D-002-5 without inference.
 - Repository signing integration is now PREPARED/PASS: `.github/workflows/release.yml` injects `secrets.WIN_CSC_LINK` + `secrets.WIN_CSC_KEY_PASSWORD` into electron-builder for Windows packaging, commercial tag runs fail fast when either secret is absent, and post-build Authenticode verification remains mandatory. Canonical release validator PASS / exit 0 after this change.
 - Accepted installer remains `NotSigned`; no real trusted signing certificate/service credential is configured yet.
-- Remotion commercial intent is confirmed, but ADR-002 forbids inferring operator/team eligibility from that intent; no explicit eligibility/headcount declaration or paid basis is recorded.
-- Therefore `REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_GATE=PASS` are both still absent; `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+- `REMOTION_LICENSE_GATE=PASS` / basis `FREE_LICENSE_ELIGIBLE`; durable evidence is `docs/evidence/release/TVE-REL-007-REMOTION.md`.
+- `WINDOWS_SIGNING_GATE=PASS` is still absent, so `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
 - No REL-006 stage was rerun and no tag/push/release/publish/deploy side effect occurred.
 
 ## NEXT_EXACT_ACTION
-Resolve TVE-REL-007 external gates: record an explicit valid Remotion commercial/redistribution basis (or approved Remotion-free package profile) and configure/verify a trusted Windows signing identity/service without persisting private credentials. Then create and verify a signed candidate. Do not publish before both gates PASS.
+Continue only the remaining TVE-REL-007 Windows signing sub-gate: configure/verify a trusted Windows signing identity/service without persisting private credentials, then create and verify the signed candidate with valid Authenticode status. Do not repeat REL-006 or the Remotion sub-gate, and do not publish before `WINDOWS_SIGNING_GATE=PASS`.
