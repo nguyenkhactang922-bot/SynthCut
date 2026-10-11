@@ -138,3 +138,17 @@ GitHub repository variables were configured and read back:
 The remaining blocker is genuinely external. No SSL.com IV certificate/eSigner account has been purchased/issued, so the repository does not have `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`, or an issued `WINDOWS_SIGN_PUBLISHER_NAME`. No real signed candidate can be produced yet and `WINDOWS_SIGNING_GATE=PASS` is **not** claimed.
 
 Exact resume action: product owner completes SSL.com IV + eSigner purchase and individual identity validation; after issuance configure those three GitHub Secrets plus the non-secret publisher-name variable, set `WINDOWS_SIGNING_APPROVED=true`, and execute only the REL-007 signed-candidate path. Do not repeat REL-006, Remotion, provider selection, or provider integration. No tag/GitHub Release publication occurred in this preparation step.
+
+
+## 2026-10-11 paid-signing decline / Supabase licensing strategy change
+The product owner explicitly declined purchasing a paid Windows code-signing certificate/service at this time and requested a Supabase-backed commercial license-key system instead.
+
+Completed alternate commercial-control work:
+- `SUPABASE_LICENSE_BACKEND=PASS` with evidence `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`;
+- isolated `tve_license_*` schema objects created without modifying the pre-existing license systems in the Supabase project;
+- transactional device-limit authority and Edge Function validation path verified;
+- founder/admin commercial key created, stored only as SHA-256 hash in Supabase, with prefix `TAIVE-F3E3Y`, maxDevices=3, no expiry and activeDevices=0 after test cleanup.
+
+Important boundary: Supabase licensing controls entitlement but does not replace Windows Authenticode or SmartScreen reputation. The previously prepared SSL.com/eSigner integration is retained only as an optional future signing path; purchase/issuance is no longer the active next action.
+
+Under the currently accepted ADR-002, trusted signing is still mandatory for `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=true`. Therefore the signing gate is not falsely marked PASS. The next lifecycle action is a bounded DEFINE/ADR/PLAN amendment if the product owner chooses to distribute commercially unsigned and accepts `Unknown publisher` / SmartScreen warnings, followed by desktop integration with `tve-license-authority`.

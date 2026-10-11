@@ -198,15 +198,17 @@ Evidence: `docs/evidence/release/TVE-REL-006.md`
 Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, tracked dirty=false.
 Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
 
-## TVE-REL-007 — External commercial authorization gates
-Status: PARTIAL PASS / BLOCKED_EXTERNAL — REMOTION PASS / SSL.COM ESIGNER INTEGRATION PASS / EXTERNAL CERTIFICATE ISSUANCE PENDING
+## TVE-REL-007 — Commercial authorization / license strategy
+Status: STRATEGY LOOPBACK — REMOTION PASS / SUPABASE LICENSE BACKEND PASS / PAID SIGNING DECLINED / UNSIGNED ACCEPTANCE AMENDMENT PENDING
 Dependencies: REL-006 PASS
-Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md` + `docs/evidence/release/TVE-REL-007-BLOCKER.md`
-Required before public commercial-ready release:
-- explicit valid Remotion commercial/redistribution basis, or verified Remotion-free package profile;
-- trusted Windows signing identity/service and signature verification.
-Current evidence: `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE`. Signing provider path is now frozen to SSL.com IV Code Signing + eSigner Cloud Signing and `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS`: release-tag workflow is fail-closed, eSigner CKA `v1.1.2` is SHA-256 pinned, the commercial electron-builder config forces SHA-256 code signing with RFC3161 timestamping, and final verification requires installer + packaged app Authenticode `Valid`, expected publisher, and timestamp. Static/negative/YAML/pinned-installer verification PASS. GitHub variables are set to `REMOTION_COMMERCIAL_BASIS_APPROVED=true`, `WINDOWS_SIGNING_PROVIDER=sslcom-esigner`, `WINDOWS_SIGNING_APPROVED=false`. A real SSL.com IV/eSigner certificate/account has not yet been purchased/issued, so no real signed candidate exists and `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until `WINDOWS_SIGNING_GATE=PASS`.
-
+Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md` + retained `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`
+Current evidence:
+- `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE`.
+- `SUPABASE_LICENSE_BACKEND=PASS`: isolated `tve_license_*` tables, transactional RPC, deployed `tve-license-authority` Edge Function, real HTTPS validation PASS.
+- founder/admin commercial key prefix `TAIVE-F3E3Y`: maxDevices=3, no expiry, activeDevices=0; plaintext key is not stored in Git.
+- product owner explicitly declined purchasing paid Windows signing on 2026-10-11.
+- SSL.com/eSigner integration remains retained as an optional future path only.
+- Supabase licensing does not replace Authenticode; under the current ADR `WINDOWS_SIGNING_GATE=PASS` is absent and `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until an unsigned-commercial acceptance amendment is approved or trusted signing is later supplied.
 ## TVE-REL-008 — GitHub Release publication
 Status: BLOCKED BY REL-007
 Target: `nguyenkhactang922-bot/SynthCut` only.
@@ -221,4 +223,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-007` remains the next task and only external SSL.com certificate/eSigner issuance is BLOCKED_EXTERNAL. `REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS` are complete and must not be repeated. Product owner completes SSL.com IV + eSigner purchase/individual identity validation; after issuance configure `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`, set `WINDOWS_SIGN_PUBLISHER_NAME`, then set `WINDOWS_SIGNING_APPROVED=true` and execute only the signed-candidate path. Do not repeat REL-006, provider selection/integration, or earlier IMP/E2E gates; do not publish before `WINDOWS_SIGNING_GATE=PASS`.
+Bounded DEFINE/ADR/PLAN loopback for unsigned commercial distribution is next: explicitly record acceptance of `Unknown publisher` / SmartScreen risk, then integrate the desktop app with `tve-license-authority` and verify activation/startup/device-limit behavior. Do not repeat REL-006, Remotion, Supabase backend provisioning, or signing-provider integration.

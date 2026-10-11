@@ -3,37 +3,34 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-007 — External commercial authorization gates`
-- STATUS: `INTERRUPTED / REL-007 PARTIAL PASS — REMOTION PASS / WINDOWS_SIGNING BLOCKED_EXTERNAL`
-- CURRENT_STAGE: `REL-007 — REMOTION_LICENSE_GATE=PASS; SSL.com IV + eSigner provider/repository integration PREPARED/PASS; waiting only on external certificate purchase + identity validation + eSigner credential issuance`
+- STATUS: `INTERRUPTED / REL-007 STRATEGY CHANGE — REMOTION PASS / SUPABASE LICENSE BACKEND PASS / PAID SIGNING DECLINED`
+- CURRENT_STAGE: `REL-007 — owner declined paid Windows signing on 2026-10-11; Supabase commercial license backend + founder key are provisioned/PASS; current ADR still requires trusted signing, so an unsigned-commercial release amendment is required before publication`
 - BRANCH: `chatgpt/phase7-commercial-release`
 - HEAD: resolve from current Git HEAD (Git is authoritative); REL-006 acceptance/state commit: `f297abb`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1` (`personal/main` MAIN VERIFIED before Phase-7 changes)
-- LAST_VERIFIED_CHECKPOINT: `TVE-REL-007 WINDOWS SIGNING PROVIDER INTEGRATION PREPARED/PASS` — selected SSL.com IV Code Signing + eSigner; release validator PASS; commercial signing config positive/fail-closed tests PASS; workflow YAML parse PASS; pinned eSigner CKA v1.1.2 hash + installer Authenticode PASS; GitHub repo variables synchronized. Evidence: `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`. `REMOTION_LICENSE_GATE=PASS` remains retained; REL-006 must not be rerun.
-- PROCESS_PID: `NONE` for SynthCut REL-007 signed candidate
+- LAST_VERIFIED_CHECKPOINT: `TVE SUPABASE COMMERCIAL LICENSE BACKEND PASS` — isolated `tve_license_*` tables created with RLS/direct public grants removed; transactional activation RPC PASS; Edge Function `tve-license-authority` deployed and real HTTPS validation PASS; 3-device limit PASS; test activations cleaned; founder/admin commercial key created with prefix `TAIVE-F3E3Y`, maxDevices=3, no expiry, activeDevices=0. Evidence: `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`. Plaintext key is not stored in Git.
+- PROCESS_PID: `NONE` for SynthCut release/licensing task
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE` for active SynthCut task. Any visible unrelated PTY belongs to another project and must not be touched.
-- LATEST_LOG: `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`
-- LAST_EXIT_CODE: `N/A — no real signed-candidate process started`; repository/provider preparation checks PASS / exit 0.
+- LATEST_LOG: `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`
+- LAST_EXIT_CODE: `PASS` for Supabase database/Edge Function verification; no release publication process started.
 - ARTIFACTS:
-  - `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`
+  - `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`
+  - Supabase Edge Function `tve-license-authority` (project `ljygpbxkxmsuhdfpfgml`)
+  - `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md` (retained optional future signing path)
   - `docs/release/WINDOWS_SIGNING_SSL_COM.md`
   - `apps/desktop/electron-builder.commercial.cjs`
   - `.github/workflows/release.yml`
   - `docs/evidence/release/TVE-REL-007-REMOTION.md`
   - `docs/evidence/release/TVE-REL-007-BLOCKER.md`
   - `docs/evidence/release/TVE-REL-006.md`
-  - `apps/desktop/build/rel006-rerun3-dist/Tang-AI-Video-Editor-1.0.6.exe`
-  - `apps/desktop/build/rel006-rerun3-dist/Tang-AI-Video-Editor-1.0.6.zip`
-  - `apps/desktop/build/rel006-rerun3-dist/Tang-AI-Video-Editor-1.0.6.exe.blockmap`
-  - `apps/desktop/build/rel006-rerun3-dist/latest.yml`
-  - `apps/desktop/build/rel006-rerun3-dist/SHA256SUMS.txt`
 - BLOCKERS:
   - `REMOTION_LICENSE_GATE=PASS`: owner explicitly declared on 2026-10-11 that the Tang AI Video Editor operator has at most 3 people and uses the current Remotion Free License. Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md`.
-  - `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS`: selected SSL.com IV + eSigner; workflow is fail-closed, eSigner CKA is version/hash pinned, commercial electron-builder config forces signing, and final Authenticode/publisher/timestamp verification is mandatory. Evidence: `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`.
-  - `WINDOWS_SIGNING_GATE=BLOCKED_EXTERNAL`: no SSL.com IV certificate/eSigner account credential has been purchased/issued yet; therefore `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET` and issued `WINDOWS_SIGN_PUBLISHER_NAME` do not exist yet. Accepted REL-006 installer remains `NotSigned`.
-  - GitHub repo variables are already set: `REMOTION_COMMERCIAL_BASIS_APPROVED=true`, `WINDOWS_SIGNING_PROVIDER=sslcom-esigner`, `WINDOWS_SIGNING_APPROVED=false`.
-  - Therefore `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until a real signed candidate verifies and `WINDOWS_SIGNING_GATE=PASS`.
-- NEXT_EXACT_ACTION: Product owner completes SSL.com IV Code Signing + eSigner purchase and individual identity validation. After issuance, configure GitHub Actions secrets `ESIGNER_USERNAME`, `ESIGNER_PASSWORD`, `ESIGNER_TOTP_SECRET`; set non-secret variable `WINDOWS_SIGN_PUBLISHER_NAME` to the issued certificate simple/common name; then set `WINDOWS_SIGNING_APPROVED=true` and run only the REL-007 signed-candidate tag/build path. Verify installer + packaged app Authenticode `Valid`, expected publisher and RFC3161 timestamp before REL-007 PASS. Do not repeat REL-006, Remotion, provider research, or provider integration.
+  - `SUPABASE_LICENSE_BACKEND=PASS`: commercial key authority exists and founder/admin key is active with 3-device limit; plaintext key is not stored in repo. Evidence: `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`.
+  - `PAID_WINDOWS_SIGNING_DECLINED_BY_OWNER=true` as of 2026-10-11. SSL.com/eSigner integration remains retained as an optional future path, not the active next action.
+  - `WINDOWS_SIGNING_GATE` is still not PASS under current ADR; Supabase licensing does not replace Authenticode. Accepted REL-006 installer remains `NotSigned`.
+  - Therefore `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` under the current frozen ADR until the release acceptance criteria are amended for an unsigned commercial path or trusted signing is later supplied.
+- NEXT_EXACT_ACTION: perform a bounded DEFINE/ADR/PLAN amendment for an unsigned commercial distribution path (explicitly accepting `Unknown publisher` / SmartScreen risk), then integrate the desktop app with `tve-license-authority` and verify activation/startup/device-limit behavior. Do not repeat REL-006, Remotion, Supabase backend provisioning, provider research, or eSigner integration.
 - DO_NOT_REPEAT:
   - DISCOVER / original DEFINE / original RESEARCH;
   - completed DESIGN spikes and `TVE-FRZ-001`;
@@ -53,7 +50,8 @@ All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20 ten-
 - Prior product/runtime baseline remains `MAIN_VERIFIED=true` at `personal/main@af92f20`.
 - `TVE-REL-006=PASS`.
 - `REMOTION_LICENSE_GATE=PASS`.
-- `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS`.
-- `WINDOWS_SIGNING_GATE=BLOCKED_EXTERNAL`.
-- `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until REL-007 PASS.
-- REL-008 GitHub Release publication remains blocked by REL-007.
+- `SUPABASE_LICENSE_BACKEND=PASS`.
+- `PAID_WINDOWS_SIGNING_DECLINED_BY_OWNER=true`.
+- `WINDOWS_SIGNING_PROVIDER_INTEGRATION=PASS` remains retained only as an optional future path.
+- Under current ADR, `WINDOWS_SIGNING_GATE=PASS` is absent and `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false`.
+- REL-008 remains blocked until a bounded amendment explicitly permits unsigned commercial distribution or trusted signing is later supplied.
