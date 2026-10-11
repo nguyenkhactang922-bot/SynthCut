@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; TVE-REL-009 updater identity repair LOCAL PASS / commit+PR pending; full updater E2E still pending`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; TVE-REL-009 updater identity repair COMMITTED at d1dc00f / push+PR pending; full updater E2E still pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` remains immutable published evidence; REL-009 updater identity repair is LOCAL PASS on release-forward `1.1.1`, with commit/PR/CI/review/merge and the true installed updater E2E still pending
+- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` remains immutable published evidence; REL-009 updater identity repair is COMMITTED at `d1dc00f` on release-forward `1.1.1`, with push/PR/CI/review/merge and the true installed updater E2E still pending
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - updater identity repair LOCAL PASS / commit+PR pending; full installed updater E2E remains pending`
+`TVE-REL-009 - updater identity repair COMMITTED d1dc00f / push+PR pending; full installed updater E2E remains pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -416,4 +416,4 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Verification PASS: EXE SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`; ZIP SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`; both match SHA256SUMS; installer/app `NotSigned`; tag-mode validator v1.1.1 PASS; root typecheck PASS; root build PASS; `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`.
 
 ## NEXT_EXACT_ACTION
-Review/stage exactly the updater identity repair + evidence/state, commit it, then use side-effect guards before personal-fork push/PR. After CI/review/merge PASS, release-forward only as `v1.1.1` under normal guards, then resume REL-009 updater E2E from retained installed `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.
+Identity repair commit `d1dc00f1a160ae2e6a667f908b58735b1c6cae35` is PASS locally. Create a state-only checkpoint, then use side-effect guards before personal-fork push/PR. After CI/review/merge PASS, release-forward only as `v1.1.1` under normal guards, then resume REL-009 updater E2E from retained installed `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.

@@ -1,9 +1,10 @@
 # TVE-REL-009 — Updater Identity Repair
 
-Status: **LOCAL PASS / COMMIT + PR PENDING**
+Status: **COMMIT PASS / PUSH + PR PENDING**
 Date: 2026-10-12
 Branch: `chatgpt/phase7-commercial-release`
 Baseline checkpoint: `34dd22f3238f45367e7cbb1584a25046cebeaf5f`
+Repair commit: `d1dc00f1a160ae2e6a667f908b58735b1c6cae35`
 Dependency retained: `TVE-REL-008=PASS`
 
 ## Input
@@ -65,7 +66,7 @@ Targeted current-source verification PASS / exit 0:
 A locally verified `1.1.1` release-forward candidate with fork-owned updater cache identity and personal-fork update feed.
 
 ## Exit Gate
-**LOCAL PASS.** The updater identity defect found by REL-009 preflight is repaired in source and recovered package evidence. This repair is not yet MAIN VERIFIED and `v1.1.1` is not published yet. Commit/PR/CI/review/merge and normal tag/release side-effect guards remain required.
+**COMMIT PASS.** The updater identity defect found by REL-009 preflight is repaired, verified, and committed at `d1dc00f1a160ae2e6a667f908b58735b1c6cae35`. This repair is not yet MAIN VERIFIED and `v1.1.1` is not published yet. Push/PR/CI/review/merge and normal tag/release side-effect guards remain required.
 
 ## Artifact
 `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
