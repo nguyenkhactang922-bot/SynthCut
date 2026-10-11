@@ -12,7 +12,7 @@
     "start": "npm run build:renderer && electron .",
     "dev:renderer": "vite",
     "electron": "electron .",
-    "prepare:bundle": "node scripts/prepare-bundle.ts",
+    "prepare:bundle": "node --experimental-strip-types scripts/prepare-bundle.ts",
     "pack": "electron-builder --dir",
     "dist": "electron-builder --win",
     "dist:commercial": "electron-builder --win --config electron-builder.commercial.cjs"
