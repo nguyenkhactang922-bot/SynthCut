@@ -52,3 +52,27 @@ Narrow compile verification after source repair:
 
 ## Exit / next action
 The locally repaired failed stage is PASS. REL-008 itself is not PASS yet. Commit this repair and state evidence, push the existing personal-fork feature branch, then monitor the new PR #2 CI run. Do not rerun REL-007 package/license proofs and do not publish/tag until PR CI/review/merge and side-effect guards PASS.
+
+## Remote CI and merge completion
+The repaired commit was created as `a27c78f9404024eb45638512c2e513a82d188f5b` and is present on `personal/chatgpt/phase7-commercial-release`.
+
+GitHub PR #2 automatic CI rerun:
+- run: `38126601288`;
+- exact head: `a27c78f9404024eb45638512c2e513a82d188f5b`;
+- `build-and-smoke`: **SUCCESS** / 2m42s;
+- no local rerun of already-PASS package/license stages was performed.
+
+Merge verification:
+- PR #2 state: `MERGED`;
+- merged at: `2026-10-11T09:04:04Z`;
+- personal-main merge commit: `622af29029d53c2724af6f5789c54b43688d25da`;
+- merged-main tree hash equals repaired feature-head tree hash: `5afbdddc0741db5daff64f9d743b0d5feecacd32`;
+- `git diff --exit-code a27c78f personal/main`: PASS;
+- upstream `origin/main` remained `96b1ca0e8b9935cc0d9561a3bc020f29bf9e88a0` and was not modified.
+
+Pre-publication side-effect guard after merge:
+- `v1.1.0` tag on personal fork: ABSENT;
+- GitHub Release `v1.1.0`: ABSENT;
+- no active SynthCut process.
+
+REL-008 is therefore past PR verification/merge and may proceed only after durable state sync and one final tag/release/auth collision check. GitHub Release publication itself remains pending.

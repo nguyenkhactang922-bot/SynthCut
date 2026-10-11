@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS for owner-approved unsigned commercial lane; TVE-REL-008 eligible pending reviewed commit + fork/tag/release side-effect guard`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS; TVE-REL-008 PR CI + merge PASS on personal main; durable state sync precedes final tag/release guard and publication`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS for the owner-approved unsigned lane; `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS`; `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`; trusted signing retained only as optional future hardening; REL-008 publication is now dependency-eligible after reviewed commit + fork/tag/release/auth side-effect guard
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS; REL-008 PR #2 CI/review/merge PASS on personal fork; `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS`; `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`; trusted signing remains optional future hardening; durable state sync + final tag/release/auth guard remain before publication
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — PR #2 CI verification FAIL at jobs-progress stage on db00c89; root cause repaired locally; targeted jobs smoke + core compile PASS; new CI rerun pending after repair commit/push`
+`TVE-REL-008 — PR #2 CI/review/merge PASS on personal fork; personal/main@622af29 tree equals tested a27c78f; durable state-sync follow-up precedes final v1.1.0 tag/release guard`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -330,6 +330,12 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Exact failed smoke rerun with already-bundled candidate FFmpeg/ffprobe: PASS / exit 0; observed running fraction `0.005`; marker `JOBS SMOKE TEST PASSED`.
 - Narrow compile after repair: `tsc -b packages/core` PASS / exit 0.
 - Evidence: `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`.
+- Repair commit `a27c78f9404024eb45638512c2e513a82d188f5b` is present on the personal feature branch.
+- PR #2 CI rerun `38126601288` on exact repaired head: `build-and-smoke` SUCCESS / 2m42s.
+- PR #2 MERGED to personal `main` at `622af29029d53c2724af6f5789c54b43688d25da` on 2026-10-11T09:04:04Z.
+- Merged-main tree equals repaired-head tree `5afbdddc0741db5daff64f9d743b0d5feecacd32`; tree parity PASS.
+- Upstream `origin/main` remains `96b1ca0e8b9935cc0d9561a3bc020f29bf9e88a0`; no upstream mutation occurred.
+- Post-merge guard: personal `v1.1.0` tag ABSENT; GitHub Release `v1.1.0` ABSENT; no active SynthCut process.
 
 ## NEXT_EXACT_ACTION
-Review/stage only the bounded-export progress repair + REL-008 evidence/state, commit, verify the remote feature branch still points to `db00c89`, push only to `personal`, then monitor the newly triggered PR #2 CI run. If CI PASSes, review/merge PR #2 to personal main and perform merged-main/tag/release side-effect checks before any `v1.1.0` tag or GitHub Release publication.
+Commit and merge this durable state/evidence sync only, without rerunning REL-007 or the already-PASS PR #2 verification. Then recheck personal-main HEAD, GitHub auth, local/remote `v1.1.0` tag absence, and existing GitHub Release absence. If all guards remain clean, create the fork-only `v1.1.0` release path on `nguyenkhactang922-bot/SynthCut` and monitor the release workflow. Never publish upstream.
