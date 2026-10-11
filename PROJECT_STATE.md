@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at Assemble and validate release artifact set in run 38133316488 after package PASS; exact post-package tracked-clean defect repaired locally; hotfix PR/merge + guarded tag retry pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at artifact provenance validation in run 38134667267 after package + post-package clean gate PASS; exact provenance clean-gate timing defect repaired locally; hotfix commit/PR/merge + guarded tag retry pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; run `38133316488` PASSed through the intentionally unsigned Windows package stage, then FAILed only post-package assemble clean validation because `packages/skill-installer/bin/synthcut.mjs` was the sole tracked dirty path; narrow fail-closed restore gate repaired locally; publication remains blocked pending reviewed hotfix + guarded tag retry
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; PR #7 CI PASSed and merged to personal `main@f9ea9ab`; guarded `v1.1.0` points there; run `38134667267` PASSed through package and the post-package clean gate, then FAILed only because the previously generated bundle manifest recorded `sourceTrackedDirty=true`; narrow pre-provenance clean gate + ordering contract repaired locally; publication remains blocked pending reviewed hotfix + guarded tag retry
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / run 38133316488 failed only post-package assemble clean gate after package PASS; fail-closed known workspace-bin restore repair locally PASS; hotfix PR pending`
+`TVE-REL-008 — FAIL / run 38134667267 failed only artifact provenance validation after package + post-package clean gate PASS; pre-provenance clean-gate timing repair locally PASS; hotfix commit/PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -386,5 +386,18 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-008-POST-PACKAGE-CLEAN-GATE-REPAIR.md`.
 - No local package/build rerun was performed for this repair.
 
+## Latest TVE-REL-008 provenance clean-gate timing failure / repair
+- Post-package clean hotfix commit `ee10c86` was pushed; PR #7 automatic CI `build-and-smoke` PASSed and PR #7 MERGED to personal `main@f9ea9ab3278c2158593508feec21fbf92f7e1ce7`.
+- Remote annotated tag `v1.1.0` currently peels to `f9ea9ab`; GitHub Release `v1.1.0` remains ABSENT (release-by-tag API returned 404).
+- Release run `38134667267` PASSed initial clean validation, dependency install, build, pinned FFmpeg, provenance staging command, commercial gates, intentionally unsigned Windows packaging, and the post-package tracked-clean restore gate.
+- The assemble stage's own `validate-release --require-clean` also PASSed, proving the previous post-package repair worked.
+- FAIL only at artifact provenance validation: `RELEASE_ARTIFACT_VALIDATION_FAIL: release bundle manifest must come from a clean tracked source state`.
+- Root cause: `prepare-bundle.ts` sampled `sourceTrackedDirty` before the post-package restore. The known workspace-bin mutation therefore entered `BUNDLE_MANIFEST.json` as `true` even though the worktree was later cleaned.
+- Narrow repair: add the same fail-closed exact-path restore gate immediately before provenance manifest generation, retain the post-package gate, and require validator ordering `pre-provenance clean < provenance staging < post-package clean < assemble`.
+- Targeted smoke PASS: `REL008_PRE_PROVENANCE_CLEAN=PASS`; `REL008_MANIFEST_DIRTY_FLAG_FALSE=PASS`; `REL008_POST_PACKAGE_CLEAN=PASS`; `REL008_UNEXPECTED_MUTATION_REJECT=PASS`.
+- Tag-mode static validator PASS; `git diff --check` PASS.
+- Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
+- No full build/package/release rerun was performed locally; retained PASS stages remain retained.
+
 ## NEXT_EXACT_ACTION
-Review/commit only the post-package clean-gate repair + evidence/state, push only to personal, open one hotfix PR and monitor its automatic CI. If CI PASSes, merge to personal main and verify merge-tree parity. Then re-check GitHub Release `v1.1.0` absence, exact current tag target, GitHub auth and absence of active Release runs before any guarded tag move. Never manually create a duplicate Release, never publish upstream, and do not manually rerun REL-001..007 or retained PASS stages from run `38133316488`.
+Review/commit only the provenance-timing clean-gate repair + evidence/state, push only to personal, open exactly one hotfix PR and monitor its automatic CI. If CI PASSes, merge to personal main and verify merge-tree parity. Then re-check GitHub Release `v1.1.0` absence, exact current tag target, GitHub auth and absence of active Release runs before any guarded tag move. Never manually create a duplicate Release, never publish upstream, and do not manually rerun REL-001..007 or retained PASS stages from run `38134667267`.
