@@ -1,6 +1,6 @@
 # TVE-REL-008 — Provenance clean-gate timing failure / narrow repair evidence
 
-Status: **FAIL STAGE REPAIRED + COMMITTED + PUSHED — hotfix PR pending**
+Status: **FAIL STAGE REPAIRED — PR #8 CI + MERGE + TREE PARITY PASS; guarded tag retry pending**
 Date: 2026-10-11
 Target repository: `nguyenkhactang922-bot/SynthCut`
 Release tag: `v1.1.0`
@@ -90,6 +90,10 @@ Tag-mode static release validator PASSed against the repaired workflow contract:
 - Push to `personal/chatgpt/phase7-commercial-release`: PASS; remote branch advanced from `ee10c86` to `9ec5ccd`.
 - No open hotfix PR existed at the push checkpoint.
 - Canonical state sync is committed/pushed before PR creation so automatic PR CI runs only on the final reviewed head.
+- State checkpoint commit `5a543150172aa5c7ddd7f7b1c2ffcf857c80f968` was pushed before PR creation.
+- PR #8 automatic CI run `38136588599`: SUCCESS.
+- PR #8 MERGED to personal `main` at `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`.
+- Merge-tree parity PASS: `ce31bfdd^{tree}` equals reviewed head `5a54315^{tree}` (`115bcfc87809544fda213a8b62866a56dcf20236`).
 
 ## Exit gate for this repair
 Before another tag-triggered Release run:
