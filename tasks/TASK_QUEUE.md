@@ -212,11 +212,13 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: FAIL / RELEASE WORKFLOW FAILED STAGE REPAIRED LOCALLY / HOTFIX PR PENDING
+Status: FAIL / PACKAGE ARGUMENT STAGE REPAIRED LOCALLY / SECOND HOTFIX PR PENDING
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
-PR #2 and state-sync PR #3 are MERGED on personal fork. Tag-triggered Release run `38127692348` on `v1.1.0` failed only provenance staging with Node 22.12 `ERR_UNKNOWN_FILE_EXTENSION` for `prepare-bundle.ts`. Narrow launcher repair is locally PASS. Evidence: `docs/evidence/release/TVE-REL-008-RELEASE-WORKFLOW-REPAIR.md`.
-Current guard: remote `v1.1.0` tag EXISTS; GitHub Release `v1.1.0` ABSENT; publish job was skipped. Next gate: hotfix PR/CI/merge, then guarded tag move to repaired main only if Release remains absent, then monitor corrected Release workflow.
+PR #2/#3/#4 are MERGED on the personal fork. Current personal main is `14912c71d3ff2f43a036de1a31909e3c2882f21c`; remote `v1.1.0` peels to that commit; GitHub Release `v1.1.0` is ABSENT.
+Release run `38128610356` retained PASS through release identity, dependencies, build, pinned FFmpeg, provenance staging, and commercial gates, then failed only `Package intentionally unsigned Windows NSIS + ZIP for current commercial lane`. GitHub log shows npm converted `--publish never` forwarding into `electron-builder --win never`, causing `Unknown target: never`.
+Narrow repair is local: `dist` and `dist:commercial` embed `--publish never`; workflow package steps call those scripts without forwarding publish arguments. Static validation PASS; evidence: `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`.
+Next gate: review/commit/push second hotfix, PR CI PASS, merge + tree parity, then guard Release absence/tag/auth/no-active-run and only then move existing `v1.1.0` to repaired personal main. Do not rerun REL-001..007 or retained PASS stages.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -228,4 +230,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: review/commit/push only the `.ts` launcher hotfix + repair evidence/state, open hotfix PR and monitor automatic CI, merge if PASS, then recheck auth/tag/release state. If Release remains absent, guarded-force-move `v1.1.0` to repaired personal main and monitor the new Release workflow. Do not rerun REL-001..007 or prior PASS release stages.
+`TVE-REL-008`: review/commit/push only the package-command hotfix + evidence/state, open the second hotfix PR and monitor automatic CI, merge if PASS, then repeat the personal-fork release/tag/auth/no-active-run guard. If Release remains absent, guarded-force-move `v1.1.0` to repaired reviewed personal main and monitor only the new Release workflow. Do not rerun REL-001..007 or retained PASS release stages.

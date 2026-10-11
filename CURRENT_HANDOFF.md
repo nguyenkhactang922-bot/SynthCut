@@ -3,42 +3,46 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-008 — GitHub Release publication`
-- STATUS: `FAIL / RELEASE WORKFLOW FAILED STAGE REPAIRED LOCALLY — HOTFIX PR PENDING`
-- CURRENT_STAGE: `Release run 38127692348 on tag v1.1.0 completed FAILURE at only Stage verified FFmpeg, Whisper, YuNet, font and provenance. Root cause was Node 22.12 invoking prepare-bundle.ts without TypeScript stripping. Launcher is repaired locally and the exact failed staging logic now PASSes; no release was published.`
+- STATUS: `FAIL / PACKAGE ARGUMENT STAGE REPAIRED LOCALLY — HOTFIX PR PENDING`
+- CURRENT_STAGE: `Release run 38128610356 on v1.1.0 / personal main 14912c71 completed FAILURE only at Package intentionally unsigned Windows NSIS + ZIP for current commercial lane. Earlier identity/install/build/FFmpeg/provenance/commercial-gate stages PASS and are retained. Root cause is npm argument forwarding turning --publish never into electron-builder --win never. Narrow package-command repair is applied locally; no GitHub Release exists.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `beeb8152331c172b728b96c34f3b4df22b472351` before the uncommitted REL-008 launcher repair; Git is authoritative
+- HEAD: `14912c71d3ff2f43a036de1a31909e3c2882f21c` before the uncommitted package-command repair; Git is authoritative
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-008 failed-stage local repair PASS` — `node --experimental-strip-types apps/desktop/scripts/prepare-bundle.ts` completed exit 0 with verified FFmpeg 6.1.1, Whisper, YuNet, Noto Sans, bundle manifest, 313.0 MB bundle. Evidence: `docs/evidence/release/TVE-REL-008-RELEASE-WORKFLOW-REPAIR.md`.
-- PROCESS_PID: `NONE` for active SynthCut release/staging task
+- LAST_VERIFIED_CHECKPOINT: `REL-008 package-command static repair PASS` — `git diff --check` PASS; package/workflow semantic check emitted `REL008_PACKAGE_COMMAND_STATIC=PASS`; installed electron-builder 26.15.3 source declares `publish` with allowed `never`. Evidence: `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`.
+- PROCESS_PID: `NONE` for SynthCut release/package/electron-builder after post-timeout scans
 - PROCESS_COMMAND: `NONE`
-- PTY_SESSION: release watcher and local targeted staging PTYs completed/expired; no active release retry is authorized
-- LATEST_LOG: `docs/evidence/release/TVE-REL-008-RELEASE-WORKFLOW-REPAIR.md`
-- LAST_EXIT_CODE: `GitHub Release workflow 38127692348 = FAILURE`; targeted failed-stage repair verification = `0/PASS`
+- PTY_SESSION: `NONE` active in current FileMCP workspace
+- LATEST_LOG: `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`
+- LAST_EXIT_CODE: `GitHub Release workflow 38128610356 = FAILURE`; static repair checks = `0/PASS`; two optional CLI/parser probes timed out and are not PASS evidence
 - ARTIFACTS:
-  - failed Release run `38127692348` on `v1.1.0` / `beeb8152331c172b728b96c34f3b4df22b472351`
+  - PR #4 — MERGED to personal main at `14912c71d3ff2f43a036de1a31909e3c2882f21c`
+  - remote annotated tag `v1.1.0` peels to `14912c71`
+  - failed Release run `38128610356` on `14912c71`
+  - prior failed Release run `38127692348` on `beeb815`
+  - `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`
   - `docs/evidence/release/TVE-REL-008-RELEASE-WORKFLOW-REPAIR.md`
   - `docs/evidence/release/TVE-REL-008-PR-CI-REPAIR.md`
-  - remote tag `v1.1.0` exists; GitHub Release `v1.1.0` is absent
-  - retained REL-007 local 1.1.0 artifact evidence; do not rebuild it for this launcher hotfix
+  - GitHub Release `v1.1.0`: ABSENT
 - BLOCKERS:
-  - `REL-008` cannot PASS until the launcher hotfix is reviewed/merged and a corrected tag-triggered Release workflow PASSes.
-  - Existing remote `v1.1.0` tag is a durable side effect and must not be blindly recreated/re-pushed. It may be moved only after hotfix merge and a fresh guard proves GitHub Release is still absent.
-- NEXT_EXACT_ACTION: review/stage only `apps/desktop/package.json` + REL-008 release-workflow repair evidence/state, run diff/static validation without rerunning REL-007/package stages, commit, push only to `personal`, open hotfix PR, monitor its automatic CI, merge if PASS, then repeat auth/tag/release guard. If Release remains absent, deliberately move `v1.1.0` to repaired personal main and monitor the newly triggered Release workflow. Never publish upstream and never manually create a duplicate Release while a release workflow is RUNNING.
+  - `REL-008` cannot PASS until this second hotfix is reviewed/merged and the corrected tag-triggered Release workflow publishes successfully.
+  - Existing remote `v1.1.0` tag is a durable side effect. Do not blindly recreate/re-push it; move it only after hotfix merge and a fresh guard proves Release is still absent and no release workflow is running.
+- NEXT_EXACT_ACTION: review only `.github/workflows/release.yml`, `apps/desktop/package.json`, `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`, and canonical state changes; verify no unrelated tracked diff; commit; push only to `personal`; open hotfix PR; monitor its automatic CI without rerunning REL-001..007 or prior PASS release stages; merge if PASS; verify merged-tree parity + GitHub Release absence + no active Release run; then guarded-move `v1.1.0` to repaired personal main and monitor only the newly triggered Release workflow. Never publish upstream and never manually create a duplicate Release while workflow is RUNNING.
 - DO_NOT_REPEAT:
   - TVE-REL-001..007;
-  - PR #2/#3 CI and merges;
+  - PR #2/#3/#4 already-PASS CI/merges;
   - REL-007 full 1.1.0 package/license activation/restart proofs;
-  - successful stages 1–7 of failed Release run 38127692348;
-  - full release/package workflow until the hotfix is merged and tag move is guarded;
-  - unrelated `.spike-temp/`, `.tmp/`, historical build dirs, datasets, or other project PTYs.
+  - PASS stages through commercial gates in Release run `38128610356`;
+  - first provenance launcher repair and PR #4;
+  - optional timed-out local electron-builder parser/help probes;
+  - unrelated `.spike-temp/`, `.tmp/`, historical build dirs, datasets, or other-project PTYs.
 
 ## Lifecycle law
 All work follows `docs/process/PROJECT_LIFECYCLE_V1.md` and global-law §20.
 
 ## Hard gates
 - `TVE-REL-001..007=PASS` retained.
-- PR #2 and PR #3 are MERGED on personal fork; upstream remains untouched.
-- Current release line remains `1.1.0`; unsigned/SmartScreen acceptance and Supabase entitlement gates remain PASS.
-- Remote tag `v1.1.0` exists but its first Release workflow failed before publication; GitHub Release remains absent.
+- PR #2, PR #3 and PR #4 are MERGED on personal fork; upstream remains untouched.
+- Current release line remains `1.1.0`; unsigned/SmartScreen acceptance, Remotion basis and Supabase entitlement gates remain PASS.
+- Remote tag `v1.1.0` exists and currently peels to `14912c71`; GitHub Release remains absent.
 - `TVE-REL-008` is FAIL until corrected Release workflow + publication verification PASS.
 - REL-009 remains blocked by REL-008.

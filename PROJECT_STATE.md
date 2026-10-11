@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at tag-triggered Release provenance staging; failed stage repaired locally; hotfix PR/merge + guarded tag move pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at tag-triggered unsigned package command; npm forwarding defect repaired locally; second hotfix PR/merge + guarded tag move pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; REL-008 Release run `38127692348` failed only provenance staging because Node 22.12 invoked a `.ts` script without type stripping; narrow launcher repair passes locally; publication remains blocked pending reviewed hotfix + guarded tag move
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS retained; REL-008 Release run `38128610356` reached PASS through provenance + commercial gates, then failed only unsigned packaging because npm forwarded `never` without `--publish`; narrow non-publishing package-command repair is local; publication remains blocked pending reviewed hotfix + guarded tag move
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / Release run 38127692348 failed at provenance staging; launcher repair locally PASS; hotfix PR pending`
+`TVE-REL-008 — FAIL / Release run 38128610356 failed only unsigned package command; package-argument repair locally PASS by static checks; second hotfix PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -350,5 +350,16 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-008-RELEASE-WORKFLOW-REPAIR.md`.
 - Side-effect guard: remote `v1.1.0` tag exists; Release absent. Do not blindly recreate/re-push tag. Move it only after hotfix merge and a fresh no-Release guard.
 
+## Latest TVE-REL-008 package argument failure / repair
+- PR #4 MERGED to personal `main` at `14912c71d3ff2f43a036de1a31909e3c2882f21c`; repaired provenance-launcher head `75f08e6` had CI PASS before merge.
+- Guarded remote tag `v1.1.0` currently peels to `14912c71`; GitHub Release `v1.1.0` remains ABSENT.
+- Corrected Release run `38128610356` on exact SHA `14912c71` retained PASS for checkout, Node setup, release validation, lockfile install, core+MCP+renderer build, pinned FFmpeg, provenance staging, and commercial gates.
+- FAIL only at `Package intentionally unsigned Windows NSIS + ZIP for current commercial lane`.
+- GitHub log proves `npm run dist --workspace synthcut-by-relo -- --publish never` resolved to `electron-builder --win never`, causing `Unknown target: never`.
+- Repair: package scripts now embed `--publish never`; workflow package steps no longer forward `--publish` through npm. Separate `publish-release` remains the only GitHub Release publication path.
+- Verification: `git diff --check` PASS; static package/workflow semantic check `REL008_PACKAGE_COMMAND_STATIC=PASS`; installed electron-builder 26.15.3 source declares `publish` and allowed choice `never`. Two optional local parser/help probes timed out with no output, left no process, were not retried, and are not counted as PASS evidence.
+- Evidence: `docs/evidence/release/TVE-REL-008-PACKAGE-ARG-REPAIR.md`.
+- No full package/release rerun was performed locally; prior REL-001..007 and run-38128610356 PASS stages remain retained.
+
 ## NEXT_EXACT_ACTION
-Review/commit only the REL-008 launcher repair + evidence/state, push only to personal, obtain hotfix PR CI PASS, merge to personal main, then re-run auth/tag/release side-effect guard. If GitHub Release remains absent, deliberately move existing `v1.1.0` to repaired reviewed main and monitor the newly triggered Release workflow. Do not rerun prior PASS release/package stages and never publish upstream.
+Review/commit only the package-command repair + evidence/state, push only to personal, obtain hotfix PR CI PASS, merge to personal main, and verify merged-tree parity. Then re-check GitHub Release absence, current tag target, auth, and active Release runs. If no Release exists and no Release workflow is running, guarded-force-move existing `v1.1.0` to repaired reviewed personal main and monitor only the newly triggered Release workflow. Do not rerun REL-001..007 or any retained PASS stage; never publish upstream.
