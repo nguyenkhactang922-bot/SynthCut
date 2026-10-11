@@ -219,11 +219,11 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: IDENTITY REPAIR CI + MERGE PASS / `v1.1.1` PUBLICATION PENDING / E2E NOT YET RUN
+Status: REVIEWED MAIN READY / `v1.1.1` PUBLICATION PENDING / E2E NOT YET RUN
 Dependencies: REL-008 PASS
 Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
 Repair result: desktop package identity `tang-ai-video-editor`; release-forward version `1.1.1`; root/workflow selectors use `--workspace apps/desktop`; package-lock desktop link and validator contracts are synchronized. Existing full `rel009-identity-dist` artifacts verify generated feed `nguyenkhactang922-bot/SynthCut`, cache `tang-ai-video-editor-updater`, matching hashes, and intentional `NotSigned`. Tag-mode validator, root typecheck/build and diff-check PASS. Do not rerun package before commit/CI.
-Delivery result: repair `d1dc00f` + state head `41ee10b`; PR #9 CI run `38161023407` SUCCESS; PR #9 MERGED to personal `main@f071f817`; merge-tree parity PASS. Next: state-only merge checkpoint PR, then guarded-publish `v1.1.1`; resume only the installed updater transition from retained `1.0.6`.
+Delivery result: source PR #9 CI `38161023407` PASS and merged `f071f817`; state PR #10 CI `38161447758` PASS and merged to reviewed personal `main@452dd263`; merge-tree parity PASS. Next: guarded-publish `v1.1.1`; resume only the installed updater transition from retained `1.0.6`.
 
 ## TVE-REL-010 — Monitor / incident handoff
 Status: BLOCKED BY REL-009
@@ -232,4 +232,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 release-forward delivery`: identity repair PR #9 is CI+MERGE PASS on personal `main@f071f817`. First merge this state-only checkpoint, then verify auth/tag/release/no-active-run guards, publish only new `v1.1.1`, verify release evidence, and run only the true updater E2E from retained installed `1.0.6`.
+`TVE-REL-009 release-forward delivery`: reviewed personal `main@452dd263` is ready. Verify auth/tag/release/no-active-run guards, publish only new `v1.1.1`, verify Release evidence, then run only the true updater E2E from retained installed `1.0.6`.

@@ -1,13 +1,15 @@
 # TVE-REL-009 — Updater Identity Repair
 
-Status: **CI + REVIEW + MERGE PASS / RELEASE-FORWARD PENDING**
+Status: **REVIEWED MAIN READY / RELEASE-FORWARD PENDING**
 Date: 2026-10-12
 Branch: `chatgpt/phase7-commercial-release`
 Baseline checkpoint: `34dd22f3238f45367e7cbb1584a25046cebeaf5f`
 Repair commit: `d1dc00f1a160ae2e6a667f908b58735b1c6cae35`
 Final PR head: `41ee10b6886cf46228d0b9a92cfd8ecd1afb0f66`
 PR #9 CI run: `38161023407` — SUCCESS
-Merged personal main: `f071f817608344401f9d9deb25ecb1bf9c2b715b` — tree parity PASS
+Source merge: `f071f817608344401f9d9deb25ecb1bf9c2b715b` — tree parity PASS
+State PR #10 CI: `38161447758` — SUCCESS
+Reviewed release-forward main: `452dd263163faa2b48ca91006c4f8ff65cffbb7d` — tree parity PASS
 Dependency retained: `TVE-REL-008=PASS`
 
 ## Input
