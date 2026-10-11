@@ -14,8 +14,8 @@
     "electron": "electron .",
     "prepare:bundle": "node --experimental-strip-types scripts/prepare-bundle.ts",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder --win",
-    "dist:commercial": "electron-builder --win --config electron-builder.commercial.cjs"
+    "dist": "electron-builder --win --publish never",
+    "dist:commercial": "electron-builder --win --config electron-builder.commercial.cjs --publish never"
   },
   "dependencies": {
     "@aive/core": "*",

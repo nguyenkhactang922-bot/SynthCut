@@ -123,15 +123,15 @@ jobs:
 
       - name: Package unsigned Windows NSIS + ZIP for manual validation
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
-        run: npm run dist --workspace synthcut-by-relo -- --publish never
+        run: npm run dist --workspace synthcut-by-relo
 
       - name: Package trusted-signed Windows NSIS + ZIP for signed release tag
         if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
-        run: npm run dist:commercial --workspace synthcut-by-relo -- --publish never
+        run: npm run dist:commercial --workspace synthcut-by-relo
 
       - name: Package intentionally unsigned Windows NSIS + ZIP for current commercial lane
         if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED != 'true' && vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED == 'true' }}
-        run: npm run dist --workspace synthcut-by-relo -- --publish never
+        run: npm run dist --workspace synthcut-by-relo
 
       - name: Assemble and validate release artifact set
         shell: pwsh
