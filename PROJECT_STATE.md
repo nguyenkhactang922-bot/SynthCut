@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at artifact provenance validation in run 38134667267 after package + post-package clean gate PASS; exact provenance clean-gate timing defect repaired locally; hotfix commit/PR/merge + guarded tag retry pending`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS retained; TVE-REL-008 FAIL at artifact provenance validation in run 38134667267 after package + post-package clean gate PASS; provenance clean-gate timing repair committed as 9ec5ccd and pushed to personal feature branch; hotfix PR/merge + guarded tag retry pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-008 — FAIL / run 38134667267 failed only artifact provenance validation after package + post-package clean gate PASS; pre-provenance clean-gate timing repair locally PASS; hotfix commit/PR pending`
+`TVE-REL-008 — FAIL / run 38134667267 failed only artifact provenance validation after package + post-package clean gate PASS; provenance-timing repair commit 9ec5ccd PUSHED to personal feature branch; hotfix PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -398,6 +398,7 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Tag-mode static validator PASS; `git diff --check` PASS.
 - Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
 - No full build/package/release rerun was performed locally; retained PASS stages remain retained.
+- Repair implementation/evidence/state commit: `9ec5ccd4065ec9949152f513d6ac6bc747bafeec`; push to `personal/chatgpt/phase7-commercial-release` PASS. No open hotfix PR existed at the push checkpoint.
 
 ## NEXT_EXACT_ACTION
-Review/commit only the provenance-timing clean-gate repair + evidence/state, push only to personal, open exactly one hotfix PR and monitor its automatic CI. If CI PASSes, merge to personal main and verify merge-tree parity. Then re-check GitHub Release `v1.1.0` absence, exact current tag target, GitHub auth and absence of active Release runs before any guarded tag move. Never manually create a duplicate Release, never publish upstream, and do not manually rerun REL-001..007 or retained PASS stages from run `38134667267`.
+Commit/push this state-sync checkpoint before PR creation, verify no duplicate open PR, then open exactly one hotfix PR and monitor its automatic CI. If CI PASSes, merge to personal main and verify merge-tree parity. Then re-check GitHub Release `v1.1.0` absence, exact current tag target, GitHub auth and absence of active Release runs before any guarded tag move. Never manually create a duplicate Release, never publish upstream, and do not manually rerun REL-001..007 or retained PASS stages from run `38134667267`.

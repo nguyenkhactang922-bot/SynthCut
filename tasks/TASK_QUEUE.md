@@ -212,12 +212,12 @@ Result:
 - no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
 
 ## TVE-REL-008 — GitHub Release publication
-Status: FAIL / PROVENANCE CLEAN-GATE TIMING REPAIRED LOCALLY / HOTFIX COMMIT-PR PENDING
+Status: FAIL / PROVENANCE CLEAN-GATE TIMING REPAIR COMMITTED + PUSHED / HOTFIX PR PENDING
 Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
 PR #7 automatic CI PASSed and PR #7 MERGED to personal `main@f9ea9ab`; remote `v1.1.0` currently peels to that commit. Release run `38134667267` PASSed release validation, dependencies, build, pinned FFmpeg, provenance staging command, commercial gates, intentionally unsigned package, and the post-package tracked-clean restore gate, then FAILed only during artifact provenance validation inside `Assemble and validate release artifact set`.
 Exact failure: `BUNDLE_MANIFEST.json` recorded `sourceTrackedDirty=true` because `prepare:bundle` sampled tracked state before the known workspace-bin mutation was restored. The in-stage `validate-release --require-clean` PASSed, so this is a provenance-timing defect, not a failed post-package clean gate. Narrow local repair adds the same fail-closed exact-path restore immediately before provenance manifest generation, retains the post-package gate, and makes the release validator enforce ordering `pre-provenance clean < provenance staging < post-package clean < assemble`. Targeted timing/negative smokes + tag-mode validator + `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-008-PROVENANCE-CLEAN-GATE-REPAIR.md`.
-Next gate: review/commit/push only this provenance-timing hotfix + evidence/state, open exactly one PR, obtain automatic CI PASS, merge + verify tree parity, then perform Release absence/tag/auth/no-active-run guard before any tag move. Do not rerun REL-001..007 or manually duplicate retained PASS stages/runs.
+Repair commit `9ec5ccd4065ec9949152f513d6ac6bc747bafeec` was pushed to `personal/chatgpt/phase7-commercial-release`; no open hotfix PR existed at the push checkpoint. Next gate: commit/push the state-sync checkpoint, open exactly one PR, obtain automatic CI PASS, merge + verify tree parity, then perform Release absence/tag/auth/no-active-run guard before any tag move. Do not rerun REL-001..007 or manually duplicate retained PASS stages/runs.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -229,4 +229,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-008`: review/commit/push only the provenance-timing clean-gate hotfix + evidence/state, open exactly one hotfix PR and monitor its automatic CI. If PASS, merge + verify tree parity, then guard Release absence/tag/auth/no-active-run before any tag move. If FAIL, repair only the exact failed CI stage. Do not duplicate tag moves, Release creation, CI, PR, or prior Release runs.
+`TVE-REL-008`: commit/push this state-sync checkpoint, verify no duplicate open PR, open exactly one hotfix PR and monitor its automatic CI. If PASS, merge + verify tree parity, then guard Release absence/tag/auth/no-active-run before any tag move. If FAIL, repair only the exact failed CI stage. Do not duplicate tag moves, Release creation, CI, PR, or prior Release runs.
