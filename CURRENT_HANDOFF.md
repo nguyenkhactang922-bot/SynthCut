@@ -3,12 +3,12 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `PASS / UPDATER IDENTITY REPAIR COMMITTED — PUSH/PR PENDING`
+- STATUS: `PASS / UPDATER IDENTITY REPAIR CI + MERGE VERIFIED — RELEASE-FORWARD TAG PENDING`
 - CURRENT_STAGE: `REL-008 remains PASS/published. The REL-009 identity preflight failure has been repaired locally: desktop private package identity is tang-ai-video-editor, release-forward line is 1.1.1, generated app-update.yml targets nguyenkhactang922-bot/SynthCut and uses tang-ai-video-editor-updater. Existing full 1.1.1 package artifacts were recovered and verified; no package rerun was needed.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `d1dc00f1a160ae2e6a667f908b58735b1c6cae35` — updater identity repair COMMITTED; push/PR pending
+- HEAD: local feature state checkpoint branch; identity repair commit `d1dc00f`; PR #9 head `41ee10b`; merged personal main `f071f817608344401f9d9deb25ecb1bf9c2b715b`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-009 updater identity repair COMMIT PASS — d1dc00f` — evidence `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+- LAST_VERIFIED_CHECKPOINT: `REL-009 updater identity repair CI+MERGE PASS` — PR #9 CI run `38161023407` SUCCESS on `41ee10b`; merge `f071f817`; merge-tree parity PASS. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
 - PROCESS_PID: `NONE` for SynthCut
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE` for SynthCut; visible FileMCP PTYs belong to other projects and must not be touched
@@ -23,9 +23,9 @@
   - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.zip` — 505858966 bytes — SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`
   - generated `app-update.yml`: personal fork feed + `tang-ai-video-editor-updater`
 - BLOCKERS:
-  - no local technical blocker for push/PR review of the committed identity repair;
-  - REL-009 runtime updater E2E remains pending until committed source is pushed, CI/reviewed/merged and release-forward `v1.1.1` is published under normal side-effect guards.
-- NEXT_EXACT_ACTION: create this state-only COMMIT-PASS checkpoint, then re-verify personal remote/PR/tag/release guards; push both `d1dc00f` and the state checkpoint only to personal feature branch; create exactly one PR to personal main; monitor that existing CI without duplicate reruns; merge only after CI/review PASS; guarded-publish new tag/release `v1.1.1` without altering `v1.1.0`; then resume only the true REL-009 updater transition from retained installed `1.0.6`, including feed/download/hash/NotSigned/install/relaunch/project-state/license verification.
+  - no technical blocker for state checkpoint review or guarded `v1.1.1` publication;
+  - REL-009 runtime updater E2E remains pending until `v1.1.1` is published from reviewed main under normal side-effect guards.
+- NEXT_EXACT_ACTION: commit/push this state-only PR9-merge checkpoint, open exactly one state-only PR to personal main, monitor its existing CI and merge after PASS; then guard auth + tag/release absence + exact reviewed main + no active Release run, create new tag `v1.1.1` on that reviewed main without altering `v1.1.0`, monitor the single tag-triggered Release workflow, verify published artifacts/provenance/hashes/NotSigned, then resume only the true REL-009 updater transition from retained installed `1.0.6`.
 - DO_NOT_REPEAT:
   - REL-001..008 substantive work or published `v1.1.0`;
   - REL-006 rebuild of old `1.0.6`;
@@ -36,6 +36,6 @@
 ## Hard gates
 - `TVE-REL-001..008=PASS` retained.
 - `v1.1.0` is immutable published historical evidence.
-- Current repair is COMMITTED at `d1dc00f`; push/CI/review/merge remain pending.
+- Identity repair is CI/REVIEW/MERGE PASS in personal `main@f071f817`; release-forward `v1.1.1` and updater E2E remain pending.
 - Upstream `Relo-video/SynthCut` remains read-only/non-publication target.
 - `TVE-REL-010` remains blocked by full REL-009 E2E.
