@@ -1,8 +1,9 @@
 name: Release
 
 # Manual runs remain non-publishing package validation. A release tag is fail-closed:
-# Remotion basis + trusted Windows signing provider + signed artifact verification
-# must all pass before the fork-only publish job can run.
+# Remotion basis + Supabase entitlement backend + an explicitly approved publisher-trust
+# lane must pass. The current commercial lane is intentionally unsigned; trusted signing
+# remains available as optional future hardening.
 on:
   push:
     tags: ["v*"]
@@ -52,23 +53,29 @@ jobs:
       - name: Stage verified FFmpeg, Whisper, YuNet, font and provenance
         run: npm run prepare:bundle --workspace synthcut-by-relo
 
-      - name: Enforce external commercial gates for release tags
+      - name: Enforce commercial gates for release tags
         if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
         shell: pwsh
         env:
           REMOTION_COMMERCIAL_BASIS_APPROVED: ${{ vars.REMOTION_COMMERCIAL_BASIS_APPROVED }}
+          SUPABASE_LICENSE_BACKEND_APPROVED: ${{ vars.SUPABASE_LICENSE_BACKEND_APPROVED }}
+          UNSIGNED_COMMERCIAL_RELEASE_APPROVED: ${{ vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED }}
           WINDOWS_SIGNING_APPROVED: ${{ vars.WINDOWS_SIGNING_APPROVED }}
           WINDOWS_SIGNING_PROVIDER: ${{ vars.WINDOWS_SIGNING_PROVIDER }}
           WINDOWS_SIGN_PUBLISHER_NAME: ${{ vars.WINDOWS_SIGN_PUBLISHER_NAME }}
         run: |
           $ErrorActionPreference = 'Stop'
           if ($env:REMOTION_COMMERCIAL_BASIS_APPROVED -ne 'true') { throw 'REMOTION_COMMERCIAL_BASIS_APPROVED must be true before a release tag can build' }
-          if ($env:WINDOWS_SIGNING_APPROVED -ne 'true') { throw 'WINDOWS_SIGNING_APPROVED must be true before a release tag can build' }
-          if ($env:WINDOWS_SIGNING_PROVIDER -ne 'sslcom-esigner') { throw 'WINDOWS_SIGNING_PROVIDER must be sslcom-esigner for the frozen commercial release path' }
-          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PUBLISHER_NAME)) { throw 'WINDOWS_SIGN_PUBLISHER_NAME repository variable is required' }
+          if ($env:SUPABASE_LICENSE_BACKEND_APPROVED -ne 'true') { throw 'SUPABASE_LICENSE_BACKEND_APPROVED must be true before a release tag can build' }
+          if ($env:WINDOWS_SIGNING_APPROVED -eq 'true') {
+            if ($env:WINDOWS_SIGNING_PROVIDER -ne 'sslcom-esigner') { throw 'Signed lane requires WINDOWS_SIGNING_PROVIDER=sslcom-esigner' }
+            if ([string]::IsNullOrWhiteSpace($env:WINDOWS_SIGN_PUBLISHER_NAME)) { throw 'Signed lane requires WINDOWS_SIGN_PUBLISHER_NAME' }
+          } elseif ($env:UNSIGNED_COMMERCIAL_RELEASE_APPROVED -ne 'true') {
+            throw 'Unsigned lane requires UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true'
+          }
 
-      - name: Configure SSL.com eSigner CKA for trusted release signing
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
+      - name: Configure SSL.com eSigner CKA for optional trusted release signing
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
         shell: pwsh
         env:
           ESIGNER_USERNAME: ${{ secrets.ESIGNER_USERNAME }}
@@ -118,9 +125,13 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         run: npm run dist --workspace synthcut-by-relo -- --publish never
 
-      - name: Package trusted-signed Windows NSIS + ZIP for release tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
+      - name: Package trusted-signed Windows NSIS + ZIP for signed release tag
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
         run: npm run dist:commercial --workspace synthcut-by-relo -- --publish never
+
+      - name: Package intentionally unsigned Windows NSIS + ZIP for current commercial lane
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED != 'true' && vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED == 'true' }}
+        run: npm run dist --workspace synthcut-by-relo -- --publish never
 
       - name: Assemble and validate release artifact set
         shell: pwsh
@@ -145,8 +156,8 @@ jobs:
           node scripts/release/validate-release.mjs --require-clean --metadata apps/desktop/build/release-artifacts/RELEASE_METADATA.json
           node scripts/release/validate-artifacts.mjs apps/desktop/build/release-artifacts
 
-      - name: Verify trusted publisher, timestamp and Authenticode on release tag
-        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' }}
+      - name: Verify trusted publisher, timestamp and Authenticode on signed release tag
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
         shell: pwsh
         env:
           WINDOWS_SIGN_PUBLISHER_NAME: ${{ vars.WINDOWS_SIGN_PUBLISHER_NAME }}
@@ -169,6 +180,26 @@ jobs:
           }
           'WINDOWS_SIGNING_GATE=PASS' | Write-Output
 
+      - name: Verify intentional NotSigned status for unsigned commercial release tag
+        if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.WINDOWS_SIGNING_APPROVED != 'true' && vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED == 'true' }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $targets = @()
+          $targets += Get-ChildItem 'apps/desktop/build/release-artifacts' -File -Filter '*.exe'
+          $targets += Get-Item 'apps/desktop/build/dist/win-unpacked/Tang AI Video Editor.exe' -ErrorAction Stop
+          if ($targets.Count -lt 2) { throw 'Expected installer and packaged application executable for unsigned-status verification' }
+          foreach ($target in $targets) {
+            $sig = Get-AuthenticodeSignature $target.FullName
+            if ($sig.Status -ne 'NotSigned') { throw "Unsigned lane expected NotSigned for $($target.Name), got $($sig.Status)" }
+          }
+          @'
+          IMPORTANT: This commercial Windows release is intentionally unsigned.
+          Windows may display "Unknown publisher" and Microsoft Defender SmartScreen warnings.
+          Supabase licensing controls product entitlement; it does not provide Authenticode publisher trust.
+          '@ | Set-Content 'apps/desktop/build/release-artifacts/UNSIGNED_RELEASE_NOTICE.txt' -Encoding utf8
+          'UNSIGNED_WINDOWS_RELEASE_GATE=PASS' | Write-Output
+
       - name: Upload validated non-publishing release artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -179,7 +210,7 @@ jobs:
 
   publish-release:
     needs: windows
-    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED == 'true' && vars.WINDOWS_SIGNING_PROVIDER == 'sslcom-esigner' }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'nguyenkhactang922-bot/SynthCut' && vars.REMOTION_COMMERCIAL_BASIS_APPROVED == 'true' && vars.SUPABASE_LICENSE_BACKEND_APPROVED == 'true' && vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED == 'true' && vars.WINDOWS_SIGNING_APPROVED != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -198,3 +229,7 @@ jobs:
             release-artifacts/*
           draft: false
           generate_release_notes: true
+          body: |
+            **Windows publisher notice:** this commercial release is intentionally unsigned.
+            Windows may display **Unknown publisher** and Microsoft Defender SmartScreen warnings during download/install.
+            Supabase licensing controls Tang AI Video Editor entitlement; it does **not** provide Authenticode publisher trust.

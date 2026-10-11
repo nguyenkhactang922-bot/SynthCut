@@ -54,10 +54,17 @@ No agent may infer company size or license eligibility from chat style or reposi
 ### D-002-6 — FFmpeg redistribution becomes deterministic and traceable
 The release pipeline must not silently bundle an arbitrary FFmpeg found on PATH. The exact build/version/source provenance must be captured, and the release evidence must identify the corresponding-source route for the redistributed binary.
 
-### D-002-7 — Stable commercial release requires trusted Windows signing
-Unsigned builds are permitted only for local/CI package validation. A stable release labeled `COMMERCIAL_READY` requires a trusted code-signing path and verification of the resulting Authenticode signature.
+### D-002-7 — Current commercial lane permits unsigned Windows distribution with explicit risk acceptance
+Trusted Windows code signing remains the preferred future hardening path, but it is not a mandatory gate for the current commercial lane because the product owner explicitly declined paid signing and accepted unsigned distribution on 2026-10-11.
 
-The signing implementation may be OV/EV, Azure Trusted Signing, or another acceptable trusted service. Secrets/credentials must never be committed.
+A stable unsigned release may be labeled `COMMERCIAL_READY_UNSIGNED` only when all of the following are true:
+- the installer and packaged app are verified as intentionally `NotSigned` rather than accidentally losing a required signature;
+- release notes/evidence state that Windows may show `Unknown publisher` and Microsoft Defender SmartScreen warnings;
+- no claim is made that Supabase licensing provides publisher identity, Authenticode trust, or SmartScreen reputation;
+- the Supabase entitlement backend and desktop license activation path are verified independently;
+- the optional trusted-signing integration remains retained for future adoption without blocking this unsigned lane.
+
+If trusted signing is adopted later, the signing implementation may be OV/EV, Azure Trusted Signing, SSL.com/eSigner, or another acceptable trusted service. Secrets/credentials must never be committed.
 
 ### D-002-8 — Release-tool security is in scope
 The packaging/dev dependency findings previously carried by TVE-IMP-009 must be re-audited because Phase 7 now executes that toolchain in a production release role. Remediate or upgrade release tooling with risk-based verification before stable release.

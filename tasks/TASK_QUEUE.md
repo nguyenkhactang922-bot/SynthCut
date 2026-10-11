@@ -199,19 +199,23 @@ Accepted candidate source manifest: `225a987dfb5490949ba107eac4c9e0dd0c74499b`, 
 Result: NSIS+ZIP integrity PASS; hashes/provenance/update metadata PASS; packaged MCP/core/bundled-resource smoke PASS; project save/open PASS; representative H.264+AAC export PASS; installer exit 0; installed desktop launch PASS. No publication occurred. `asar=false` was assessed and remains deferred hardening because an ASAR package needs additional MCP launcher/path work.
 
 ## TVE-REL-007 — Commercial authorization / license strategy
-Status: STRATEGY LOOPBACK — REMOTION PASS / SUPABASE LICENSE BACKEND PASS / PAID SIGNING DECLINED / UNSIGNED ACCEPTANCE AMENDMENT PENDING
+Status: DONE / PASS — owner-approved unsigned commercial lane
 Dependencies: REL-006 PASS
-Evidence: `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md` + retained `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`
-Current evidence:
+Evidence: `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md` + `docs/evidence/release/TVE-REL-007-REMOTION.md` + `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md` + retained `docs/evidence/release/TVE-REL-007-SIGNING-PROVIDER.md`
+Result:
 - `REMOTION_LICENSE_GATE=PASS` / `FREE_LICENSE_ELIGIBLE`.
-- `SUPABASE_LICENSE_BACKEND=PASS`: isolated `tve_license_*` tables, transactional RPC, deployed `tve-license-authority` Edge Function, real HTTPS validation PASS.
-- founder/admin commercial key prefix `TAIVE-F3E3Y`: maxDevices=3, no expiry, activeDevices=0; plaintext key is not stored in Git.
-- product owner explicitly declined purchasing paid Windows signing on 2026-10-11.
-- SSL.com/eSigner integration remains retained as an optional future path only.
-- Supabase licensing does not replace Authenticode; under the current ADR `WINDOWS_SIGNING_GATE=PASS` is absent and `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until an unsigned-commercial acceptance amendment is approved or trusted signing is later supplied.
+- `SUPABASE_LICENSE_BACKEND=PASS`; founder/admin key prefix `TAIVE-F3E3Y`, maxDevices=3, no expiry, activeDevices=0 after exact test cleanup; plaintext key is not stored in Git.
+- bounded DEFINE/ADR/PLAN amendment now explicitly permits the current unsigned commercial lane with owner-accepted Unknown-publisher/SmartScreen risk.
+- packaged desktop activation/restart persistence through real renderer/preload/main IPC PASS; same device remained activeDevices=1; persisted key encrypted via Electron `safeStorage`.
+- full 1.1.0 NSIS/ZIP dist PASS / exit 0; installer SHA-256 `867fb75aceecab263ad0a5b3914f55ce71772dfa6aa923749b689dc1ecad6451`; ZIP SHA-256 `2ff621e45d4c7d78211282beec983fecc66ea6f2f635f074aa8ece53d2d004f2`.
+- installer and packaged app both intentionally `NotSigned`; trusted signing remains optional future hardening.
+- no tag/push/PR/merge/GitHub Release/updater side effect occurred in REL-007.
+
 ## TVE-REL-008 — GitHub Release publication
-Status: BLOCKED BY REL-007
+Status: ELIGIBLE / PRE-PUBLICATION GUARD
+Dependencies: REL-007 PASS
 Target: `nguyenkhactang922-bot/SynthCut` only.
+Next gate: reviewed committed source; verify branch/remote auth, existing PR state, local+remote `v1.1.0` tag absence, and GitHub Release collision absence before any push/tag/release side effect.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
 Status: BLOCKED BY REL-008
@@ -223,4 +227,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-Bounded DEFINE/ADR/PLAN loopback for unsigned commercial distribution is next: explicitly record acceptance of `Unknown publisher` / SmartScreen risk, then integrate the desktop app with `tve-license-authority` and verify activation/startup/device-limit behavior. Do not repeat REL-006, Remotion, Supabase backend provisioning, or signing-provider integration.
+`TVE-REL-008`: review/commit the REL-007 changes, then run the fork-only Git/tag/release side-effect guard. If no collision exists and GitHub write authority is valid, continue the repository Git workflow and create the `v1.1.0` release on `nguyenkhactang922-bot/SynthCut` only. Do not rerun REL-007 runtime/package proofs.

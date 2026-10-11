@@ -184,36 +184,36 @@ Build exit codes, file hashes, packaged smoke/runtime logs.
 ### Owner/Authority
 ChatGPT Web/FileMCP-E.
 ### Risks/Open Questions
-Unsigned artifacts are test candidates only.
+Unsigned artifacts may now proceed to the explicitly approved unsigned-commercial lane only after REL-007 entitlement + risk-acceptance evidence PASS; otherwise they remain test candidates.
 ### Loopback
 Owning REL task for package/config defects; owning IMP only for actual runtime regression.
 
 ---
 
-## TVE-REL-007 — External commercial authorization gates
-Status: BLOCKED BY REL-006
+## TVE-REL-007 — Commercial authorization + entitlement gate
+Status: ACTIVE STRATEGY LOOPBACK
 Dependencies: REL-006 PASS
 
 ### Input
-Package candidate plus commercial audit.
+Accepted package candidate, Remotion basis, explicit owner approval for unsigned commercial distribution, and the Supabase commercial license backend.
 ### Entry Gate
-Technical package candidate PASS.
+REL-006 PASS; `REMOTION_LICENSE_GATE=PASS`; owner explicitly accepts `Unknown publisher` / SmartScreen risk for the unsigned lane.
 ### Work
-Record a valid Remotion redistribution/commercial basis and configure a trusted Windows signing identity/service; verify signature on candidate artifacts.
+Preserve Remotion commercial evidence; verify the Supabase license authority; integrate desktop activation/startup checks; record intentional unsigned status; keep trusted signing as an optional future hardening path rather than a mandatory current gate.
 ### Output
-`REMOTION_LICENSE_GATE=PASS` and `WINDOWS_SIGNING_GATE=PASS`.
+`REMOTION_LICENSE_GATE=PASS`, `SUPABASE_LICENSE_BACKEND=PASS`, `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`, desktop license activation/startup/device-limit verification PASS, and explicit `NotSigned` release evidence.
 ### Exit Gate
-Both external gates PASS. No inference from repository/chat alone.
+Entitlement enforcement PASS; package is intentionally unsigned and risk acceptance is durable; no claim of Authenticode trust is made.
 ### Artifact
-Non-secret evidence records only; never persist credentials/private keys.
+Non-secret licensing/unsigned-release evidence records. Plaintext customer license keys and backend secret keys must never be committed.
 ### Evidence
-License-basis record + signature verification output/certificate subject.
+Remotion basis + Supabase DB/Edge Function verification + desktop activation E2E + Authenticode `NotSigned` observation + owner risk acceptance.
 ### Owner/Authority
-Product owner/external providers for credentials/license; ChatGPT Web verifies observable results.
+Product owner authorizes unsigned distribution and commercial terms; ChatGPT Web verifies observable implementation/evidence; Supabase controls hosted backend availability.
 ### Risks/Open Questions
-This is the expected human/external blocker if no license basis or signing credential/service exists yet.
+SmartScreen/Unknown-publisher warnings can reduce installation trust/conversion. Trusted signing remains a future hardening option.
 ### Loopback
-REL-007; alternative is ADR/research re-entry to create a Remotion-free release profile.
+REL-007 for entitlement defects; DEFINE/ADR if commercial trust policy changes; optional signing path if owner later adopts a certificate/service.
 
 ---
 
@@ -222,7 +222,7 @@ Status: BLOCKED BY REL-007
 Dependencies: REL-007 PASS
 
 ### Input
-Signed, license-cleared package candidate and reviewed release commit.
+Unsigned-but-explicitly-approved, license-cleared package candidate with Supabase entitlement verification and a reviewed release commit.
 ### Entry Gate
 REL-001..007 PASS; no existing tag/release collision; GitHub auth/write authority verified.
 ### Work
@@ -253,7 +253,7 @@ Published release/update feed and an installed older fork build or controlled pr
 ### Entry Gate
 Published update metadata is valid.
 ### Work
-Verify installed fork queries only fork feed, discovers newer version, downloads, validates publisher/signature, installs/relaunches, preserves project/user state.
+Verify installed fork queries only the fork feed, discovers the newer version, downloads it, validates artifact hashes/update metadata and intentional unsigned status, installs/relaunches, preserves project/user state, and revalidates the Supabase license after restart.
 ### Output
 Updater E2E evidence.
 ### Exit Gate
@@ -261,13 +261,13 @@ End-to-end update PASS with no upstream feed access or identity collision.
 ### Artifact
 Updater evidence/log.
 ### Evidence
-Installed app logs, version transition, signature/feed inspection.
+Installed app logs, version transition, release-feed/hash inspection, intentional `NotSigned` observation, and post-relaunch license validation.
 ### Owner/Authority
 ChatGPT Web/FileMCP-E.
 ### Risks/Open Questions
 Requires at least two package versions for a true update transition.
 ### Loopback
-REL-002/005/007 depending on feed/signature defect.
+REL-002/005/007 depending on feed, artifact-integrity, unsigned-status, or entitlement defect.
 
 ---
 
@@ -297,4 +297,4 @@ Future defects loop to the smallest owning stage.
 Owning REL/IMP stage based on evidence.
 
 ## Phase-7 completion definition
-`COMMERCIAL_READY=true` is forbidden until REL-001..010 all PASS and stable release evidence exists. A local unsigned package may PASS REL-006 but cannot skip REL-007.
+For the current owner-approved unsigned lane, final state is `COMMERCIAL_READY_UNSIGNED=true` only after REL-001..010 all PASS, Supabase entitlement enforcement is verified, GitHub release/updater E2E PASS, and durable evidence records intentional `NotSigned` status plus accepted `Unknown publisher` / SmartScreen risk. `COMMERCIAL_READY_SIGNED=true` remains reserved for a future trusted-signing lane.

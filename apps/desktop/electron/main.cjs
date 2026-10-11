@@ -10,6 +10,7 @@ const { app, BrowserWindow, Menu, ipcMain, dialog } = require("electron");
 const path = require("node:path");
 const { ensureCore } = require("./core-launcher.cjs");
 const { applyBundledAssetEnv, getBundledAssetEnv } = require("./bundled-assets.cjs");
+const license = require("./license.cjs");
 
 // Branding: the display name (taskbar / jump-list / dialogs) and a stable Windows
 // AppUserModelID so the taskbar shows OUR name + icon instead of "Electron" and
@@ -174,6 +175,12 @@ ipcMain.on("project:state", (_e, state) => {
     if (mainWin) mainWin.close();
   }
 });
+
+// Commercial entitlement gate. The renderer never receives Supabase backend
+// credentials; it can only ask the main process to validate/store a customer key.
+ipcMain.handle("license:status", () => license.status());
+ipcMain.handle("license:activate", (_e, licenseKey) => license.activate(licenseKey));
+ipcMain.handle("license:forget", () => license.forget());
 
 ipcMain.handle("dialog:openFiles", async () => {
   const result = await dialog.showOpenDialog({

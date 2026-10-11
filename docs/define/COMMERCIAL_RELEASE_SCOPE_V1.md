@@ -54,7 +54,7 @@ A public binary may not be called `COMMERCIAL_READY` until all applicable gates 
    - a release build that demonstrably excludes Remotion and its governed runtime packages.
 4. **Packaging-security gate:** release tooling security findings are re-audited/remediated or explicitly resolved with evidence.
 5. **Brand/update gate:** product name, app id, installer strings and update feed point to the fork identity.
-6. **Signing gate:** a stable commercial release requires a trusted Windows signing path. Unsigned builds may be used for local/CI validation but must not be labeled final commercial-ready.
+6. **Publisher trust / unsigned-distribution gate:** trusted Windows code signing remains the preferred future path, but the product owner explicitly authorizes an unsigned commercial release for the current lane. Before publication, release evidence must record that the installer/app are intentionally `NotSigned`, that Windows may display `Unknown publisher` / Microsoft Defender SmartScreen warnings, and that this risk is accepted rather than misrepresented as signed/trusted. Supabase entitlement licensing does not replace Authenticode.
 7. **Runtime package gate:** packaged installer/ZIP smoke, install/launch, bundled-resource, updater and artifact-integrity checks pass.
 
 ## Exit Gate

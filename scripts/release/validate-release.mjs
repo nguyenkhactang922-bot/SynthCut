@@ -79,13 +79,25 @@ if (requireClean) {
 
 const workflow = readFileSync(resolve(ROOT, ".github/workflows/release.yml"), "utf8");
 const commercialConfig = readFileSync(resolve(ROOT, "apps/desktop/electron-builder.commercial.cjs"), "utf8");
+const licenseClient = readFileSync(resolve(ROOT, "apps/desktop/electron/license.cjs"), "utf8");
+const preload = readFileSync(resolve(ROOT, "apps/desktop/electron/preload.cjs"), "utf8");
+const licenseGate = readFileSync(resolve(ROOT, "apps/desktop/src/LicenseGate.tsx"), "utf8");
 const requiredWorkflowTokens = [
   "contents: read",
   "contents: write",
   "github.repository == 'nguyenkhactang922-bot/SynthCut'",
   "REMOTION_COMMERCIAL_BASIS_APPROVED must be true",
-  "WINDOWS_SIGNING_APPROVED must be true",
-  "WINDOWS_SIGNING_PROVIDER must be sslcom-esigner",
+  "SUPABASE_LICENSE_BACKEND_APPROVED must be true",
+  "UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true",
+  "vars.SUPABASE_LICENSE_BACKEND_APPROVED",
+  "vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED",
+  "npm run dist --workspace synthcut-by-relo -- --publish never",
+  "Get-AuthenticodeSignature",
+  "NotSigned",
+  "UNSIGNED_WINDOWS_RELEASE_GATE=PASS",
+  "UNSIGNED_RELEASE_NOTICE.txt",
+  "Unknown publisher",
+  "Supabase licensing controls Tang AI Video Editor entitlement",
   "vars.WINDOWS_SIGN_PUBLISHER_NAME",
   "secrets.ESIGNER_USERNAME",
   "secrets.ESIGNER_PASSWORD",
@@ -121,6 +133,23 @@ for (const token of requiredCommercialConfigTokens) {
 }
 if (desktop.scripts?.["dist:commercial"] !== "electron-builder --win --config electron-builder.commercial.cjs") {
   fail("desktop dist:commercial script must use electron-builder.commercial.cjs");
+}
+const licenseClientTokens = [
+  "https://ljygpbxkxmsuhdfpfgml.supabase.co/functions/v1/tve-license-authority",
+  "safeStorage.encryptString",
+  "safeStorage.decryptString",
+  "crypto.randomUUID()",
+  "NETWORK_TIMEOUT",
+  "LICENSE_REQUIRED",
+];
+for (const token of licenseClientTokens) {
+  if (!licenseClient.includes(token)) fail(`desktop license client is missing required token: ${token}`);
+}
+for (const token of ["license:status", "license:activate", "license:forget"]) {
+  if (!preload.includes(token)) fail(`desktop preload is missing license bridge token: ${token}`);
+}
+for (const token of ["Commercial license verification", "Activate license", "DEVICE_LIMIT"]) {
+  if (!licenseGate.includes(token)) fail(`desktop license gate is missing required token: ${token}`);
 }
 if (/npm\s+publish/.test(workflow)) fail("release workflow must not publish npm packages");
 

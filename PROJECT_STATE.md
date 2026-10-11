@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE — ACTIVE WITH STRATEGY LOOPBACK; TVE-REL-006 PASS; REMOTION_LICENSE_GATE=PASS; SUPABASE_LICENSE_BACKEND=PASS; paid Windows signing declined by owner; unsigned-commercial acceptance amendment required`
+`RELEASE & OPERATE — ACTIVE; TVE-REL-001..007 PASS for owner-approved unsigned commercial lane; TVE-REL-008 eligible pending reviewed commit + fork/tag/release side-effect guard`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,7 +19,7 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE WITH STRATEGY LOOPBACK — REL-001..006 retained PASS; `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS`; paid Windows signing declined by owner; SSL.com/eSigner integration retained only as an optional future path; unsigned-commercial acceptance amendment pending and publication remains prohibited under the current ADR
+- RELEASE & OPERATE: ACTIVE — REL-001..007 PASS for the owner-approved unsigned lane; `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS`; `UNSIGNED_COMMERCIAL_RELEASE_APPROVED=true`; trusted signing retained only as optional future hardening; REL-008 publication is now dependency-eligible after reviewed commit + fork/tag/release/auth side-effect guard
 - LEARN: FUTURE
 
 ## Governance normalization
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-007 — STRATEGY LOOPBACK: REMOTION_LICENSE_GATE=PASS; SUPABASE_LICENSE_BACKEND=PASS; paid signing declined; unsigned-commercial acceptance amendment pending`
+`TVE-REL-008 — GitHub Release publication; REL-007 PASS, awaiting reviewed committed source + fork/tag/release/auth side-effect guard`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -103,12 +103,12 @@ Release baseline summary:
 - REL-004 packaging/release-tool security hardening is PASS/COMMITTED `20c8ff9` with `docs/evidence/release/TVE-REL-004.md`;
 - REL-005 release workflow/version hardening is PASS/COMMITTED `227535b` with `docs/evidence/release/TVE-REL-005.md`;
 - REL-006 local packaged acceptance is PASS with `docs/evidence/release/TVE-REL-006.md`; accepted candidate manifest source commit is `225a987`, installer/ZIP integrity PASS, packaged MCP/core/resource resolution PASS, save/open PASS, representative H.264+AAC export PASS, installer exit 0 and installed launch PASS;
-- `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS` with evidence `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md`; founder/admin commercial key prefix `TAIVE-F3E3Y` exists with maxDevices=3, no expiry and activeDevices=0. Product owner declined paid signing on 2026-10-11. SSL.com/eSigner integration remains retained only as an optional future path. Under current ADR, public release remains fail-closed until a bounded amendment explicitly permits unsigned commercial distribution or trusted signing is later supplied.
+- `REMOTION_LICENSE_GATE=PASS`; `SUPABASE_LICENSE_BACKEND=PASS`; owner-approved unsigned distribution amendment PASS; packaged license activation/restart persistence PASS; founder/admin key returned to activeDevices=0 after exact test-device cleanup; full 1.1.0 NSIS/ZIP build PASS with installer/app `NotSigned` and hashes recorded in `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md`. REL-007 is PASS.
 
 ## Hard gate
-`RELEASE_IMPLEMENTATION_ALLOWED=true` for dependency-ready REL-002..006 tasks.
+`RELEASE_IMPLEMENTATION_ALLOWED=true` for dependency-ready Phase-7 tasks.
 
-`PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until REL-007 PASS. This authorization is task/dependency scoped and does not permit skipping license/signing gates or rerunning prior IMP/E2E stages.
+`PUBLIC_COMMERCIAL_RELEASE_ALLOWED=true` for the frozen owner-approved unsigned lane only after REL-008 entry checks confirm reviewed committed source, fork-only target, no tag/release collision, and valid GitHub write authority. This does not authorize publication to upstream or skipping REL-008 side-effect guards.
 
 ## Git identity
 Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkhactang813@gmail.com>`.
@@ -306,17 +306,20 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - `asar=false` was explicitly assessed. An ASAR smoke candidate packaged PASS, but current external MCP launch via a script path inside `app.asar` needs additional launcher/unpack work. Experimental ASAR source change was reverted and is deferred hardening, not part of the accepted candidate.
 - No tag/push/GitHub Release/npm publish/deploy occurred.
 
-## Latest TVE-REL-007 strategy change / Supabase licensing verification
-- Status: `STRATEGY LOOPBACK` — Remotion PASS; paid Windows signing explicitly declined by owner; Supabase commercial licensing backend PASS.
-- Evidence: `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md` + retained signing/remotion evidence.
+## Latest TVE-REL-007 unsigned-commercial verification
+- Status: `PASS` — owner-approved unsigned commercial lane, Supabase entitlement integration, packaged runtime persistence, and full 1.1.0 unsigned artifact proof all verified.
+- Evidence: `docs/evidence/release/TVE-REL-007-UNSIGNED-SUPABASE.md` + `docs/evidence/release/TVE-SUPABASE-LICENSE-BACKEND.md` + retained signing/remotion evidence.
 - Supabase project `ljygpbxkxmsuhdfpfgml` contains isolated `tve_license_keys`, `tve_license_devices`, `tve_license_events` tables with RLS enabled and no direct `anon`/`authenticated` grants.
 - Transactional RPC `public.tve_activate_license(...)` uses `SECURITY INVOKER`, row-locks the license and enforces max-device count atomically; execute is restricted to `service_role`.
 - Edge Function `tve-license-authority` version 1 deployed with custom license-key authentication and pinned `@supabase/supabase-js@2.117.3`.
 - Founder/admin commercial key prefix `TAIVE-F3E3Y`: active, maxDevices=3, no expiry, activeDevices=0 after test cleanup. Full plaintext key is not stored in Git.
 - Verification PASS: devices 1/2/3 VALID; device 4 DEVICE_LIMIT; real HTTPS Edge Function validation VALID; test device/event data removed afterward.
+- Packaged desktop activation via the real renderer/preload/main bridge returned VALID/commercial/stored=true; restart on the same device remained activeDevices=1; persisted license file contained encrypted key bytes and no plaintext key.
+- Full 1.1.0 dist PASS / exit 0. Installer SHA-256 `867fb75aceecab263ad0a5b3914f55ce71772dfa6aa923749b689dc1ecad6451`; ZIP SHA-256 `2ff621e45d4c7d78211282beec983fecc66ea6f2f635f074aa8ece53d2d004f2`; installer and packaged app both `NotSigned` as required by the current lane.
 - Supabase security advisor reports `RLS Enabled No Policy` at INFO for the new service-only tables; this is intentional because direct public/authenticated access is revoked.
 - SSL.com/eSigner repository integration remains available as an optional future trusted-signing path, but purchase/issuance is no longer the active next action.
-- Supabase licensing does not satisfy Authenticode. Under current ADR, `WINDOWS_SIGNING_GATE=PASS` remains absent and `PUBLIC_COMMERCIAL_RELEASE_ALLOWED=false` until acceptance criteria are amended for unsigned distribution or trusted signing is later supplied.
+- Supabase licensing does not satisfy Authenticode; the release remains intentionally unsigned and carries explicit Unknown-publisher/SmartScreen risk acceptance.
+- No tag, push, PR, merge, GitHub Release, or updater side effect was performed by REL-007.
 
 ## NEXT_EXACT_ACTION
-Perform the bounded DEFINE/ADR/PLAN amendment needed to allow an unsigned commercial Windows release with explicit `Unknown publisher` / SmartScreen risk acceptance, then integrate the desktop app with `tve-license-authority` and verify activation/startup/device-limit behavior. Do not repeat REL-006, Remotion, Supabase backend provisioning, signing-provider research, or eSigner integration.
+Review and commit the REL-007 source/governance/evidence changes, then run the REL-008 side-effect guard: inspect fork remote/auth, branch/PR state, `v1.1.0` local+remote tag state, and existing GitHub Releases. If collision/auth checks PASS, continue the repository Git workflow and publish only to `nguyenkhactang922-bot/SynthCut`; never publish upstream.

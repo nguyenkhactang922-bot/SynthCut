@@ -284,6 +284,16 @@ export interface ProgressInfo {
   fraction: number;
 }
 
+export interface LicenseResult {
+  ok: boolean;
+  code: string;
+  plan?: string | null;
+  expiresAt?: string | null;
+  maxDevices?: number | null;
+  activeDevices?: number | null;
+  stored?: boolean;
+}
+
 declare global {
   interface Window {
     aive?: {
@@ -295,6 +305,9 @@ declare global {
       onMenu: (cb: (action: string) => void) => void;
       reportProjectState: (state: { dirty: boolean; hasPath: boolean }) => void;
       getMcpConfig: () => Promise<{ available: boolean; packaged: boolean; mcpEntry: string | null; json: string }>;
+      licenseStatus: () => Promise<LicenseResult>;
+      activateLicense: (licenseKey: string) => Promise<LicenseResult>;
+      forgetLicense: () => Promise<LicenseResult>;
     };
   }
 }
