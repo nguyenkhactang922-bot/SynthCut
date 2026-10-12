@@ -219,7 +219,7 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: FAIL / PACKAGED CORE READINESS REPAIRED LOCALLY / v1.1.3 PR PENDING
+Status: FAIL / PACKAGED CORE READINESS REPAIR COMMITTED `4467d0f` / v1.1.3 PUSH+PR PENDING
 Dependencies: REL-008 PASS
 Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md` + `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md` + `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md` + `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
 Repair/release-forward result: desktop package identity is `tang-ai-video-editor`; reviewed personal main is `452dd263`; `v1.1.1` is published/verified and immutable.
@@ -237,4 +237,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 v1.1.3 readiness repair`: review/commit/push the locally verified launcher fallback + CI smoke + version/evidence/state, open one personal-fork PR, monitor CI, merge/verify, guarded-publish immutable v1.1.3, then rerun only the updater E2E using a controlled lower-version package containing both coordination and readiness fixes plus shared-core defer proof. Do not mutate v1.1.0/v1.1.1/v1.1.2 or rerun REL-001..008.
+`TVE-REL-009 v1.1.3 readiness repair`: local repair commit `4467d0f` PASS. Guard personal remote/open PR state; push once if needed, open exactly one personal-fork PR, monitor only its CI, merge/verify tree parity, guarded-publish immutable v1.1.3, then rerun only the updater E2E using a controlled lower-version package containing both coordination and readiness fixes plus shared-core defer proof. Do not mutate v1.1.0/v1.1.1/v1.1.2 or rerun REL-001..008.
