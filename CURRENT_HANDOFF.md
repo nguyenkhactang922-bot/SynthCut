@@ -3,42 +3,42 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `FAIL / UPDATE-INSTALL INTEGRITY — 1.1.2 REPAIR COMMITTED + PUSHED / PR PENDING`
-- CURRENT_STAGE: `REL-001..008 and published v1.1.0/v1.1.1 remain PASS. New owned-core probe evidence proves electron-updater launches NSIS before app.quit/core cleanup, so the earlier shared-core-only hypothesis is incomplete. Source is repaired for 1.1.2: shared core defers install; owned core must exit before quitAndInstall; autoInstallOnAppQuit is disabled. Deterministic coordinator smoke + typecheck/build/release-validator/YAML/diff gates PASS. No 1.1.2 release side effect yet.`
+- STATUS: `FAIL / PACKAGED CORE READINESS REPAIR COMMITTED / v1.1.3 PUSH+PR PENDING`
+- CURRENT_STAGE: `Public v1.1.2 remains PASS/immutable. Packaged core-readiness defect is repaired and locally verified; containment-safe readiness smoke PASS. Scoped repair commit 4467d0f was created locally. No SynthCut runtime is active. Push/PR/CI/merge/publication + updater E2E remain.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `2c19c93b386436cf941c46d4373034025957be88` — updater-coordination repair committed and pushed to personal feature branch
+- HEAD: local `4467d0f` — readiness repair committed; last durable pushed checkpoint before this repair remains `ca2e6674dc65032bfd8bbb6dbab9a29ac99e6c4b`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-009 updater-coordination repair COMMIT + PUSH PASS` at `2c19c93b386436cf941c46d4373034025957be88`. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`.
-- PROCESS_PID: `NONE` for SynthCut app/core/updater/release
+- LAST_VERIFIED_CHECKPOINT: `REL-009 PACKAGED CORE READINESS LOCAL REPAIR + COMMIT PASS` — deterministic fallback smoke PASS after temp containment fix, packaged runtime `[aive] started core on port 48713`, `/health=200`, prior typecheck/build/tag-validator/YAML/diff PASS. Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`.
+- PROCESS_PID: `NONE` for SynthCut runtime/test/release work
 - PROCESS_COMMAND: `NONE`
-- PTY_SESSION: `NONE` for SynthCut; visible FileMCP PTYs belong to other projects and must not be touched
-- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
-- LAST_EXIT_CODE: `node check/typecheck/build/coordinator smoke/release validator/YAML parse/diff check = PASS`; REL-009 final E2E remains FAIL/pending
+- PTY_SESSION: `NONE` for active SynthCut; visible FileMCP PTYs belong to unrelated projects and must not be touched
+- LATEST_LOG: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`
+- LAST_EXIT_CODE: `readiness containment-safe smoke=0/PASS`; prior root typecheck=0/PASS; prior root build=0/PASS; REL-009 overall remains FAIL until reviewed v1.1.3 + runtime updater E2E PASS
 - ARTIFACTS:
-  - published `v1.1.0`: `docs/evidence/release/TVE-REL-008.md`
-  - published `v1.1.1`: `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md`
-  - first install-integrity failure: `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`
-  - owned-core contradictory proof: `.tmp/rel009-isolated-rerun/probe2/logs/`
-  - repair evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
-  - new coordinator: `apps/desktop/electron/update-coordinator.cjs`
-  - deterministic smoke: `scripts/release/smoke-updater-coordination.cjs`
-  - release-forward source version: `1.1.2` in all five manifests + lockfile
+  - immutable published `v1.1.0`: retained REL-008 evidence
+  - immutable published `v1.1.1`: updater identity release-forward
+  - immutable published `v1.1.2`: updater coordination release-forward
+  - local readiness repair commit: `4467d0f`
+  - failure evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-FAIL.md`
+  - repair evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`
+  - deterministic smoke: `scripts/release/smoke-core-launcher-ready-fallback.cjs`
+  - test-only packaged runtime proof: `.tmp/rel009-ready-runtime-smoke`
+  - controlled lower install evidence remains under `.tmp/rel009-fixed-e2e-install`; do not treat its locally patched launcher as a public artifact
 - BLOCKERS:
-  - REL-009 cannot PASS until repaired source is reviewed/merged/published as a new immutable `v1.1.2` and a fixed-code updater E2E proves complete install + persistence.
-  - Public `v1.1.1` contains the old updater sequencing behavior; it cannot be used as proof that the new coordinator works. Runtime proof must start from a controlled lower-version package containing the fixed coordinator.
-- NEXT_EXACT_ACTION: commit/push this state-only checkpoint, then open exactly one PR from `chatgpt/phase7-commercial-release` to personal `main`; monitor that PR CI without extra pushes; merge only after PASS and verify tree parity. Then side-effect-guard `v1.1.2` tag/release absence + auth + no active release run, publish `v1.1.2`, verify public assets/provenance, and resume only REL-009 with a fixed lower-version test package updating to public 1.1.2 plus a shared-core defer proof. Never publish upstream.
+  - public `v1.1.2` contains the old readiness launcher, so it cannot close REL-009 post-update relaunch proof.
+  - v1.1.3 source must pass personal-fork PR/CI/review/merge and guarded immutable publication before updater E2E can target the repaired public artifact.
+- NEXT_EXACT_ACTION: side-effect guard the personal feature branch/open PR state; if `4467d0f` is not pushed, push exactly once to personal fork; open exactly one PR if absent, monitor only its automatic CI, merge/verify tree parity on PASS; guard auth/tag/release/no-active-run then publish immutable `v1.1.3`; verify public artifact/provenance; prepare a controlled lower-version fixture containing both updater-coordination and readiness fixes; rerun only REL-009 owned-core updater E2E to v1.1.3 plus shared-core defer proof. Never publish upstream or mutate v1.1.0/v1.1.1/v1.1.2.
 - DO_NOT_REPEAT:
-  - REL-001..008 substantive work or v1.1.0 publication;
-  - v1.1.1 identity repair/CI/PR/merge/release publication;
-  - 1.0.6 rebuild;
-  - first corrupt updater transition as a claimed PASS;
-  - existing probe2 owned-core/download evidence;
-  - current local node-check/typecheck/build/coordinator-smoke/release-validator/YAML/diff-check gates unless source changes again;
+  - REL-001..008 substantive work;
+  - v1.1.0/v1.1.1/v1.1.2 publication;
+  - PR #11 CI/merge;
+  - updater-coordination local smoke/build gates unless its source changes;
+  - failed readiness E2E attempt or stopped PTY;
+  - readiness smoke/typecheck/build/tag-validator/YAML/diff already PASS unless relevant source changes;
   - unrelated project PTYs/artifacts or historical scratch/build directories.
 
 ## Hard gates
 - `TVE-REL-001..008=PASS` retained.
-- `v1.1.0` and `v1.1.1` are immutable published historical evidence.
-- Upstream `Relo-video/SynthCut` remains read-only/non-publication target.
-- `TVE-REL-009=FAIL` until fixed-code runtime updater E2E passes.
+- `v1.1.0`, `v1.1.1`, `v1.1.2` are immutable published evidence.
+- `TVE-REL-009=FAIL/REPAIR` until v1.1.3 publication and fixed-code owned/shared updater runtime proofs PASS.
 - `TVE-REL-010` remains blocked by REL-009.

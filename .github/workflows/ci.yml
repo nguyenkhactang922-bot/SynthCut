@@ -32,6 +32,9 @@ jobs:
       - name: Smoke — updater core coordination
         run: node scripts/release/smoke-updater-coordination.cjs
 
+      - name: Smoke — packaged core readiness fallback
+        run: node scripts/release/smoke-core-launcher-ready-fallback.cjs
+
       # The media-free / self-synthesizing smoke subset (no model downloads).
       - name: Smoke — compositor plan (pure logic)
         run: npx tsx apps/desktop/scripts/smoke-composite.ts

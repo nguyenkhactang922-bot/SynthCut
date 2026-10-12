@@ -51,21 +51,60 @@ function healthCheck(port) {
  * Electron that's the Electron binary (with ELECTRON_RUN_AS_NODE), under tests
  * it's plain node. Resolves with { child, port } once the core reports ready.
  */
-function startCore(dir, execPath) {
+function startCore(dir, execPath, options = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(execPath || process.execPath, [coreCliPath()], {
+    const cliPath = options.cliPath || coreCliPath();
+    const readyTimeoutMs = options.readyTimeoutMs || 20000;
+    const pollIntervalMs = options.pollIntervalMs || 100;
+    const child = spawn(execPath || process.execPath, [cliPath], {
       env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", AIVE_DATA_DIR: dir },
       stdio: ["ignore", "pipe", "pipe"],
     });
 
     let settled = false;
     let buf = "";
-    const timeout = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        reject(new Error("Timed out waiting for editor core to start"));
+    let probeInFlight = false;
+    let timeout = null;
+    let readinessPoll = null;
+
+    const cleanup = () => {
+      if (timeout) clearTimeout(timeout);
+      if (readinessPoll) clearInterval(readinessPoll);
+    };
+    const settleReady = (port, token = "") => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve({ child, port, token });
+    };
+    const settleError = (err) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (child && child.exitCode === null && !child.killed) {
+        try { child.kill(); } catch { /* best-effort cleanup after failed startup */ }
       }
-    }, 20000);
+      reject(err);
+    };
+
+    // Packaged Electron children on Windows can become healthy and publish
+    // server.json even when their stdout ready line never reaches this pipe.
+    // Fall back only to authoritative state from THIS spawned PID plus /health.
+    readinessPoll = setInterval(async () => {
+      if (settled || probeInFlight) return;
+      const info = readServerInfo(dir);
+      if (!info || Number(info.pid) !== child.pid || !info.port) return;
+      probeInFlight = true;
+      try {
+        if (await healthCheck(info.port)) settleReady(info.port, info.token || "");
+      } finally {
+        probeInFlight = false;
+      }
+    }, pollIntervalMs);
+
+    timeout = setTimeout(() => {
+      settleError(new Error("Timed out waiting for editor core to start"));
+    }, readyTimeoutMs);
 
     child.stdout.on("data", (chunk) => {
       buf += chunk.toString();
@@ -76,11 +115,8 @@ function startCore(dir, execPath) {
         if (!line) continue;
         try {
           const msg = JSON.parse(line);
-          if (msg.event === "ready" && msg.port && !settled) {
-            settled = true;
-            clearTimeout(timeout);
-            // token: session auth secret; also published in <dataDir>/server.json.
-            resolve({ child, port: msg.port, token: msg.token || (readServerInfo(dir) || {}).token || "" });
+          if (msg.event === "ready" && msg.port) {
+            settleReady(msg.port, msg.token || (readServerInfo(dir) || {}).token || "");
           }
         } catch {
           /* non-JSON log line; ignore */
@@ -88,20 +124,8 @@ function startCore(dir, execPath) {
       }
     });
     child.stderr.on("data", (d) => process.stderr.write(`[core] ${d}`));
-    child.on("exit", (code) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeout);
-        reject(new Error(`Core exited before ready (code ${code})`));
-      }
-    });
-    child.on("error", (err) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timeout);
-        reject(err);
-      }
-    });
+    child.on("exit", (code) => settleError(new Error(`Core exited before ready (code ${code})`)));
+    child.on("error", (err) => settleError(err));
   });
 }
 

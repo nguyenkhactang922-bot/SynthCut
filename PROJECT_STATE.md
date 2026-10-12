@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 updater install-integrity FAIL retained; v1.1.2 core-coordination repair LOCAL VERIFY PASS / PR pending`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 packaged core-readiness FAIL repaired locally; v1.1.3 review/release-forward ACTIVE`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - FAIL retained; v1.1.2 updater core-coordination repair LOCAL VERIFY PASS / PR pending`
+`TVE-REL-009 - FAIL / packaged core-readiness repair committed at 4467d0f; v1.1.3 push/PR/CI/release-forward pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -431,8 +431,24 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Coordination is isolated in `apps/desktop/electron/update-coordinator.cjs`; deterministic smoke covers shared defer, owned-core ordering, already-stopped core, and timeout fail-closed. CI now includes this smoke.
 - LOCAL VERIFY PASS: node checks, `REL009_UPDATER_COORDINATION_SMOKE=PASS`, root typecheck, root build, release validator `version=1.1.2 tag=v1.1.2`, CI YAML parse, and `git diff --check`.
 - Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`.
-- Repair commit `2c19c93b386436cf941c46d4373034025957be88` created and pushed to `personal/chatgpt/phase7-commercial-release`; PR pending.
-- REL-009 remains FAIL until review/merge, guarded v1.1.2 publication, and a fixed-code runtime updater E2E PASS.
+- Repair commit `2c19c93b386436cf941c46d4373034025957be88` was pushed and reviewed through PR #11; CI run `38232873973` SUCCESS; PR #11 MERGED to personal `main@196dccb6affae074d66c9233d97086b384e40609`; merge-tree parity PASS.
+- Guarded `v1.1.2` publication succeeded through Release run `38237764462`; both `windows` and `publish-release` jobs PASSed.
+- `v1.1.2^{}` peel, personal main, bundle source and release metadata source all equal `196dccb6affae074d66c9233d97086b384e40609`; `sourceTrackedDirty=false`.
+- `latest.yml` version `1.1.2`; EXE SHA-256 `19e99f06f3c09200045b924d2361e853bab500eb21c836653dde30d4ae8ff046`; ZIP SHA-256 `0c59b5bbbd83f12c4fe99ad5455dd15345a5eb8cb7b261136cd5c409970fb14b`; GitHub asset digests match.
+- Existing controlled fixed lower-version fixture `.tmp/rel009-fixed-lower-dist` is version `1.1.1`, package/cache identity `tang-ai-video-editor` / `tang-ai-video-editor-updater`, coordinator present, 224 production module directories, `electron-updater` present, installer SHA-256 `0474e36d6a3d563b151e7015d7b1ebaf881c6cf8767e3b929306d9fe7721315e`, intentionally NotSigned.
+- Evidence: `docs/evidence/release/TVE-REL-009-V112-RELEASE-FORWARD.md`.
+- REL-009 remains RUNNING only for the fixed-code runtime updater E2E plus shared-core defer proof.
+
+## Latest TVE-REL-009 packaged core-readiness failure / repair
+- Fixed-code owned-core E2E against the retained lower fixture failed before updater install: lower app PID `128244` spawned core PID `136700` on dedicated port `48712`; core was healthy and wrote authoritative `server.json`, but desktop never reached `[aive] started core` and later quit. No updater install side effect occurred. Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-FAIL.md`.
+- Root cause: launcher previously depended exclusively on child stdout JSON ready. Packaged runtime can publish matching `server.json` + healthy `/health` while stdout ready is not delivered to the Electron parent.
+- Narrow repair keeps stdout ready as fast path and adds fail-closed fallback requiring `server.json.pid === child.pid`, valid port and `/health` PASS; mismatched PID is rejected; failed startup cleans its spawned child.
+- New deterministic smoke `scripts/release/smoke-core-launcher-ready-fallback.cjs` PASSes positive no-stdout-ready and negative PID-mismatch/cleanup paths; CI includes the smoke.
+- Test-only packaged runtime proof under `.tmp/rel009-ready-runtime-smoke` PASSed: desktop logged `[aive] started core on port 48713`; core PID `98564`; `/health=200`; cleanup PASS.
+- Release-forward version bumped consistently to `1.1.3` in the five canonical manifests and only corresponding workspace-version fields in `package-lock.json`.
+- Local verification PASS: launcher/smoke node checks, `REL009_CORE_READY_FALLBACK_SMOKE=PASS`, CI YAML parse, tag-mode release validator `version=1.1.3`, root typecheck exit 0, root build exit 0, `git diff --check` PASS.
+- Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`.
+- REL-009 remains FAIL/REPAIR until reviewed v1.1.3 publication and owned-core + shared-core runtime updater E2E PASS.
 
 ## NEXT_EXACT_ACTION
-Review/stage only the v1.1.2 updater-coordination source, CI, version metadata, evidence and state files; commit and push to personal fork; open one PR and monitor its existing CI to PASS; merge and verify tree parity. Then guard tag/release/auth/no-active-run state before publishing v1.1.2. After public artifact verification, run only the REL-009 fixed-code updater E2E plus shared-core defer proof. Never publish upstream or rerun REL-001..008.
+Repair commit `4467d0f` is local and reviewed. Side-effect guard personal feature branch/open PR state; push exactly once if remote lacks `4467d0f`; open one PR if absent and monitor only its automatic CI; merge/verify tree parity on PASS. Then guard auth/tag/release/no-active-run, publish immutable v1.1.3, verify public provenance/artifacts, create a controlled lower-version fixture containing both coordination + readiness fixes, and rerun only REL-009 updater E2E plus shared-core defer proof. Never publish upstream or rerun REL-001..008.
