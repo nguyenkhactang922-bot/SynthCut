@@ -219,11 +219,13 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: REVIEWED MAIN READY / `v1.1.1` PUBLICATION PENDING / E2E NOT YET RUN
+Status: FAIL / UPDATE-INSTALL INTEGRITY / ISOLATED TRANSITION RERUN ACTIVE
 Dependencies: REL-008 PASS
-Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
-Repair result: desktop package identity `tang-ai-video-editor`; release-forward version `1.1.1`; root/workflow selectors use `--workspace apps/desktop`; package-lock desktop link and validator contracts are synchronized. Existing full `rel009-identity-dist` artifacts verify generated feed `nguyenkhactang922-bot/SynthCut`, cache `tang-ai-video-editor-updater`, matching hashes, and intentional `NotSigned`. Tag-mode validator, root typecheck/build and diff-check PASS. Do not rerun package before commit/CI.
-Delivery result: source PR #9 CI `38161023407` PASS and merged `f071f817`; state PR #10 CI `38161447758` PASS and merged to reviewed personal `main@452dd263`; merge-tree parity PASS. Next: guarded-publish `v1.1.1`; resume only the installed updater transition from retained `1.0.6`.
+Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md` + `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md` + `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`
+Repair/release-forward result: desktop package identity is `tang-ai-video-editor`; reviewed personal main is `452dd263`; `v1.1.1` is published/verified and immutable.
+First updater attempt result: discovery/download of personal-fork v1.1.1 and executable version change to `1.1.1.0` occurred, but the resulting in-place install tree is incomplete (`electron-updater` absent; only `@aive` remains under top-level node_modules). Fresh v1.1.1 install is healthy with 224 modules, proving the public package is not the defect.
+Root isolation finding: old 1.0.6 app attached to a pre-existing shared core on port 4789; attached cores intentionally survive app quit, invalidating the updater-install isolation precondition and allowing install-tree file locking during NSIS replacement.
+Rerun rule: rerun only the failed updater transition using the accepted existing 1.0.6 installer, new controlled install/userData/APPDATA/LOCALAPPDATA/TEMP/AIVE_DATA_DIR and dedicated AIVE_PORT; prove old app owns core and core exits before install; then verify full 1.1.1 module tree/electron-updater, personal-fork feed + unique cache, `NotSigned`, same-device license revalidation and unchanged project/user-state hashes. Do not republish v1.1.1 or rerun REL-001..008.
 
 ## TVE-REL-010 — Monitor / incident handoff
 Status: BLOCKED BY REL-009
@@ -232,4 +234,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 release-forward delivery`: reviewed personal `main@452dd263` is ready. Verify auth/tag/release/no-active-run guards, publish only new `v1.1.1`, verify Release evidence, then run only the true updater E2E from retained installed `1.0.6`.
+`TVE-REL-009 isolated updater-transition rerun`: checkpoint this failure state, then rerun only the failed updater transition with an owned dedicated core. Do not rebuild 1.0.6, republish v1.1.1, or rerun REL-001..008.

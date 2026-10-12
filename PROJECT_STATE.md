@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 identity repair + state checkpoint reviewed/merged to personal main 452dd263; v1.1.1 publication + updater E2E pending`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 v1.1.1 release-forward PASS; updater E2E FAIL at update-install integrity and bounded isolated updater-transition rerun ACTIVE`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -19,8 +19,8 @@ Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §
 - DESIGN: V1 FROZEN + release ADR ACCEPTED — `docs/adr/ADR-002_COMMERCIAL_RELEASE_DISTRIBUTION.md`
 - PLAN IMPLEMENTATION: V1 PASS + Phase-7 release plan FROZEN — `docs/plan/PHASE7_RELEASE_PLAN_V1.md`
 - BUILD & VERIFY: PASS — prior product baseline remains MAIN VERIFIED at `personal/main@af92f20`
-- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` remains immutable published evidence; REL-009 source PR #9 + state PR #10 are CI/merge PASS; personal `main@452dd263` is reviewed release-forward source for `v1.1.1`; publication and installed updater E2E remain pending
-- LEARN: FUTURE
+- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` remains immutable published evidence; REL-009 source PR #9 + state PR #10 are CI/merge PASS; `v1.1.1` release-forward is published/verified from personal `main@452dd263`; installed updater E2E is ACTIVE
+- RELEASE & OPERATE: ACTIVE - REL-001..008 PASS retained; `v1.1.0` and `v1.1.1` remain immutable published evidence; REL-009 source/state review + release-forward PASS; first updater transition produced an incomplete install tree because the old app attached to a pre-existing shared core; rerun only the updater-transition stage in an isolated owned-core environment
 
 ## Governance normalization
 The canonical lifecycle now contains 39 named substages. Post-update runtime verification confirmed all ten contract fields are present 39/39:
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - reviewed personal main `452dd263` ready for guarded `v1.1.1` publication; updater E2E pending`
+`TVE-REL-009 - FAIL at updater install integrity; isolated updater-transition rerun ACTIVE`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -415,5 +415,14 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Recovered existing full package evidence instead of rebuilding: `rel009-identity-dist` contains 1.1.1 EXE/ZIP/blockmap/latest.yml/SHA256SUMS; generated `app-update.yml` targets `nguyenkhactang922-bot/SynthCut` with `updaterCacheDirName: tang-ai-video-editor-updater`.
 - Verification PASS: EXE SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`; ZIP SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`; both match SHA256SUMS; installer/app `NotSigned`; tag-mode validator v1.1.1 PASS; root typecheck PASS; root build PASS; `git diff --check` PASS. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`.
 
+## Latest TVE-REL-009 updater install-integrity failure
+- `v1.1.1` release-forward is PASS on `personal/main@452dd263`; Release workflow `38161855081` SUCCESS.
+- First updater attempt downloaded the correct public v1.1.1 installer and changed the controlled install executable to `1.1.1.0`.
+- Post-update install tree is incomplete: `resources/app/node_modules` retains only `@aive`; `electron-updater` is absent; relaunch log reports `electron-updater unavailable`.
+- Existing fresh v1.1.1 install is healthy: `1.1.1.0`, `NotSigned`, 224 top-level production module directories, `electron-updater` present, personal-fork feed + `tang-ai-video-editor-updater`.
+- Old 1.0.6 updater log proves the app attached to an already-running core on port 4789 before update. By contract an attached/shared core is left alive on app quit, so the first E2E did not satisfy isolated updater-install preconditions.
+- REL-009 is FAIL at update-install integrity. Only the updater-transition stage may be rerun using the accepted existing 1.0.6 installer and an isolated owned core.
+- Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`.
+
 ## NEXT_EXACT_ACTION
-Identity repair PR #9 and state PR #10 are CI/merge PASS; reviewed personal main is `452dd263163faa2b48ca91006c4f8ff65cffbb7d`. Run final tag/release guards, publish only new `v1.1.1`, verify the Release, then resume REL-009 updater E2E from retained installed `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.
+Checkpoint and rerun only the failed REL-009 updater transition. Use the accepted `rel006-rerun3-dist` 1.0.6 installer in a fresh project-local install, with fresh APPDATA/LOCALAPPDATA/TEMP/AIVE_DATA_DIR and a dedicated AIVE_PORT so the old app owns its core. Preserve the encrypted license + test project/marker, prove the owned core exits before installer replacement, then verify updated 1.1.1 retains `electron-updater`, personal-fork feed + `tang-ai-video-editor-updater`, `NotSigned`, same deviceId license revalidation, and unchanged project/user-state hashes. Do not republish releases or rerun REL-001..008.nstalled `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.

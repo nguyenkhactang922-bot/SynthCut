@@ -3,39 +3,40 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `PASS / REVIEWED MAIN READY FOR v1.1.1 RELEASE-FORWARD TAG`
-- CURRENT_STAGE: `REL-008 remains PASS/published. The REL-009 identity preflight failure has been repaired locally: desktop private package identity is tang-ai-video-editor, release-forward line is 1.1.1, generated app-update.yml targets nguyenkhactang922-bot/SynthCut and uses tang-ai-video-editor-updater. Existing full 1.1.1 package artifacts were recovered and verified; no package rerun was needed.`
+- STATUS: `FAIL / UPDATE-INSTALL INTEGRITY — BOUNDED RERUN OF UPDATER TRANSITION ONLY`
+- CURRENT_STAGE: `Published v1.1.1 and identity repair remain PASS. First controlled 1.0.6→1.1.1 updater attempt downloaded/installed the correct personal-fork release but produced an incomplete in-place install tree. Fresh v1.1.1 install is healthy, so rerun only the updater transition with isolated owned core.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: local feature branch; identity repair PR #9 merged at `f071f817`; state-only PR #10 CI `38161447758` PASS and merged personal main `452dd263163faa2b48ca91006c4f8ff65cffbb7d`
+- HEAD: resolve from current Git HEAD; latest observed local/remote feature HEAD before this checkpoint `f2399d91cde0697db1d7b82c9c45d5727f35055a`; reviewed personal main `452dd263163faa2b48ca91006c4f8ff65cffbb7d`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-009 reviewed main ready for release-forward` — PR #9 source CI/merge PASS; PR #10 state CI run `38161447758` SUCCESS; personal main `452dd263`; both merge-tree parity checks PASS.
-- PROCESS_PID: `NONE` for SynthCut
+- LAST_VERIFIED_CHECKPOINT: `v1.1.1 release-forward PASS + updater download/install artifact discovery PASS; REL-009 final runtime FAIL due incomplete updated install tree`. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`.
+- PROCESS_PID: `NONE` for SynthCut updater/app/core
 - PROCESS_COMMAND: `NONE`
-- PTY_SESSION: `NONE` for SynthCut; visible FileMCP PTYs belong to other projects and must not be touched
-- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
-- LAST_EXIT_CODE: `release validator=0; root typecheck=0; root build=0; artifact/hash/signature verification=PASS`
+- PTY_SESSION: `NONE` for SynthCut; currently visible FileMCP PTYs belong to other projects and must not be touched
+- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`
+- LAST_EXIT_CODE: `REL-009=FAIL at post-update install integrity; prior updated app process is gone; no final E2E PASS marker`
 - ARTIFACTS:
-  - immutable published `v1.1.0` / REL-008 evidence: `docs/evidence/release/TVE-REL-008.md`
-  - preflight failure evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
-  - repair evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
-  - `apps/desktop/build/rel009-identity-smoke/`
-  - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.exe` — 397652177 bytes — SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`
-  - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.zip` — 505858966 bytes — SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`
-  - generated `app-update.yml`: personal fork feed + `tang-ai-video-editor-updater`
+  - published `v1.1.0`: `docs/evidence/release/TVE-REL-008.md`
+  - updater identity repair: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
+  - published `v1.1.1`: `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md`
+  - published v1.1.1 EXE SHA-256 `acb0c62b703c5cf29b05b19fe15045c2d4b7fc67c166130b20a6d5e12d0753a6`
+  - failed first updated install target `.tmp/rel009-updater-install` now reports version `1.1.1.0`, personal-fork feed, `tang-ai-video-editor-updater`, `NotSigned`, but missing `electron-updater`
+  - healthy fresh v1.1.1 install `.tmp/rel009-fresh111-install` has `224` top-level production modules and `electron-updater`
+  - accepted old installer `apps/desktop/build/rel006-rerun3-dist/Tang-AI-Video-Editor-1.0.6.exe`
 - BLOCKERS:
-  - no technical blocker for state checkpoint review or guarded `v1.1.1` publication;
-  - REL-009 runtime updater E2E remains pending until `v1.1.1` is published from reviewed main under normal side-effect guards.
-- NEXT_EXACT_ACTION: run final release side-effect guard (auth, exact `personal/main=452dd263`, `v1.1.1` tag absent, Release absent, no active Release run, upstream unchanged); create annotated `v1.1.1` on exact reviewed main and push only that new tag to personal fork; monitor the single tag-triggered Release workflow without retry/manual release; on PASS verify published source/artifacts/provenance/hashes/NotSigned, then resume only the true REL-009 updater transition from retained installed `1.0.6`.
+  - first updater transition was invalid because old app attached to a pre-existing core; that shared core remained alive while NSIS replaced the install tree, and the resulting tree is incomplete.
+  - REL-009 cannot PASS until the updater transition is rerun in an isolated environment where the 1.0.6 app owns a dedicated core and that core is gone before install replacement.
+- NEXT_EXACT_ACTION: checkpoint this FAIL state, then rerun only the failed updater transition using the already accepted 1.0.6 installer in a new project-local install/userData/APPDATA/LOCALAPPDATA/TEMP/AIVE_DATA_DIR with a dedicated AIVE_PORT. Copy only the existing encrypted license state and preserved project/marker test files; expose no plaintext license. Prove old app owns core and core exits before install, then verify resulting 1.1.1 tree retains electron-updater, feed identity is personal fork + tang-ai-video-editor-updater, Authenticode is NotSigned, stored license revalidates with same deviceId, and project/user-state hashes are unchanged. Do not republish v1.1.1 or rerun REL-001..008.
 - DO_NOT_REPEAT:
-  - REL-001..008 substantive work or published `v1.1.0`;
-  - REL-006 rebuild of old `1.0.6`;
-  - REL-009 preflight discovery;
-  - current `1.1.1` package build already evidenced by `rel009-identity-dist`;
+  - REL-001..008 substantive work;
+  - v1.1.0 or v1.1.1 publication/tag/release runs;
+  - 1.0.6 rebuild;
+  - updater identity repair build/typecheck/CI/PR/merge;
+  - failed first updater target as a claimed PASS;
   - unrelated project PTYs/artifacts.
 
 ## Hard gates
 - `TVE-REL-001..008=PASS` retained.
-- `v1.1.0` is immutable published historical evidence.
-- Identity repair is CI/REVIEW/MERGE PASS in personal `main@f071f817`; release-forward `v1.1.1` and updater E2E remain pending.
+- `v1.1.0` and `v1.1.1` are immutable published historical evidence.
 - Upstream `Relo-video/SynthCut` remains read-only/non-publication target.
-- `TVE-REL-010` remains blocked by full REL-009 E2E.
+- `TVE-REL-009=FAIL` only at updater install integrity / post-install runtime.
+- `TVE-REL-010` remains blocked by REL-009.
