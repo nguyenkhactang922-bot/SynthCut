@@ -431,6 +431,7 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Coordination is isolated in `apps/desktop/electron/update-coordinator.cjs`; deterministic smoke covers shared defer, owned-core ordering, already-stopped core, and timeout fail-closed. CI now includes this smoke.
 - LOCAL VERIFY PASS: node checks, `REL009_UPDATER_COORDINATION_SMOKE=PASS`, root typecheck, root build, release validator `version=1.1.2 tag=v1.1.2`, CI YAML parse, and `git diff --check`.
 - Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`.
+- Repair commit `2c19c93b386436cf941c46d4373034025957be88` created and pushed to `personal/chatgpt/phase7-commercial-release`; PR pending.
 - REL-009 remains FAIL until review/merge, guarded v1.1.2 publication, and a fixed-code runtime updater E2E PASS.
 
 ## NEXT_EXACT_ACTION
