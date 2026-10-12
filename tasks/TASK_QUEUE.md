@@ -219,7 +219,7 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: FAIL / v1.1.3 PR #12 CI PASS + MERGED `e40af756` / PUBLICATION PENDING
+Status: RUNNING / v1.1.3 RELEASE RUN `38275741580` ON REVIEWED MAIN `e40af756`
 Dependencies: REL-008 PASS
 Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md` + `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md` + `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md` + `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
 Repair/release-forward result: desktop package identity is `tang-ai-video-editor`; reviewed personal main is `452dd263`; `v1.1.1` is published/verified and immutable.
@@ -237,4 +237,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 v1.1.3 readiness repair`: PR #12 CI `38274638406` PASS and merge-tree parity PASS at personal main `e40af756`. Run publication guards; if clean, create/push exactly one annotated `v1.1.3` tag to personal fork and monitor only its Release workflow. On public release PASS, verify provenance/artifacts, then rerun only owned-core updater E2E plus shared-core defer proof. Do not mutate v1.1.0/v1.1.1/v1.1.2 or rerun REL-001..008.
+`TVE-REL-009 v1.1.3 release`: monitor existing Release run `38275741580` only; do not retag/restart/manual-release. If PASS, verify public provenance/artifacts then rerun only owned-core updater E2E + shared-core defer proof. If FAIL, retain prior PASS and repair only the exact failed stage.

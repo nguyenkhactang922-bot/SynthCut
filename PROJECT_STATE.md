@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - FAIL / v1.1.3 readiness repair PR #12 CI PASS + MERGED at personal main e40af756; guarded publication pending`
+`TVE-REL-009 - RUNNING / v1.1.3 Release run 38275741580 on reviewed personal main e40af756; do not restart/retag/manual-release`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -451,4 +451,4 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - REL-009 remains FAIL/REPAIR until reviewed v1.1.3 publication and owned-core + shared-core runtime updater E2E PASS.
 
 ## NEXT_EXACT_ACTION
-PR #12 CI run `38274638406` PASSed on exact head `d46db5a`; PR #12 MERGED to personal main `e40af75653375317b2d154b4190fd3cb2a8c17bd`; merge-tree parity PASS. Run publication guards now: verify auth, exact personal main, absent `v1.1.3` tag/release, no active v1.1.3 Release run, and upstream unchanged. If all PASS, publish immutable v1.1.3 via exactly one annotated tag on personal fork and monitor only its tag-triggered Release workflow. On release PASS verify public provenance/artifacts, then run only REL-009 owned-core updater E2E plus shared-core defer proof. Never publish upstream or rerun REL-001..008.
+Monitor existing Release run `38275741580` only. If PASS, verify public v1.1.3 source/tag/main, bundle provenance, latest.yml, public checksums/hashes and intentional NotSigned status; then rerun only REL-009 owned-core updater E2E plus shared-core defer proof using a controlled lower-version fixture containing both coordination and readiness fixes. If FAIL, repair only the exact failed stage. Never publish upstream or mutate v1.1.0/v1.1.1/v1.1.2.
