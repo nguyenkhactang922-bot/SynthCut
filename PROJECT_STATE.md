@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 packaged core-readiness FAIL repaired locally; v1.1.3 review/release-forward ACTIVE`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; v1.1.3 release-forward PASS/PUBLISHED/VERIFIED; TVE-REL-009 final owned-core updater E2E + shared-core defer runtime proof ACTIVE`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - RUNNING / v1.1.3 Release run 38275741580 on reviewed personal main e40af756; do not restart/retag/manual-release`
+`TVE-REL-009 - ACTIVE / v1.1.3 release-forward PASS; final owned-core updater E2E + shared-core defer proof pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -450,5 +450,15 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`.
 - REL-009 remains FAIL/REPAIR until reviewed v1.1.3 publication and owned-core + shared-core runtime updater E2E PASS.
 
+## Latest TVE-REL-009 v1.1.3 release-forward verification
+- Existing Release run `38275741580` completed SUCCESS on exact `headSha=e40af75653375317b2d154b4190fd3cb2a8c17bd`; both `windows` and `publish-release` jobs PASSed.
+- GitHub Release `v1.1.3` is published, non-draft/non-prerelease; `v1.1.3^{}` and `personal/main` both equal `e40af756...`.
+- `BUNDLE_MANIFEST.json`: `sourceCommit=e40af756...`, `sourceTrackedDirty=false`.
+- `RELEASE_METADATA.json`: `status=PASS`, `desktopPackageName=tang-ai-video-editor`, `updaterCacheDirName=tang-ai-video-editor-updater`.
+- Public EXE independently downloaded under `.tmp/rel009-v113-public`: 397654405 bytes; SHA-256 `82e603edb796d1251d99c6f537110ff2a19fb2b3c34a130dbe0438d3cb3d26f4`; Authenticode `NotSigned` as required by the current lane.
+- Public ZIP SHA-256 from release metadata/SHA256SUMS: `33879805fd0a4565a3d20681728c790639a893934b120cb0382fb7a08382ef87`.
+- Evidence: `docs/evidence/release/TVE-REL-009-V113-RELEASE-FORWARD.md`.
+- Release-forward substage PASS; REL-009 remains incomplete only for owned-core updater runtime E2E + shared-core defer proof.
+
 ## NEXT_EXACT_ACTION
-Monitor existing Release run `38275741580` only. If PASS, verify public v1.1.3 source/tag/main, bundle provenance, latest.yml, public checksums/hashes and intentional NotSigned status; then rerun only REL-009 owned-core updater E2E plus shared-core defer proof using a controlled lower-version fixture containing both coordination and readiness fixes. If FAIL, repair only the exact failed stage. Never publish upstream or mutate v1.1.0/v1.1.1/v1.1.2.
+Prepare a fresh project-local lower install from retained test-only `1.1.1` fixture that already contains updater coordination; patch only that test install's `resources/app/electron/core-launcher.cjs` with the current readiness-fixed source and verify exact hash parity. Then run only the owned-core updater E2E to public v1.1.3 (expected installer SHA-256 `82e603edb796d1251d99c6f537110ff2a19fb2b3c34a130dbe0438d3cb3d26f4`) and a separate shared-core defer-without-mutation runtime proof. Preserve all earlier PASS evidence; never rerun/retag/republish v1.1.0..v1.1.3.
