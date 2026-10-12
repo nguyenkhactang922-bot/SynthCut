@@ -3,42 +3,40 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `FAIL / PACKAGED CORE READINESS REPAIR COMMITTED / v1.1.3 PUSH+PR PENDING`
-- CURRENT_STAGE: `Public v1.1.2 remains PASS/immutable. Packaged core-readiness defect is repaired and locally verified; containment-safe readiness smoke PASS. Scoped repair commit 4467d0f was created locally. No SynthCut runtime is active. Push/PR/CI/merge/publication + updater E2E remain.`
+- STATUS: `FAIL / v1.1.3 READINESS REPAIR REVIEWED+MERGED / PUBLICATION PENDING`
+- CURRENT_STAGE: `PR #12 CI run 38274638406 PASSed all checks on head d46db5a; PR #12 MERGED to personal main at e40af756; merge-tree parity PASS (a6ba7758). No SynthCut runtime/update process is active. v1.1.3 tag/release has not yet been created.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: local `4467d0f` — readiness repair committed; last durable pushed checkpoint before this repair remains `ca2e6674dc65032bfd8bbb6dbab9a29ac99e6c4b`
+- HEAD: resolve from current Git HEAD; reviewed PR #12 head `d46db5a2e55b07815b3480776f07d88a96a5849e`; reviewed personal main merge `e40af75653375317b2d154b4190fd3cb2a8c17bd`
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-009 PACKAGED CORE READINESS LOCAL REPAIR + COMMIT PASS` — deterministic fallback smoke PASS after temp containment fix, packaged runtime `[aive] started core on port 48713`, `/health=200`, prior typecheck/build/tag-validator/YAML/diff PASS. Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`.
-- PROCESS_PID: `NONE` for SynthCut runtime/test/release work
+- LAST_VERIFIED_CHECKPOINT: `REL-009 v1.1.3 PR REVIEW/MERGE PASS` — CI run `38274638406` SUCCESS on exact head `d46db5a`; readiness smoke PASS in CI; PR #12 MERGED; `e40af756^{tree} == d46db5a^{tree} == a6ba7758c753350cafc5e76cb3e5b10e29565186`.
+- PROCESS_PID: `NONE` for active SynthCut runtime/test/release work
 - PROCESS_COMMAND: `NONE`
-- PTY_SESSION: `NONE` for active SynthCut; visible FileMCP PTYs belong to unrelated projects and must not be touched
-- LATEST_LOG: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`
-- LAST_EXIT_CODE: `readiness containment-safe smoke=0/PASS`; prior root typecheck=0/PASS; prior root build=0/PASS; REL-009 overall remains FAIL until reviewed v1.1.3 + runtime updater E2E PASS
+- PTY_SESSION: `pty_e22825ae709520d57a865150f24773390e90` exited 0 after CI SUCCESS; do not restart. Other visible PTYs belong to unrelated projects and must not be touched.
+- LATEST_LOG: `https://github.com/nguyenkhactang922-bot/SynthCut/actions/runs/38274638406`
+- LAST_EXIT_CODE: `PR #12 CI=SUCCESS`; merge=PASS; tree parity=PASS; REL-009 overall remains FAIL until public v1.1.3 + owned/shared updater runtime proofs PASS
 - ARTIFACTS:
-  - immutable published `v1.1.0`: retained REL-008 evidence
-  - immutable published `v1.1.1`: updater identity release-forward
-  - immutable published `v1.1.2`: updater coordination release-forward
-  - local readiness repair commit: `4467d0f`
-  - failure evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-FAIL.md`
-  - repair evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`
-  - deterministic smoke: `scripts/release/smoke-core-launcher-ready-fallback.cjs`
-  - test-only packaged runtime proof: `.tmp/rel009-ready-runtime-smoke`
-  - controlled lower install evidence remains under `.tmp/rel009-fixed-e2e-install`; do not treat its locally patched launcher as a public artifact
+  - immutable published `v1.1.0`, `v1.1.1`, `v1.1.2` retained
+  - readiness repair commit `4467d0f`
+  - state checkpoint `d46db5a`
+  - PR #12 `https://github.com/nguyenkhactang922-bot/SynthCut/pull/12` — MERGED
+  - personal main `e40af75653375317b2d154b4190fd3cb2a8c17bd`
+  - CI run `38274638406` — SUCCESS
+  - `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-FAIL.md`
+  - `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`
 - BLOCKERS:
-  - public `v1.1.2` contains the old readiness launcher, so it cannot close REL-009 post-update relaunch proof.
-  - v1.1.3 source must pass personal-fork PR/CI/review/merge and guarded immutable publication before updater E2E can target the repaired public artifact.
-- NEXT_EXACT_ACTION: side-effect guard the personal feature branch/open PR state; if `4467d0f` is not pushed, push exactly once to personal fork; open exactly one PR if absent, monitor only its automatic CI, merge/verify tree parity on PASS; guard auth/tag/release/no-active-run then publish immutable `v1.1.3`; verify public artifact/provenance; prepare a controlled lower-version fixture containing both updater-coordination and readiness fixes; rerun only REL-009 owned-core updater E2E to v1.1.3 plus shared-core defer proof. Never publish upstream or mutate v1.1.0/v1.1.1/v1.1.2.
+  - public `v1.1.2` contains the old readiness launcher and cannot close REL-009.
+  - reviewed v1.1.3 source is merged but must be guarded-published and publicly verified before the updater E2E can target it.
+- NEXT_EXACT_ACTION: run publication side-effect guards: verify GitHub auth, personal main exactly `e40af756`, `v1.1.3` tag absent, GitHub Release `v1.1.3` absent, no active Release workflow for v1.1.3, and upstream unchanged. If all PASS, create annotated tag `v1.1.3` at exact reviewed personal main and push only that tag to personal fork; monitor the single tag-triggered Release workflow without manual release duplication. On Release PASS, verify public provenance/update metadata/hashes/NotSigned, then prepare the controlled lower-version fixture containing updater coordination + readiness fixes and rerun only REL-009 owned-core updater E2E plus shared-core defer proof. Never publish upstream or mutate v1.1.0/v1.1.1/v1.1.2.
 - DO_NOT_REPEAT:
   - REL-001..008 substantive work;
   - v1.1.0/v1.1.1/v1.1.2 publication;
-  - PR #11 CI/merge;
-  - updater-coordination local smoke/build gates unless its source changes;
-  - failed readiness E2E attempt or stopped PTY;
-  - readiness smoke/typecheck/build/tag-validator/YAML/diff already PASS unless relevant source changes;
+  - PR #11 or PR #12 CI/merge;
+  - readiness local smoke/typecheck/build/package runtime proof;
   - unrelated project PTYs/artifacts or historical scratch/build directories.
 
 ## Hard gates
 - `TVE-REL-001..008=PASS` retained.
 - `v1.1.0`, `v1.1.1`, `v1.1.2` are immutable published evidence.
-- `TVE-REL-009=FAIL/REPAIR` until v1.1.3 publication and fixed-code owned/shared updater runtime proofs PASS.
+- PR #12 reviewed v1.1.3 source is merged on personal fork with tree parity PASS.
+- `TVE-REL-009=FAIL/REPAIR` until public v1.1.3 and fixed-code owned/shared updater runtime proofs PASS.
 - `TVE-REL-010` remains blocked by REL-009.
