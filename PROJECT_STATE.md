@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; v1.1.2 updater-coordination repair PUBLISHED + VERIFIED; REL-009 fixed-code runtime updater E2E ACTIVE`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 packaged core-readiness FAIL repaired locally; v1.1.3 review/release-forward ACTIVE`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - RUNNING / v1.1.2 PUBLISHED + VERIFIED; fixed-code updater E2E READY using retained controlled lower-version fixture`
+`TVE-REL-009 - FAIL / packaged core-readiness repaired locally; v1.1.3 PR/CI/release-forward pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -439,5 +439,16 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-009-V112-RELEASE-FORWARD.md`.
 - REL-009 remains RUNNING only for the fixed-code runtime updater E2E plus shared-core defer proof.
 
+## Latest TVE-REL-009 packaged core-readiness failure / repair
+- Fixed-code owned-core E2E against the retained lower fixture failed before updater install: lower app PID `128244` spawned core PID `136700` on dedicated port `48712`; core was healthy and wrote authoritative `server.json`, but desktop never reached `[aive] started core` and later quit. No updater install side effect occurred. Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-FAIL.md`.
+- Root cause: launcher previously depended exclusively on child stdout JSON ready. Packaged runtime can publish matching `server.json` + healthy `/health` while stdout ready is not delivered to the Electron parent.
+- Narrow repair keeps stdout ready as fast path and adds fail-closed fallback requiring `server.json.pid === child.pid`, valid port and `/health` PASS; mismatched PID is rejected; failed startup cleans its spawned child.
+- New deterministic smoke `scripts/release/smoke-core-launcher-ready-fallback.cjs` PASSes positive no-stdout-ready and negative PID-mismatch/cleanup paths; CI includes the smoke.
+- Test-only packaged runtime proof under `.tmp/rel009-ready-runtime-smoke` PASSed: desktop logged `[aive] started core on port 48713`; core PID `98564`; `/health=200`; cleanup PASS.
+- Release-forward version bumped consistently to `1.1.3` in the five canonical manifests and only corresponding workspace-version fields in `package-lock.json`.
+- Local verification PASS: launcher/smoke node checks, `REL009_CORE_READY_FALLBACK_SMOKE=PASS`, CI YAML parse, tag-mode release validator `version=1.1.3`, root typecheck exit 0, root build exit 0, `git diff --check` PASS.
+- Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`.
+- REL-009 remains FAIL/REPAIR until reviewed v1.1.3 publication and owned-core + shared-core runtime updater E2E PASS.
+
 ## NEXT_EXACT_ACTION
-Run only the fixed-code REL-009 updater E2E from existing `.tmp/rel009-fixed-lower-dist` into a fresh contained install/userData/APPDATA/LOCALAPPDATA/TEMP/AIVE_DATA_DIR environment, updating to public `v1.1.2`. Verify owned-core exit before NSIS, downloaded installer SHA, complete production module tree + `electron-updater`, personal fork feed/cache identity, intentional `NotSigned`, encrypted-license same-device revalidation, unchanged project/user-state hashes, then separately prove shared-core install is deferred without mutation. If PASS, sync REL-009 PASS and auto-claim REL-010. Never publish upstream or rerun REL-001..008.
+Review/stage only the v1.1.3 core-readiness repair, CI smoke, canonical version metadata, failure/repair evidence and state; commit/push personal feature branch; open one PR and monitor its existing CI; merge/verify tree parity. Guard auth/tag/release/no-active-run then publish immutable v1.1.3, verify public provenance/artifacts, create a controlled lower-version fixture containing both coordination + readiness fixes, and rerun only REL-009 updater E2E plus shared-core defer proof. Never publish upstream or rerun REL-001..008.

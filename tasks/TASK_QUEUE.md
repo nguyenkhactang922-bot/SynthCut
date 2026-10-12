@@ -219,7 +219,7 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: RUNNING / v1.1.2 PUBLISHED + VERIFIED / FIXED-CODE UPDATER E2E READY
+Status: FAIL / PACKAGED CORE READINESS REPAIRED LOCALLY / v1.1.3 PR PENDING
 Dependencies: REL-008 PASS
 Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md` + `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md` + `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md` + `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md` + `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
 Repair/release-forward result: desktop package identity is `tang-ai-video-editor`; reviewed personal main is `452dd263`; `v1.1.1` is published/verified and immutable.
@@ -228,6 +228,7 @@ Root isolation finding: old 1.0.6 app attached to a pre-existing shared core on 
 Rerun rule: rerun only the failed updater transition using the accepted existing 1.0.6 installer, new controlled install/userData/APPDATA/LOCALAPPDATA/TEMP/AIVE_DATA_DIR and dedicated AIVE_PORT; prove old app owns core and core exits before install; then verify full 1.1.1 module tree/electron-updater, personal-fork feed + unique cache, `NotSigned`, same-device license revalidation and unchanged project/user-state hashes. Do not republish v1.1.1 or rerun REL-001..008.
 Repair update: retained owned-core probe evidence proved the race also occurs when the app owns the core. v1.1.2 coordination repair disables auto-install-on-quit, defers shared-core install, waits for owned-core exit before quitAndInstall, and has deterministic CI smoke coverage. PR #11 CI PASSed and merged to personal main `196dccb6`; Release run `38237764462` SUCCESS and public v1.1.2 metadata/provenance/hash verification PASS. Runtime fixed-code updater E2E remains the only incomplete REL-009 stage.
 Repair commit `2c19c93b386436cf941c46d4373034025957be88` was reviewed through PR #11 and merged; `v1.1.2` is published/verified. Controlled fixed lower-version fixture `.tmp/rel009-fixed-lower-dist` is accepted for the remaining runtime E2E.
+Packaged readiness finding: the next fixed-code runtime attempt reached a healthy owned core/server.json but the desktop timed out because child stdout ready was not delivered. Local v1.1.3 repair now accepts only matching-child `server.json` + `/health` as fallback, rejects PID mismatch, cleans failed children, and has deterministic CI smoke + packaged runtime proof. Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-FAIL.md` and `TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`. v1.1.3 PR/CI/merge/release-forward remain pending.
 
 ## TVE-REL-010 — Monitor / incident handoff
 Status: BLOCKED BY REL-009
@@ -236,4 +237,4 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 updater E2E`: use existing `.tmp/rel009-fixed-lower-dist` to update to public `v1.1.2`; prove owned-core exit-before-installer, complete installed tree + `electron-updater`, personal feed/cache identity, intentional `NotSigned`, encrypted-license + project/user-state persistence, and shared-core defer without mutation. If PASS, close REL-009 and auto-claim REL-010. Do not republish v1.1.2 or rerun REL-001..008.
+`TVE-REL-009 v1.1.3 readiness repair`: review/commit/push the locally verified launcher fallback + CI smoke + version/evidence/state, open one personal-fork PR, monitor CI, merge/verify, guarded-publish immutable v1.1.3, then rerun only the updater E2E using a controlled lower-version package containing both coordination and readiness fixes plus shared-core defer proof. Do not mutate v1.1.0/v1.1.1/v1.1.2 or rerun REL-001..008.
