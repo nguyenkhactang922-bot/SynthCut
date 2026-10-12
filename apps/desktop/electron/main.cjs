@@ -11,6 +11,7 @@ const path = require("node:path");
 const { ensureCore } = require("./core-launcher.cjs");
 const { applyBundledAssetEnv, getBundledAssetEnv } = require("./bundled-assets.cjs");
 const license = require("./license.cjs");
+const { createUpdateCoordinator } = require("./update-coordinator.cjs");
 
 // Branding: the display name (taskbar / jump-list / dialogs) and a stable Windows
 // AppUserModelID so the taskbar shows OUR name + icon instead of "Electron" and
@@ -36,6 +37,18 @@ let projectHasPath = false;
 let forceQuit = false;       // user chose to close anyway → allow the close
 let pendingSaveQuit = false; // waiting for the renderer to finish saving, then quit
 
+const updateCoordinator = createUpdateCoordinator({
+  dialog,
+  getMainWindow: () => mainWin,
+  getCoreState: () => ({ owned: coreOwned, child: coreChild }),
+  clearCoreState: () => {
+    coreChild = null;
+    coreOwned = false;
+  },
+  setForceQuit: (value) => { forceQuit = !!value; },
+  log: (message) => console.error(message),
+});
+
 // No native OS menu bar — the app uses ONE custom title bar (Clipchamp-style).
 // New/Open/Save live in the in-app Project menu; editing shortcuts (Ctrl+S/Z/Y)
 // are handled in the renderer. Removing the menu also drops the Ctrl+/- page-zoom
@@ -46,9 +59,10 @@ function buildMenu() {
 
 // Background auto-update (packaged builds only). On launch the app reads the
 // GitHub Release feed (latest.yml), and if a newer version exists electron-updater
-// downloads only the changed chunks (via the .blockmap) in the background, then
-// installs on the next restart. Guarded by app.isPackaged so it NEVER runs during
-// a `npm start` dev session. Update source is the `publish` block in package.json.
+// downloads it in the background. Installation is intentionally NOT automatic on
+// app quit: replacing resources while an owned/shared core is still using files
+// can corrupt an unpacked (asar=false) install. Guarded by app.isPackaged so it
+// NEVER runs during a `npm start` dev session.
 function setupAutoUpdate() {
   if (!app.isPackaged) return; // dev build — nothing to update against
   let autoUpdater;
@@ -59,6 +73,9 @@ function setupAutoUpdate() {
     return;
   }
 
+  // The app coordinates installation only after core safety is established.
+  autoUpdater.autoInstallOnAppQuit = false;
+
   // Never crash the app over a failed/unreachable update check (offline, no
   // release yet, private repo, etc.) — just log and carry on.
   autoUpdater.on("error", (err) =>
@@ -68,10 +85,12 @@ function setupAutoUpdate() {
   autoUpdater.on("update-not-available", () =>
     console.error("[aive] up to date"));
 
-  // When the new version is fully downloaded, offer an immediate restart. Setting
-  // forceQuit first bypasses the unsaved-changes quit guard in onWindowClose so
-  // quitAndInstall() can relaunch cleanly.
-  autoUpdater.on("update-downloaded", (info) => {
+  autoUpdater.on("update-downloaded", async (info) => {
+    if (!coreOwned) {
+      await updateCoordinator.installDownloadedUpdate(autoUpdater);
+      return;
+    }
+
     const choice = dialog.showMessageBoxSync(mainWin, {
       type: "info",
       buttons: ["Restart now", "Later"],
@@ -80,17 +99,13 @@ function setupAutoUpdate() {
       noLink: true,
       title: "Update ready",
       message: `${APP_NAME} ${info.version} has been downloaded.`,
-      detail: "Restart to install it — the update installs on next launch if you choose Later.",
+      detail: "Restart now safely stops the editor core before installing. Choose Later to defer installation; the update will be offered again on a future launch.",
     });
-    if (choice === 0) {
-      forceQuit = true;
-      autoUpdater.quitAndInstall();
-    }
+    if (choice === 0) await updateCoordinator.installDownloadedUpdate(autoUpdater);
   });
 
-  // Kick off the check. (checkForUpdates + autoDownload handles our own restart
-  // UX; we don't use checkForUpdatesAndNotify since the dialog above replaces the
-  // built-in OS notification.)
+  // Kick off the check. (checkForUpdates + autoDownload handles download; install
+  // is coordinated above after the core-safety gate.)
   autoUpdater.checkForUpdates().catch((err) =>
     console.error("[aive] update check failed:", err && err.message ? err.message : err));
 }

@@ -29,6 +29,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Smoke — updater core coordination
+        run: node scripts/release/smoke-updater-coordination.cjs
+
       # The media-free / self-synthesizing smoke subset (no model downloads).
       - name: Smoke — compositor plan (pure logic)
         run: npx tsx apps/desktop/scripts/smoke-composite.ts

@@ -3,39 +3,42 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `PASS / UPDATER IDENTITY REPAIR CI + MERGE VERIFIED — RELEASE-FORWARD TAG PENDING`
-- CURRENT_STAGE: `REL-008 remains PASS/published. The REL-009 identity preflight failure has been repaired locally: desktop private package identity is tang-ai-video-editor, release-forward line is 1.1.1, generated app-update.yml targets nguyenkhactang922-bot/SynthCut and uses tang-ai-video-editor-updater. Existing full 1.1.1 package artifacts were recovered and verified; no package rerun was needed.`
+- STATUS: `FAIL / UPDATE-INSTALL INTEGRITY — 1.1.2 REPAIR COMMITTED + PUSHED / PR PENDING`
+- CURRENT_STAGE: `REL-001..008 and published v1.1.0/v1.1.1 remain PASS. New owned-core probe evidence proves electron-updater launches NSIS before app.quit/core cleanup, so the earlier shared-core-only hypothesis is incomplete. Source is repaired for 1.1.2: shared core defers install; owned core must exit before quitAndInstall; autoInstallOnAppQuit is disabled. Deterministic coordinator smoke + typecheck/build/release-validator/YAML/diff gates PASS. No 1.1.2 release side effect yet.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: local feature state checkpoint branch; identity repair commit `d1dc00f`; PR #9 head `41ee10b`; merged personal main `f071f817608344401f9d9deb25ecb1bf9c2b715b`
+- HEAD: `2c19c93b386436cf941c46d4373034025957be88` — updater-coordination repair committed and pushed to personal feature branch
 - HEAD_BASELINE: `af92f2018d287a14e4f3af03f6d00879d12a6ab1`
-- LAST_VERIFIED_CHECKPOINT: `REL-009 updater identity repair CI+MERGE PASS` — PR #9 CI run `38161023407` SUCCESS on `41ee10b`; merge `f071f817`; merge-tree parity PASS. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
-- PROCESS_PID: `NONE` for SynthCut
+- LAST_VERIFIED_CHECKPOINT: `REL-009 updater-coordination repair COMMIT + PUSH PASS` at `2c19c93b386436cf941c46d4373034025957be88`. Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`.
+- PROCESS_PID: `NONE` for SynthCut app/core/updater/release
 - PROCESS_COMMAND: `NONE`
 - PTY_SESSION: `NONE` for SynthCut; visible FileMCP PTYs belong to other projects and must not be touched
-- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
-- LAST_EXIT_CODE: `release validator=0; root typecheck=0; root build=0; artifact/hash/signature verification=PASS`
+- LATEST_LOG: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
+- LAST_EXIT_CODE: `node check/typecheck/build/coordinator smoke/release validator/YAML parse/diff check = PASS`; REL-009 final E2E remains FAIL/pending
 - ARTIFACTS:
-  - immutable published `v1.1.0` / REL-008 evidence: `docs/evidence/release/TVE-REL-008.md`
-  - preflight failure evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-PREFLIGHT.md`
-  - repair evidence: `docs/evidence/release/TVE-REL-009-UPDATER-IDENTITY-REPAIR.md`
-  - `apps/desktop/build/rel009-identity-smoke/`
-  - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.exe` — 397652177 bytes — SHA-256 `bf9e9b03ac8d2745e7b3d7a5c58c8ad24c70af50e7f53434c8f52650c74ac218`
-  - `apps/desktop/build/rel009-identity-dist/Tang-AI-Video-Editor-1.1.1.zip` — 505858966 bytes — SHA-256 `dd5081f1ec4c0e415d99b464e0990136f93f36c90c1e76bff75e6f445b06d3e0`
-  - generated `app-update.yml`: personal fork feed + `tang-ai-video-editor-updater`
+  - published `v1.1.0`: `docs/evidence/release/TVE-REL-008.md`
+  - published `v1.1.1`: `docs/evidence/release/TVE-REL-009-RELEASE-FORWARD.md`
+  - first install-integrity failure: `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`
+  - owned-core contradictory proof: `.tmp/rel009-isolated-rerun/probe2/logs/`
+  - repair evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`
+  - new coordinator: `apps/desktop/electron/update-coordinator.cjs`
+  - deterministic smoke: `scripts/release/smoke-updater-coordination.cjs`
+  - release-forward source version: `1.1.2` in all five manifests + lockfile
 - BLOCKERS:
-  - no technical blocker for state checkpoint review or guarded `v1.1.1` publication;
-  - REL-009 runtime updater E2E remains pending until `v1.1.1` is published from reviewed main under normal side-effect guards.
-- NEXT_EXACT_ACTION: commit/push this state-only PR9-merge checkpoint, open exactly one state-only PR to personal main, monitor its existing CI and merge after PASS; then guard auth + tag/release absence + exact reviewed main + no active Release run, create new tag `v1.1.1` on that reviewed main without altering `v1.1.0`, monitor the single tag-triggered Release workflow, verify published artifacts/provenance/hashes/NotSigned, then resume only the true REL-009 updater transition from retained installed `1.0.6`.
+  - REL-009 cannot PASS until repaired source is reviewed/merged/published as a new immutable `v1.1.2` and a fixed-code updater E2E proves complete install + persistence.
+  - Public `v1.1.1` contains the old updater sequencing behavior; it cannot be used as proof that the new coordinator works. Runtime proof must start from a controlled lower-version package containing the fixed coordinator.
+- NEXT_EXACT_ACTION: commit/push this state-only checkpoint, then open exactly one PR from `chatgpt/phase7-commercial-release` to personal `main`; monitor that PR CI without extra pushes; merge only after PASS and verify tree parity. Then side-effect-guard `v1.1.2` tag/release absence + auth + no active release run, publish `v1.1.2`, verify public assets/provenance, and resume only REL-009 with a fixed lower-version test package updating to public 1.1.2 plus a shared-core defer proof. Never publish upstream.
 - DO_NOT_REPEAT:
-  - REL-001..008 substantive work or published `v1.1.0`;
-  - REL-006 rebuild of old `1.0.6`;
-  - REL-009 preflight discovery;
-  - current `1.1.1` package build already evidenced by `rel009-identity-dist`;
-  - unrelated project PTYs/artifacts.
+  - REL-001..008 substantive work or v1.1.0 publication;
+  - v1.1.1 identity repair/CI/PR/merge/release publication;
+  - 1.0.6 rebuild;
+  - first corrupt updater transition as a claimed PASS;
+  - existing probe2 owned-core/download evidence;
+  - current local node-check/typecheck/build/coordinator-smoke/release-validator/YAML/diff-check gates unless source changes again;
+  - unrelated project PTYs/artifacts or historical scratch/build directories.
 
 ## Hard gates
 - `TVE-REL-001..008=PASS` retained.
-- `v1.1.0` is immutable published historical evidence.
-- Identity repair is CI/REVIEW/MERGE PASS in personal `main@f071f817`; release-forward `v1.1.1` and updater E2E remain pending.
+- `v1.1.0` and `v1.1.1` are immutable published historical evidence.
 - Upstream `Relo-video/SynthCut` remains read-only/non-publication target.
-- `TVE-REL-010` remains blocked by full REL-009 E2E.
+- `TVE-REL-009=FAIL` until fixed-code runtime updater E2E passes.
+- `TVE-REL-010` remains blocked by REL-009.
