@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 v1.1.1 release-forward PASS; updater E2E FAIL at update-install integrity and bounded isolated updater-transition rerun ACTIVE`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 updater install-integrity FAIL retained; v1.1.2 core-coordination repair LOCAL VERIFY PASS / PR pending`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - FAIL at updater install integrity; isolated updater-transition rerun ACTIVE`
+`TVE-REL-009 - FAIL retained; v1.1.2 updater core-coordination repair LOCAL VERIFY PASS / PR pending`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -424,5 +424,14 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - REL-009 is FAIL at update-install integrity. Only the updater-transition stage may be rerun using the accepted existing 1.0.6 installer and an isolated owned core.
 - Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-INSTALL-INTEGRITY-FAIL.md`.
 
+## Latest TVE-REL-009 updater coordination repair
+- Existing owned-core `probe2` evidence disproves the shared-core-only hypothesis: old 1.0.6 started its own core on dedicated port 48643, downloaded v1.1.1, and still produced an incomplete install tree.
+- Installed `electron-updater` source confirms `quitAndInstall()` starts `install()`/NSIS before `app.quit()`, while the desktop previously killed its owned core only during app quit. This creates a real asar=false file-lock race.
+- v1.1.2 repair disables `autoInstallOnAppQuit`, defers install when attached to a shared core, and for an owned core waits for child exit before invoking `quitAndInstall(false, true)`.
+- Coordination is isolated in `apps/desktop/electron/update-coordinator.cjs`; deterministic smoke covers shared defer, owned-core ordering, already-stopped core, and timeout fail-closed. CI now includes this smoke.
+- LOCAL VERIFY PASS: node checks, `REL009_UPDATER_COORDINATION_SMOKE=PASS`, root typecheck, root build, release validator `version=1.1.2 tag=v1.1.2`, CI YAML parse, and `git diff --check`.
+- Evidence: `docs/evidence/release/TVE-REL-009-UPDATER-COORDINATION-REPAIR.md`.
+- REL-009 remains FAIL until review/merge, guarded v1.1.2 publication, and a fixed-code runtime updater E2E PASS.
+
 ## NEXT_EXACT_ACTION
-Checkpoint and rerun only the failed REL-009 updater transition. Use the accepted `rel006-rerun3-dist` 1.0.6 installer in a fresh project-local install, with fresh APPDATA/LOCALAPPDATA/TEMP/AIVE_DATA_DIR and a dedicated AIVE_PORT so the old app owns its core. Preserve the encrypted license + test project/marker, prove the owned core exits before installer replacement, then verify updated 1.1.1 retains `electron-updater`, personal-fork feed + `tang-ai-video-editor-updater`, `NotSigned`, same deviceId license revalidation, and unchanged project/user-state hashes. Do not republish releases or rerun REL-001..008.nstalled `1.0.6`. Do not rebuild old 1.0.6, rerun REL-001..008, or mutate published `v1.1.0`.
+Review/stage only the v1.1.2 updater-coordination source, CI, version metadata, evidence and state files; commit and push to personal fork; open one PR and monitor its existing CI to PASS; merge and verify tree parity. Then guard tag/release/auth/no-active-run state before publishing v1.1.2. After public artifact verification, run only the REL-009 fixed-code updater E2E plus shared-core defer proof. Never publish upstream or rerun REL-001..008.
