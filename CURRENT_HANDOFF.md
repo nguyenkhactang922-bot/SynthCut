@@ -3,12 +3,12 @@
 ## CANONICAL RESUME BLOCK
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
-- STATUS: `ACTIVE / fresh v1.1.4 local package and packaged desktop core readiness PASS; installed updater E2E + shared-core defer proof NOT PASS`
-- CURRENT_STAGE: `PASS: v1.1.4 local fresh --dir package, afterPack nested execa@5.1.1, source/package launcher hash parity, packaged branded-core smoke /health=200, and full packaged desktop smoke /health=200. Overall REL-009 remains ACTIVE: no v1.1.4 release yet; post-update license/feed checks and shared-core defer proof remain NOT PASS.`
-- BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: resolve with `git rev-parse HEAD` on resume; latest production candidate commit `a3826610e2e165006e73fb13e5ee28fa78096095` is PR #13 head before the state-only follow-up.
+- STATUS: `ACTIVE / PR #13 merged to personal/main at 86de3ef; main CI PASS; v1.1.4 release-forward and installed updater/shared-core runtime gates pending`
+- CURRENT_STAGE: `PASS: v1.1.4 fresh local package/runtime; PR #13 merged at 86de3ef4705167350d9b6ba3b949d6e0748ee22b; merged main tree c1d77f9d92631c6787c7d83ba3c860f1050e70b7 equals tested PR-head tree; main CI run 38377888102 SUCCESS. No v1.1.4 tag/release yet; updater/license/feed and shared-core proof NOT PASS.`
+- BRANCH: `state-sync branch chatgpt/rel009-main-verified-state; verify current branch with git branch --show-current`
+- HEAD: resolve with `git rev-parse HEAD` on resume; verified merged-main checkpoint is `86de3ef4705167350d9b6ba3b949d6e0748ee22b` (tree `c1d77f9d92631c6787c7d83ba3c860f1050e70b7`).
 - REVIEWED_MAIN: `e40af75653375317b2d154b4190fd3cb2a8c17bd`
-- LAST_VERIFIED_CHECKPOINT: `v1.1.3 RELEASE-FORWARD PASS` — Release run `38275741580` SUCCESS; tag peel/main/bundle source all `e40af756...`; bundle tracked clean; updater identity unique; public EXE hash and intentional NotSigned verified. Evidence: `docs/evidence/release/TVE-REL-009-V113-RELEASE-FORWARD.md`.
+- LAST_VERIFIED_CHECKPOINT: `PR #13 MAIN VERIFIED` — merged commit `86de3ef4705167350d9b6ba3b949d6e0748ee22b`; main tree `c1d77f9d92631c6787c7d83ba3c860f1050e70b7` matches PR head tree; CI run `38377888102` SUCCESS. Release-forward remains pending; evidence for local package/runtime: `docs/evidence/release/TVE-REL-009-V114-PACKAGED-RUNTIME.md`.
 - PROCESS_PID: `none` — build PID 144880 exited 0 at 2026-10-13T16:23:37+07; packaged smoke child PID 148880 cleaned; desktop app PID 141244 and core PID 146976 cleaned
 - PROCESS_COMMAND: `none running; last completed command was electron-builder --win --dir --config E:\\SynthCut\\.tmp\\rel009-afterpack-test-v2.config.cjs`
 - PTY_SESSION: `none active for current work`; historical updater PTY is expired and retained only as prior FAIL evidence; unrelated project PTYs were not touched.
@@ -25,9 +25,9 @@
   - current readiness-fixed source `apps/desktop/electron/core-launcher.cjs`
   - reusable encrypted-license/project-state fixture `.tmp/rel009-updater-user2/`
 - BLOCKERS:
-  - Packaged core readiness/dependency closure is now locally verified for candidate v1.1.4; the remaining blocker is the PR #13 CI/review/merge gate, followed by an authorized immutable v1.1.4 release and installed updater runtime acceptance.
+  - PR #13 is merged and merged-main CI is PASS. Remaining gate: state-sync PR #14, then immutable v1.1.4 release build/provenance and installed updater runtime acceptance.
   - REL-009 cannot PASS until owned-core updater E2E with post-update same-device encrypted-license/feed verification and the separate shared-core defer-without-mutation proof both PASS.
-- NEXT_EXACT_ACTION: monitor existing CI runs `38376963425` and `38377230670` without restarting them. The PR was strengthened to run the release validator and dependency-closure smoke on PR CI; committing that change will trigger a newer run. Query the run for the latest PR head, inspect all job logs and the PR diff/reviews, then merge only after the latest-head required checks pass. Verify merged main SHA/tree before any immutable v1.1.4 release action; then verify release artifacts/provenance and run only the remaining updater/license/feed and shared-core runtime gates.
+- NEXT_EXACT_ACTION: create a scoped state-only commit/PR #14 from this branch recording PR #13 merge + merged-main CI PASS; wait for its CI/review/merge, then verify personal/main SHA/tree. After that, re-check local/remote tag and release absence plus release authorization gates, publish immutable v1.1.4, verify release artifact hashes/provenance, and run only the remaining owned-core updater E2E with same-device license/feed revalidation plus shared-core defer-without-mutation proof.
 - DO_NOT_REPEAT:
   - REL-001..008 substantive work;
   - v1.1.0/v1.1.1/v1.1.2/v1.1.3 publication or release workflows;
@@ -107,3 +107,11 @@
 - Existing CI run `38376963425` completed SUCCESS for production candidate commit `a3826610e2e165006e73fb13e5ee28fa78096095`. CI run `38377230670` for state checkpoint `fd03c783c79bb9457012ffa6908a2d761b87561d` was observed IN_PROGRESS (Typecheck/other job steps pending at latest check). Do not restart either run.
 - The CI workflow change is local and will be included in a scoped follow-up commit on PR #13. Its push should create a new CI run for the final PR head; wait for that run before merge. PR #13 remains open, mergeable, and not merged; no tag/release exists for v1.1.4.
 - NEXT_EXACT_ACTION: run the release validator and dependency smoke locally, commit/push the CI gate addition with state sync, then monitor the exact CI run tied to the latest PR head. Review final job logs/diff and merge only when latest-head checks pass. Verify main after merge before release-forward.
+
+
+### REL-009 PR #13 merged / main verification checkpoint — 2026-10-13 16:44 +07
+- PR #13 merged successfully: `86de3ef4705167350d9b6ba3b949d6e0748ee22b`. `personal/main` fetched and verified at the same SHA; tree `c1d77f9d92631c6787c7d83ba3c860f1050e70b7` equals the PR head tree for `11844c3b0b6e508f863ff4b7272a20fb3678a62d`.
+- CI run `38377585817` for PR head `11844c3...` SUCCESS, including release validator, Remotion dependency-closure smoke, typecheck, build, and all existing smoke steps. Main push CI run `38377888102` on merged SHA `86de3ef...` also SUCCESS. No failed steps.
+- Release tag/release v1.1.4 remain absent; published v1.1.0–v1.1.3 untouched. Overall REL-009 remains ACTIVE because v1.1.4 release-forward + installed updater E2E, post-update same-device license/feed verification, and shared-core defer-without-mutation are not yet PASS.
+- Current workspace is on `chatgpt/rel009-main-verified-state` based on verified `personal/main@86de3ef...`; production tree is clean except unrelated untracked historical scratch/build artifacts, which were not staged or modified.
+- NEXT_EXACT_ACTION: commit/push the scoped state sync through PR #14, then wait for its CI/review/merge and verify main again. Only then create the authorized immutable v1.1.4 tag/release after rechecking absence and release gates; verify artifact/provenance before the remaining updater runtime gates.
