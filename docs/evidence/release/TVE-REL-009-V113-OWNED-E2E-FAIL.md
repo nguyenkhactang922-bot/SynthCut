@@ -52,3 +52,12 @@ Why does the new controlled 1.1.1 package fail to start its core through the pac
 
 ## Loopback
 Stay inside REL-009. Diagnose the Electron-to-Node child-launch discrepancy with a bounded diagnostic, repair only the demonstrated cause, add/execute focused packaged-launch proof, then retry only the owned-core updater transition in a fresh test root. Do not rerun REL-001..008, the v1.1.3 release workflow, or any already-PASSed deterministic smoke. After owned-core proof passes, run the separate shared-core defer-without-mutation proof.
+
+## Follow-up diagnostics — 2026-10-13
+
+- Electron Fuses read on the lower installed EXE with @electron/fuses 1.8.0: RunAsNode Enabled; EnableNodeOptionsEnvironmentVariable Enabled.
+- Node child_process spawnSync of the exact installed Electron EXE with ELECTRON_RUN_AS_NODE=1 and the packaged core CLI emitted ready JSON and wrote server.json on port 48716; the diagnostic child was terminated afterward.
+- The installed core-launcher.cjs invoked under system Node with the packaged Electron EXE as its child passed readiness and /health on port 48717; child PID matched server.json PID. The same test passed with all five bundled asset environment paths set, on port 48719. Diagnostic children were cleaned up.
+- Bundled ffmpeg.exe and ffprobe.exe both returned their version banners when invoked directly.
+- Therefore the core CLI, Electron RunAsNode fuse, and bundled FFmpeg paths each pass isolated controls. The original full desktop launch failure remains real, but its root cause has not been proven. A later test-only main/launcher instrumentation launch produced no logs and no server.json, so that run is inconclusive and is not treated as PASS evidence.
+- Updated next action: instrument the actual desktop main at module load and immediately before ensureCore; capture effective process.execPath, AIVE_DATA_DIR, AIVE_PORT, and whether applyBundledAssetEnv completes; compare actual main-process startup/environment with the passing Node-driven launcher control. Do not rerun updater E2E until this discrepancy is explained.

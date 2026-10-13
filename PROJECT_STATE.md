@@ -480,3 +480,9 @@ Classification: **FAIL** for the owned-core startup prerequisite; REL-009 overal
 ### NEXT_EXACT_ACTION
 
 Diagnose the packaged Electron child-launch discrepancy before rerunning updater E2E. Compare the lower EXE/build identity and effective ELECTRON_RUN_AS_NODE/RunAsNode behavior against the accepted .tmp/rel009-ready-runtime-smoke invocation. Prove the actual child command can run @aive/core/dist/cli.js and create matching server.json plus /health on a fresh project-local diagnostic port. Repair only the demonstrated cause and add focused packaged-launch evidence. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
+
+## REL-009 follow-up diagnostic checkpoint — 2026-10-13
+
+The RunAsNode-disabled hypothesis is not supported: the lower installed EXE reports RunAsNode Enabled. A Node-driven spawn of that same Electron executable with the packaged core CLI passes ready/server.json on port 48716; the installed core-launcher passes readiness + /health with the same child executable and all bundled asset paths on ports 48717 and 48719. Bundled ffmpeg/ffprobe also pass direct version probes. These controls do not close the original desktop-main failure: the actual app still produced a core-start timeout and no server.json in its controlled data root.
+
+NEXT_EXACT_ACTION: instrument the actual desktop main at module load and immediately before ensureCore, capture process.execPath, AIVE_DATA_DIR, AIVE_PORT and whether applyBundledAssetEnv completes, then compare the effective main-process environment/startup path with the passing Node-driven launcher control. Repair only the demonstrated discrepancy. Do not rerun updater E2E before the focused packaged-main startup proof passes.

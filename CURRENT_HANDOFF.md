@@ -6,7 +6,7 @@
 - STATUS: `FAIL / REL-009 OWNED-CORE STARTUP PREREQUISITE FAILED; RELEASE v1.1.3 REMAINS PUBLISHED + VERIFIED`
 - CURRENT_STAGE: `Owned-core updater E2E attempt failed before updater transition: installed 1.1.1 test app showed “Could not start the editor core / Timed out waiting for editor core to start”; no server.json, no port-48712 listener, no update/download/install. Attempt cleaned up. Diagnose packaged Electron child Node-mode/fuse/launch discrepancy before any updater E2E retry.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: `ae938c3` at bootstrap; resolve current Git HEAD on resume (state/evidence sync commit follows)
+- HEAD: resolve current Git HEAD on resume; previous durable state checkpoint `ed1f3f8` (diagnostic sync commit follows)
 - REVIEWED_MAIN: `e40af75653375317b2d154b4190fd3cb2a8c17bd`
 - LAST_VERIFIED_CHECKPOINT: `v1.1.3 RELEASE-FORWARD PASS` — Release run `38275741580` SUCCESS; tag peel/main/bundle source all `e40af756...`; bundle tracked clean; updater identity unique; public EXE hash and intentional NotSigned verified. Evidence: `docs/evidence/release/TVE-REL-009-V113-RELEASE-FORWARD.md`.
 - PROCESS_PID: `NONE` — failed owned-core test app tree cleaned; no active SynthCut updater process
@@ -25,9 +25,9 @@
   - current readiness-fixed source `apps/desktop/electron/core-launcher.cjs`
   - reusable encrypted-license/project-state fixture `.tmp/rel009-updater-user2/`
 - BLOCKERS:
-  - Current controlled lower app cannot start core through packaged Electron child launch; UI error explicitly reports core startup timeout. Same packaged core CLI starts under system Node, so Electron Node-mode/fuse/launch discrepancy is the leading unproven hypothesis.
+  - Current controlled lower app cannot start core through the actual desktop-main startup path; UI error explicitly reports core startup timeout. RunAsNode fuse is Enabled, and packaged core CLI/core-launcher pass when driven under system Node with the same Electron child and bundled assets. Root cause remains specific to actual main-process startup/environment and is unproven.
   - REL-009 cannot PASS until the owned-core updater transition to public v1.1.3 and shared-core defer-without-mutation proof both PASS.
-- NEXT_EXACT_ACTION: diagnose the packaged Electron child-launch discrepancy before rerunning updater E2E: compare the installed lower EXE/build identity and effective RunAsNode/ELECTRON_RUN_AS_NODE behavior against the previously accepted `.tmp/rel009-ready-runtime-smoke` invocation; prove the actual child command can run `@aive/core/dist/cli.js` and create matching `server.json` + `/health` on a fresh project-local diagnostic port. Repair only the demonstrated cause and add focused packaged-launch evidence. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
+- NEXT_EXACT_ACTION: instrument the actual desktop main at module load and immediately before ensureCore, capturing process.execPath, AIVE_DATA_DIR, AIVE_PORT, and whether applyBundledAssetEnv completes. Compare the actual main-process environment/startup path with the passing Node-driven core-launcher control (RunAsNode Enabled; bundled assets pass). Explain/repair only the demonstrated discrepancy and add focused packaged-main startup proof. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
 - DO_NOT_REPEAT:
   - REL-001..008 substantive work;
   - v1.1.0/v1.1.1/v1.1.2/v1.1.3 publication or release workflows;

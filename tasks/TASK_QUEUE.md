@@ -245,3 +245,9 @@ Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → co
 - Lower fixture installation and readiness-launcher hash parity: PASS; retain and do not repeat.
 - v1.1.3 release-forward: PASS and immutable; do not rerun publication.
 - Next action: investigate packaged Electron child Node-mode/fuse/launch behavior; only after focused launch proof passes, rerun the owned-core updater transition. Shared-core defer-without-mutation proof remains pending.
+
+### REL-009 follow-up diagnostic checkpoint — 2026-10-13
+- RunAsNode fuse: Enabled; do not assume a disabled fuse.
+- Same Electron executable + packaged core CLI passed through Node child_process; packaged core-launcher readiness/health passed with all bundled asset paths.
+- Actual desktop-main startup still fails and root cause remains unresolved; next action is test-only instrumentation at main-module load and immediately before ensureCore to capture effective process path/data dir/port and asset-env setup.
+- Do not retry updater E2E until the actual desktop-main startup discrepancy is explained and a focused packaged-main proof passes.
