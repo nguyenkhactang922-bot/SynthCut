@@ -251,3 +251,8 @@ Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → co
 - Same Electron executable + packaged core CLI passed through Node child_process; packaged core-launcher readiness/health passed with all bundled asset paths.
 - Actual desktop-main startup still fails and root cause remains unresolved; next action is test-only instrumentation at main-module load and immediately before ensureCore to capture effective process path/data dir/port and asset-env setup.
 - Do not retry updater E2E until the actual desktop-main startup discrepancy is explained and a focused packaged-main proof passes.
+
+### REL-009 live execution checkpoint — RUNNING
+- Harness .tmp/rel009-v113-owned-e2e2.ps1; PTY pty_e38df6f3a21835ed6039b651e3a496daa5df; PID 10760.
+- Owned core PID 143260 on port 48721; update available v1.1.3 marker PASS.
+- Monitor this process only; do not launch duplicate E2E. Await Restart now and verify all owned-core transition acceptance markers before declaring PASS.

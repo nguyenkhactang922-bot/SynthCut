@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - ACTIVE / owned-core runtime prerequisite FAIL; v1.1.3 release-forward PASS retained; diagnose packaged Electron child launch before retry`
+`TVE-REL-009 - RUNNING / controlled owned-core updater E2E retry active on dedicated port 48721; v1.1.3 release-forward PASS retained`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -486,3 +486,9 @@ Diagnose the packaged Electron child-launch discrepancy before rerunning updater
 The RunAsNode-disabled hypothesis is not supported: the lower installed EXE reports RunAsNode Enabled. A Node-driven spawn of that same Electron executable with the packaged core CLI passes ready/server.json on port 48716; the installed core-launcher passes readiness + /health with the same child executable and all bundled asset paths on ports 48717 and 48719. Bundled ffmpeg/ffprobe also pass direct version probes. These controls do not close the original desktop-main failure: the actual app still produced a core-start timeout and no server.json in its controlled data root.
 
 NEXT_EXACT_ACTION: instrument the actual desktop main at module load and immediately before ensureCore, capture process.execPath, AIVE_DATA_DIR, AIVE_PORT and whether applyBundledAssetEnv completes, then compare the effective main-process environment/startup path with the passing Node-driven launcher control. Repair only the demonstrated discrepancy. Do not rerun updater E2E before the focused packaged-main startup proof passes.
+
+## REL-009 current runtime — RUNNING
+- Single active harness: .tmp/rel009-v113-owned-e2e2.ps1; FileMCP PTY pty_e38df6f3a21835ed6039b651e3a496daa5df; host PID 10760.
+- Lower app PID 123544; owned core PID 143260; dedicated port 48721.
+- Observed PASS markers: REL009_OWNED_CORE_STARTED=PASS and REL009_UPDATE_AVAILABLE=PASS version=1.1.3.
+- Next: monitor the same PTY for Restart now, core exit before NSIS, public installer hash, complete module tree, license revalidation, and unchanged project/user state. Do not duplicate/restart this run.
