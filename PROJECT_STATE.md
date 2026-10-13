@@ -10,7 +10,7 @@ HEAD baseline: `af92f20` (`personal/main` MAIN VERIFIED before Phase-7 changes)
 Global contract: `docs/CHATCODE_GLOBAL_MULTI_PROJECT_EXECUTION_LAW.md` §19 + §20.
 
 ## Current lifecycle phase
-`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; REL-009 packaged core-readiness FAIL repaired locally; v1.1.3 review/release-forward ACTIVE`
+`RELEASE & OPERATE - ACTIVE; TVE-REL-001..008 PASS retained; v1.1.3 release-forward PASS/PUBLISHED/VERIFIED; TVE-REL-009 final owned-core updater E2E + shared-core defer runtime proof ACTIVE`
 
 ## Phase gates
 - DISCOVER: PASS — retained
@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - FAIL / packaged core-readiness repair committed at 4467d0f; v1.1.3 push/PR/CI/release-forward pending`
+`TVE-REL-009 - ACTIVE / fresh local v1.1.4 package and packaged desktop core readiness PASS; installed updater E2E + license/feed revalidation + shared-core defer proof NOT PASS`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -450,5 +450,109 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Evidence: `docs/evidence/release/TVE-REL-009-PACKAGED-CORE-READY-REPAIR.md`.
 - REL-009 remains FAIL/REPAIR until reviewed v1.1.3 publication and owned-core + shared-core runtime updater E2E PASS.
 
+## Latest TVE-REL-009 v1.1.3 release-forward verification
+- Existing Release run `38275741580` completed SUCCESS on exact `headSha=e40af75653375317b2d154b4190fd3cb2a8c17bd`; both `windows` and `publish-release` jobs PASSed.
+- GitHub Release `v1.1.3` is published, non-draft/non-prerelease; `v1.1.3^{}` and `personal/main` both equal `e40af756...`.
+- `BUNDLE_MANIFEST.json`: `sourceCommit=e40af756...`, `sourceTrackedDirty=false`.
+- `RELEASE_METADATA.json`: `status=PASS`, `desktopPackageName=tang-ai-video-editor`, `updaterCacheDirName=tang-ai-video-editor-updater`.
+- Public EXE independently downloaded under `.tmp/rel009-v113-public`: 397654405 bytes; SHA-256 `82e603edb796d1251d99c6f537110ff2a19fb2b3c34a130dbe0438d3cb3d26f4`; Authenticode `NotSigned` as required by the current lane.
+- Public ZIP SHA-256 from release metadata/SHA256SUMS: `33879805fd0a4565a3d20681728c790639a893934b120cb0382fb7a08382ef87`.
+- Evidence: `docs/evidence/release/TVE-REL-009-V113-RELEASE-FORWARD.md`.
+- Release-forward substage PASS; REL-009 remains incomplete only for owned-core updater runtime E2E + shared-core defer proof.
+
 ## NEXT_EXACT_ACTION
-Repair commit `4467d0f` is local and reviewed. Side-effect guard personal feature branch/open PR state; push exactly once if remote lacks `4467d0f`; open one PR if absent and monitor only its automatic CI; merge/verify tree parity on PASS. Then guard auth/tag/release/no-active-run, publish immutable v1.1.3, verify public provenance/artifacts, create a controlled lower-version fixture containing both coordination + readiness fixes, and rerun only REL-009 updater E2E plus shared-core defer proof. Never publish upstream or rerun REL-001..008.
+Diagnose the packaged Electron child-launch discrepancy before rerunning updater E2E. Compare the lower EXE/build identity and effective ELECTRON_RUN_AS_NODE/RunAsNode behavior against the accepted .tmp/rel009-ready-runtime-smoke invocation. Prove the actual child command can run @aive/core/dist/cli.js and create matching server.json plus /health on a fresh project-local diagnostic port. Repair only the demonstrated cause and add focused packaged-launch evidence. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
+
+
+## Latest TVE-REL-009 v1.1.3 owned-core runtime attempt — 2026-10-13
+
+Classification: **FAIL** for the owned-core startup prerequisite; REL-009 overall remains incomplete. No earlier PASS checkpoint is invalidated.
+
+- Git root: E:/SynthCut; branch: chatgpt/phase7-commercial-release; pre-sync HEAD: ae938c3.
+- v1.1.3 release-forward remains PASS and immutable; no release/tag/push/publish operation was repeated.
+- Controlled lower install PASS: .tmp/rel009-v113-lower-install-result.json; installer exit 0; lower version 1.1.1.0; 224 top-level production modules; electron-updater present; personal-fork feed/cache identity verified.
+- Patched test-install core-launcher.cjs matches current source SHA-256 c04888b151a34e2659a422b2874c919d66835802dffa06373c2757379720c94d.
+- Owned-core attempt failed before updater activity: error window said “Could not start the editor core” / “Timed out waiting for editor core to start”; dedicated port 48712 had no listener; core-data server.json absent; no update/download/installer/version-change evidence.
+- Failure evidence: docs/evidence/release/TVE-REL-009-V113-OWNED-E2E-FAIL.md; raw logs under .tmp/rel009-v113-owned-e2e/logs/.
+- Control diagnostic: packaged @aive/core/dist/cli.js starts under system Node and publishes ready on diagnostic port 48715. Direct invocation of the packaged Electron executable with the CLI did not produce Node-mode readiness. Treat RunAsNode/fuse/launch-mode as a hypothesis, not a confirmed root cause.
+- All test-owned app processes and diagnostic processes were stopped; no active SynthCut updater process remains. Unrelated project PTYs were not touched.
+
+### NEXT_EXACT_ACTION
+
+Diagnose the packaged Electron child-launch discrepancy before rerunning updater E2E. Compare the lower EXE/build identity and effective ELECTRON_RUN_AS_NODE/RunAsNode behavior against the accepted .tmp/rel009-ready-runtime-smoke invocation. Prove the actual child command can run @aive/core/dist/cli.js and create matching server.json plus /health on a fresh project-local diagnostic port. Repair only the demonstrated cause and add focused packaged-launch evidence. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
+
+## REL-009 follow-up diagnostic checkpoint — 2026-10-13
+
+The RunAsNode-disabled hypothesis is not supported: the lower installed EXE reports RunAsNode Enabled. A Node-driven spawn of that same Electron executable with the packaged core CLI passes ready/server.json on port 48716; the installed core-launcher passes readiness + /health with the same child executable and all bundled asset paths on ports 48717 and 48719. Bundled ffmpeg/ffprobe also pass direct version probes. These controls do not close the original desktop-main failure: the actual app still produced a core-start timeout and no server.json in its controlled data root.
+
+NEXT_EXACT_ACTION: instrument the actual desktop main at module load and immediately before ensureCore, capture process.execPath, AIVE_DATA_DIR, AIVE_PORT and whether applyBundledAssetEnv completes, then compare the effective main-process environment/startup path with the passing Node-driven launcher control. Repair only the demonstrated discrepancy. Do not rerun updater E2E before the focused packaged-main startup proof passes.
+
+## REL-009 current runtime — RUNNING
+- Single active harness: .tmp/rel009-v113-owned-e2e2.ps1; FileMCP PTY pty_e38df6f3a21835ed6039b651e3a496daa5df; host PID 10760.
+- Lower app PID 123544; owned core PID 143260; dedicated port 48721.
+- Observed PASS markers: REL009_OWNED_CORE_STARTED=PASS and REL009_UPDATE_AVAILABLE=PASS version=1.1.3.
+- Next: monitor the same PTY for Restart now, core exit before NSIS, public installer hash, complete module tree, license revalidation, and unchanged project/user state. Do not duplicate/restart this run.
+
+## TVE-REL-009 resume checkpoint — 2026-10-13
+- Packaging dependency-closure repair is present but uncommitted: `apps/desktop/build/after-pack.cjs`, `apps/desktop/package.json`, `scripts/release/smoke-remotion-dependency-packaging.cjs`, `.github/workflows/release.yml`, and `scripts/release/validate-release.mjs`.
+- PASS evidence: dependency smoke (`REMOTION_DEPENDENCY_PACKAGING_SMOKE_PASS`); electron-builder unpacked package hook (`REMOTION_DEPENDENCY_PACKAGING_PASS`); packaged nested `execa@5.1.1` and seven sibling dependencies present; packaged renderer ESM import resolves nested execa 5.1.1 successfully.
+- FAIL evidence: packaged desktop launch still times out waiting for editor core (`.tmp/rel009-afterpack-runtime-smoke5/logs/stderr.log`). A separate system-Node CLI probe remained alive for 8s but did not produce `server.json` or `/health=200`; cause not yet established. Therefore REL-009 remains FAIL and no license/feed PASS is claimed.
+- Immutable v1.1.0–v1.1.3 remain untouched. No updater retry, tag, release, commit or push performed.
+- NEXT_EXACT_ACTION: instrument only a fresh disposable packaged-core launch to capture process tree/command line, effective launch env and child stdout/stderr; compare with accepted readiness proof, prove `/health=200`, then continue post-update license/feed verification without repeating the updater transition or earlier PASS stages.
+- Follow-up diagnostics: instrumented only the disposable unpacked app's core launcher to log spawn executable/CLI/cwd/env and child PID/error/exit. A fresh isolated launch (PID 147704) stayed alive for 27s but produced no `server.json`, health response, stdout diagnostics or stderr diagnostics; it was closed during cleanup. No matching diagnostic process or listeners on ports 48722–48728 remain. This run is INCONCLUSIVE, not a pass and not a proven root cause.
+- Latest narrow checks: `node --check apps/desktop/build/after-pack.cjs` PASS; `node --check scripts/release/smoke-remotion-dependency-packaging.cjs` PASS; focused dependency smoke PASS; `git diff --check` exit 0 (only Git LF→CRLF informational warnings).
+
+### REL-009 packaged child-launch diagnostic checkpoint — 2026-10-13 14:53 +07
+- Bootstrap reverified: PROJECT_ROOT/git root `E:\SynthCut`; branch `chatgpt/phase7-commercial-release`; HEAD `47dd8247ba9394999b5a3b4cc2259755ef673b7b`. Working tree remains dirty with existing release-lane changes and untracked scratch/artifacts; none were reset or deleted. No active SynthCut app/core diagnostic process or listeners on ports 48720–48740 remained after probes.
+- Packaged dependency closure remains independently verified: nested renderer `execa@5.1.1` exists; focused packaging smoke PASS; direct ESM import of packaged `@remotion/renderer` PASS; direct ESM import of packaged `@aive/core/dist/engine.js` PASS.
+- New bounded child-launch probes are inconsistent, so root cause is NOT proven:
+  - Direct in-process import of packaged `@aive/core/dist/cli.js` (system Node, bundled asset paths, port 48737) emitted `{"event":"ready","port":48737,...}`, logged FFmpeg/listening, and wrote `server.json`; the probe then terminated the process at its timeout. This proves that code path can become ready under the direct in-process Node control.
+  - One full-PATH child probe using system Node reached PASS on port 48738 and wrote matching `server.json`; a repeat full-PATH run did not become ready during its 7-second observation window. Treat the repeat as inconclusive, not a stable PASS.
+  - The packaged branded `Tang AI Video Editor.exe` used as the child did not emit stdout/stderr or publish `server.json` during the observed 7-second window. Separate 8-second `spawnSync` probes with a minimal PATH timed out for system Node, branded Electron and the raw Electron binary; because the minimal-PATH setup itself affected the Node control, those results do not isolate product root cause.
+  - A packaged main launch from prior smoke4 did reach core readiness, while smoke5/6 did not; the invocation/environment difference is still unknown. The temporary core-launcher instrumentation did not emit its pre-spawn markers in the failing runs, so do not infer a root cause from those runs.
+- No source production code changed in this checkpoint. Probe scripts are disposable artifacts under `.tmp/`; do not treat them as production tests. No updater transition, install, commit, push, PR, tag or release side effect was triggered. v1.1.0–v1.1.3 remain immutable.
+- Task classification: `TVE-REL-009 = FAIL` for packaged core readiness; dependency packaging substage = PASS; post-update license/feed acceptance and shared-core defer proof = NOT RUN / NOT PASS.
+- NEXT_EXACT_ACTION: inspect and compare the exact launch command/environment in the existing passing `.tmp/rel009-afterpack-runtime-smoke4` invocation and failing smoke5/6 plus `.tmp/rel009-v113-owned-e2e2.ps1`; capture actual app `process.execPath`, inherited PATH and effective `AIVE_*` values before `ensureCore`, then run one bounded diagnostic using the same known-good invocation shape. Resolve the discrepancy with reproducible evidence before any source fix or updater retry. Do not rerun dependency smoke, packaging build, updater transition, or any earlier PASS stage.
+
+
+### REL-009 packaged launch root cause + disposable runtime repair — 2026-10-13 15:14 +07
+- Root cause now reproducible: passing the packaged branded Electron EXE the core CLI path directly as argv[1] (spawn(appExe, [cliPath]) left the child alive without stdout/stderr or server.json; the same EXE in Node mode with -e plus dynamic import of the CLI file URL emitted readiness. The production launcher now starts with -e and a pathToFileURL(cliPath) dynamic-import bootstrap, with a fail-visible import error handler. This is a narrow REL-009 runtime fix; no version/tag/release change has been made.
+- Deterministic launcher fallback smoke after the source change: REL009_CORE_READY_FALLBACK_SMOKE=PASS. Launcher syntax check PASS.
+- New focused packaged runtime regression scripts/release/smoke-packaged-core-launcher.cjs launches the actual packaged branded EXE as the core child, then verifies matching-PID server.json and /health=200. Run against the disposable packaged output: REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS pid=135540 port=64065.
+- Full packaged desktop smoke using the patched launcher in the disposable output: server.json pid=146900 port=48743, /health=200, logs include [aive] started core on port 48743; all processes were cleaned up. Only the disposable package copy's launcher was replaced; its main file was test-instrumented. This is strong runtime evidence for the fix, but a fresh package build is still required to prove source-to-package integration.
+- Release workflow now invokes node scripts/release/smoke-packaged-core-launcher.cjs apps/desktop/build/dist/win-unpacked after packaging; release validator checks that invocation and smoke contract. Fresh packaging and the integrated workflow/validator checks remain pending.
+- TVE-REL-009 remains ACTIVE / NOT DONE. Updater transition was not rerun; license revalidation/feed acceptance and shared-core defer proof remain NOT PASS. No commit/push/PR/merge/tag/release side effect occurred; v1.1.0–v1.1.3 remain immutable.
+- NEXT_EXACT_ACTION: run the narrow electron-builder --dir build into the existing project-local disposable output using .tmp/rel009-afterpack-test.config.cjs; confirm the new source launcher is in the fresh package; run the packaged-core-launch smoke against that fresh output; then run the release validator and diff checks. Do not rerun earlier updater or release-forward stages.
+
+
+### REL-009 fresh package integration checkpoint — 2026-10-13 15:23 +07
+- Source-to-package integration PASS: fresh electron-builder --dir completed exit 0 to .tmp/rel009-afterpack-test-output/win-unpacked. Build log .tmp/rel009-afterpack-build2.log contains REMOTION_DEPENDENCY_PACKAGING_PASS execa=5.1.1. Fresh packaged core-launcher.cjs SHA-256 equals source launcher: D63B42C4487D6AC9C0E60B2D50A01321A12DD3DDCF67F0D6DEBEF7046FE8F316. Packaged renderer nested execa version is 5.1.1.
+- Packaged-child runtime smoke PASS: REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS pid=147072 port=49511; matching server.json PID and /health=200.
+- Fresh packaged desktop runtime PASS: isolated app PID 149352; owned core PID 147912; server.json port 48744; /health=200; stderr records [aive] started core on port 48744. App/core were cleaned up after verification.
+- Narrow checks: source launcher syntax PASS; smoke-core-launcher-ready-fallback PASS; packaged-launch smoke syntax PASS; release-validator syntax PASS; git diff --check exit 0 (only LF/CRLF informational warnings).
+- REL-009 packaged-core startup prerequisite is now PASS. REL-009 overall remains ACTIVE/NOT DONE: the currently published v1.1.3 is immutable and still does not contain this fix. The fix requires a new immutable release version before installed updater E2E can validate it; license/feed revalidation and shared-core defer proof remain NOT PASS.
+- No commit/push/PR/merge/tag/release side effect occurred. Next: inspect exact version/lock workspace fields and current scoped diff; prepare a new release-forward version (v1.1.4 only, never rewrite v1.1.3), then validate/package that version before running only the outstanding updater runtime stages.
+
+
+### REL-009 v1.1.4 fresh package + runtime checkpoint — 2026-10-13 16:26 +07
+- Build process PID 144880 completed with exit 0 at 16:23:37 +07. Logs: `.tmp/rel009-afterpack-build-v2.stdout.log`, `.tmp/rel009-afterpack-build-v2.stderr.log`, exit marker `.tmp/rel009-afterpack-build-v2.exit.txt`. Disposable output: `.tmp/rel009-afterpack-test-output-v2/win-unpacked`, package version 1.1.4.
+- afterPack marker PASS: `REMOTION_DEPENDENCY_PACKAGING_PASS execa=5.1.1`; nested renderer execa version 5.1.1; source/package core-launcher SHA-256 matches `D63B42C4487D6AC9C0E60B2D50A01321A12DD3DDCF67F0D6DEBEF7046FE8F316`.
+- Focused packaged child smoke PASS: PID 148880, port 62740, matching server.json PID and /health=200. Fresh full packaged desktop runtime PASS: app PID 141244, core PID 146976, port 48749, /health=200, `[aive] started core on port 48749`; both processes cleaned up. Runtime result marker: `REL009_PACKAGED_DESKTOP_RUNTIME_PASS`.
+- Release validator PASS for local candidate 1.1.4; launcher syntax, dependency closure smoke, ready-fallback smoke PASS. Evidence: `docs/evidence/release/TVE-REL-009-V114-PACKAGED-RUNTIME.md`.
+- Overall TVE-REL-009 remains ACTIVE/NOT DONE. No v1.1.4 tag/release, commit, push, PR, merge, install/updater transition occurred. v1.1.0–v1.1.3 remain immutable. Post-update license/feed revalidation and shared-core defer-without-mutation remain NOT PASS.
+- NEXT_EXACT_ACTION: review the scoped REL-009 diff and release gates, verify configured `personal` remote and tag/release absence, run final scoped checks, and commit only REL-009 source, version manifests/lock, focused tests, evidence and state files. Follow PR/CI/review/merge before creating immutable v1.1.4; then verify release provenance/artifacts before running only the remaining updater and shared-core runtime gates.
+
+
+### REL-009 PR/CI checkpoint — 2026-10-13 16:31 +07
+- Scoped production candidate commit: `a3826610e2e165006e73fb13e5ee28fa78096095` (`fix: stabilize packaged core launch and Remotion dependencies`), pushed fast-forward to `personal/chatgpt/phase7-commercial-release`; remote SHA was verified equal to the commit before PR creation.
+- PR #13 is open against `main@e40af75653375317b2d154b4190fd3cb2a8c17bd`: https://github.com/nguyenkhactang922-bot/SynthCut/pull/13. GitHub reports mergeable=true and not merged. v1.1.4 local/remote tag absent and release lookup 404; v1.1.0–v1.1.3 unchanged.
+- Existing CI run `38376963425` for PR #13 was queued when checked. This run has not been restarted. A state-only checkpoint will advance the PR head and may trigger its own new CI run; monitor returned run evidence rather than retrying manually.
+- Overall REL-009 remains ACTIVE/NOT DONE: fresh local v1.1.4 package + packaged desktop health PASS; installed updater transition, post-update same-device license/feed revalidation, and shared-core defer-without-mutation remain NOT PASS.
+- NEXT_EXACT_ACTION: commit/push the state-only PR checkpoint, then query GitHub for the exact CI run(s) tied to the new PR head, inspect their jobs/logs and PR diff/reviews, and merge only when required checks/review pass. Verify merged main SHA/tree before any v1.1.4 release action.
+
+
+### REL-009 PR CI coverage hardening — 2026-10-13 16:33 +07
+- Self-review found that release-only workflow gates would not execute on pull requests. Added two lightweight PR CI steps after `npm ci`: `node scripts/release/validate-release.mjs` and `node scripts/release/smoke-remotion-dependency-packaging.cjs`. This ensures candidate version/workflow contracts and the dependency-closure hook are tested before merge; the Windows branded-EXE smoke remains in the release workflow after Windows packaging and has already passed locally against fresh v1.1.4 package output.
+- Existing CI run `38376963425` completed SUCCESS for production candidate commit `a3826610e2e165006e73fb13e5ee28fa78096095`. CI run `38377230670` for state checkpoint `fd03c783c79bb9457012ffa6908a2d761b87561d` was observed IN_PROGRESS (Typecheck/other job steps pending at latest check). Do not restart either run.
+- The CI workflow change is local and will be included in a scoped follow-up commit on PR #13. Its push should create a new CI run for the final PR head; wait for that run before merge. PR #13 remains open, mergeable, and not merged; no tag/release exists for v1.1.4.
+- NEXT_EXACT_ACTION: run the release validator and dependency smoke locally, commit/push the CI gate addition with state sync, then monitor the exact CI run tied to the latest PR head. Review final job logs/diff and merge only when latest-head checks pass. Verify main after merge before release-forward.

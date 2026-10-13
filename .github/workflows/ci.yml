@@ -23,6 +23,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate release manifests and workflow contract
+        run: node scripts/release/validate-release.mjs
+
+      - name: Smoke — Remotion dependency closure packaging
+        run: node scripts/release/smoke-remotion-dependency-packaging.cjs
+
       - name: Typecheck
         run: npm run typecheck
 
