@@ -219,7 +219,7 @@ Evidence: `docs/evidence/release/TVE-REL-008.md` plus retained repair evidence.
 Result: Release run `38137052906` SUCCESS; GitHub Release `v1.1.0` published at personal fork release id `409639821`; personal `main` and `v1.1.0^{}` both `ce31bfdd024331fbdb05d0b78e21df0e8b8e13fb`; bundle provenance clean; release metadata PASS; `latest.yml` correct; public-downloaded EXE/ZIP sizes and SHA-256 independently recomputed and exactly match `SHA256SUMS.txt` + GitHub asset digests. Published `v1.1.0` is durable historical evidence and must not be overwritten in place.
 
 ## TVE-REL-009 — Installed updater E2E + stable verification
-Status: ACTIVE / v1.1.3 PUBLISHED + VERIFIED / FINAL OWNED+SHARED RUNTIME PROOFS PENDING
+Status: ACTIVE / OWNED-CORE STARTUP PREREQUISITE FAIL; v1.1.3 RELEASE-FORWARD PASS RETAINED; SHARED-CORE PROOF PENDING
 Dependencies: REL-008 PASS
 Evidence: retained REL-009 identity/install/coordination/readiness evidence + `docs/evidence/release/TVE-REL-009-V113-RELEASE-FORWARD.md`
 Repair/release-forward result: desktop package identity is `tang-ai-video-editor`; reviewed personal main is `452dd263`; `v1.1.1` is published/verified and immutable.
@@ -237,4 +237,11 @@ Status: BLOCKED BY REL-009
 Final Traceability Audit → Feedback → New Requirement/Bug/Improvement → correct lifecycle loopback.
 
 # NEXT ELIGIBLE TASK
-`TVE-REL-009 runtime E2E`: v1.1.3 release-forward is PASS and immutable. Prepare a fresh project-local lower 1.1.1 test install containing both updater coordination + readiness fixes, then run only (1) owned-core updater transition to public v1.1.3 with core-exit-before-NSIS/integrity/license/state proofs and (2) shared-core defer-without-mutation proof. Do not rerun release publication or prior PASS stages.
+`TVE-REL-009 runtime E2E`: diagnose the packaged Electron child-launch discrepancy documented in docs/evidence/release/TVE-REL-009-V113-OWNED-E2E-FAIL.md before any updater retry. Compare EXE/build identity and effective RunAsNode/ELECTRON_RUN_AS_NODE behavior against the accepted runtime-smoke invocation; prove core CLI readiness through the actual packaged child path, repair only the demonstrated cause, then retry owned-core update to immutable public v1.1.3 in a fresh run root and run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0..v1.1.3.
+
+
+### REL-009 latest runtime checkpoint — 2026-10-13
+- Owned-core startup prerequisite: FAIL; actual UI error and absent server.json/port listener recorded in docs/evidence/release/TVE-REL-009-V113-OWNED-E2E-FAIL.md.
+- Lower fixture installation and readiness-launcher hash parity: PASS; retain and do not repeat.
+- v1.1.3 release-forward: PASS and immutable; do not rerun publication.
+- Next action: investigate packaged Electron child Node-mode/fuse/launch behavior; only after focused launch proof passes, rerun the owned-core updater transition. Shared-core defer-without-mutation proof remains pending.

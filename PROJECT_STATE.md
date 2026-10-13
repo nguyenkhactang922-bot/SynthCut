@@ -92,7 +92,7 @@ Historical human-review pack remains optional spot-check QA and is not claimed a
 - `TVE-IMP-011 — QA and durable evidence coordinator` — COMMITTED `1cf0b80`
 
 ## Active production task
-`TVE-REL-009 - ACTIVE / v1.1.3 release-forward PASS; final owned-core updater E2E + shared-core defer proof pending`
+`TVE-REL-009 - ACTIVE / owned-core runtime prerequisite FAIL; v1.1.3 release-forward PASS retained; diagnose packaged Electron child launch before retry`
 
 Release baseline summary:
 - prior product/runtime Build & Verify remains MAIN VERIFIED at `personal/main@af92f20`;
@@ -461,4 +461,22 @@ Repo-local identity is configured and verified: `nguyenkhactang922-bot <nguyenkh
 - Release-forward substage PASS; REL-009 remains incomplete only for owned-core updater runtime E2E + shared-core defer proof.
 
 ## NEXT_EXACT_ACTION
-Prepare a fresh project-local lower install from retained test-only `1.1.1` fixture that already contains updater coordination; patch only that test install's `resources/app/electron/core-launcher.cjs` with the current readiness-fixed source and verify exact hash parity. Then run only the owned-core updater E2E to public v1.1.3 (expected installer SHA-256 `82e603edb796d1251d99c6f537110ff2a19fb2b3c34a130dbe0438d3cb3d26f4`) and a separate shared-core defer-without-mutation runtime proof. Preserve all earlier PASS evidence; never rerun/retag/republish v1.1.0..v1.1.3.
+Diagnose the packaged Electron child-launch discrepancy before rerunning updater E2E. Compare the lower EXE/build identity and effective ELECTRON_RUN_AS_NODE/RunAsNode behavior against the accepted .tmp/rel009-ready-runtime-smoke invocation. Prove the actual child command can run @aive/core/dist/cli.js and create matching server.json plus /health on a fresh project-local diagnostic port. Repair only the demonstrated cause and add focused packaged-launch evidence. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
+
+
+## Latest TVE-REL-009 v1.1.3 owned-core runtime attempt — 2026-10-13
+
+Classification: **FAIL** for the owned-core startup prerequisite; REL-009 overall remains incomplete. No earlier PASS checkpoint is invalidated.
+
+- Git root: E:/SynthCut; branch: chatgpt/phase7-commercial-release; pre-sync HEAD: ae938c3.
+- v1.1.3 release-forward remains PASS and immutable; no release/tag/push/publish operation was repeated.
+- Controlled lower install PASS: .tmp/rel009-v113-lower-install-result.json; installer exit 0; lower version 1.1.1.0; 224 top-level production modules; electron-updater present; personal-fork feed/cache identity verified.
+- Patched test-install core-launcher.cjs matches current source SHA-256 c04888b151a34e2659a422b2874c919d66835802dffa06373c2757379720c94d.
+- Owned-core attempt failed before updater activity: error window said “Could not start the editor core” / “Timed out waiting for editor core to start”; dedicated port 48712 had no listener; core-data server.json absent; no update/download/installer/version-change evidence.
+- Failure evidence: docs/evidence/release/TVE-REL-009-V113-OWNED-E2E-FAIL.md; raw logs under .tmp/rel009-v113-owned-e2e/logs/.
+- Control diagnostic: packaged @aive/core/dist/cli.js starts under system Node and publishes ready on diagnostic port 48715. Direct invocation of the packaged Electron executable with the CLI did not produce Node-mode readiness. Treat RunAsNode/fuse/launch-mode as a hypothesis, not a confirmed root cause.
+- All test-owned app processes and diagnostic processes were stopped; no active SynthCut updater process remains. Unrelated project PTYs were not touched.
+
+### NEXT_EXACT_ACTION
+
+Diagnose the packaged Electron child-launch discrepancy before rerunning updater E2E. Compare the lower EXE/build identity and effective ELECTRON_RUN_AS_NODE/RunAsNode behavior against the accepted .tmp/rel009-ready-runtime-smoke invocation. Prove the actual child command can run @aive/core/dist/cli.js and create matching server.json plus /health on a fresh project-local diagnostic port. Repair only the demonstrated cause and add focused packaged-launch evidence. Then retry only the owned-core updater transition in a fresh run root; after it PASSes, run the separate shared-core defer-without-mutation proof. Do not rerun or republish v1.1.0–v1.1.3.
