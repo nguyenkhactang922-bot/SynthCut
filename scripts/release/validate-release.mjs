@@ -49,6 +49,7 @@ const desktop = manifests["apps/desktop/package.json"];
 if (desktop.name !== EXPECTED_DESKTOP_PACKAGE) fail(`unexpected desktop package name ${desktop.name}`);
 if (desktop.build?.productName !== EXPECTED_PRODUCT) fail(`unexpected productName ${desktop.build?.productName}`);
 if (desktop.build?.appId !== EXPECTED_APP_ID) fail(`unexpected appId ${desktop.build?.appId}`);
+if (desktop.build?.afterPack !== "build/after-pack.cjs") fail("desktop afterPack must repair the locked Remotion dependency closure");
 const providers = desktop.build?.publish;
 if (!Array.isArray(providers) || providers.length !== 1) fail("desktop publish provider must be exactly one entry");
 if (providers[0].provider !== "github" || providers[0].owner !== "nguyenkhactang922-bot" || providers[0].repo !== "SynthCut") {
@@ -99,6 +100,10 @@ if (requireClean) {
 }
 
 const workflow = readFileSync(resolve(ROOT, ".github/workflows/release.yml"), "utf8");
+const packagedCoreSmoke = readFileSync(resolve(ROOT, "scripts/release/smoke-packaged-core-launcher.cjs"), "utf8");
+for (const token of ["startCore", "readServerInfo", "healthCheck", "REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS"]) {
+  if (!packagedCoreSmoke.includes(token)) fail(`packaged core-launch smoke is missing required token: ${token}`);
+}
 const commercialConfig = readFileSync(resolve(ROOT, "apps/desktop/electron-builder.commercial.cjs"), "utf8");
 const licenseClient = readFileSync(resolve(ROOT, "apps/desktop/electron/license.cjs"), "utf8");
 const preload = readFileSync(resolve(ROOT, "apps/desktop/electron/preload.cjs"), "utf8");
@@ -113,6 +118,8 @@ const requiredWorkflowTokens = [
   "vars.SUPABASE_LICENSE_BACKEND_APPROVED",
   "vars.UNSIGNED_COMMERCIAL_RELEASE_APPROVED",
   "npm run prepare:bundle --workspace apps/desktop",
+  "node scripts/release/smoke-remotion-dependency-packaging.cjs",
+  "node scripts/release/smoke-packaged-core-launcher.cjs apps/desktop/build/dist/win-unpacked",
   "npm run dist --workspace apps/desktop",
   "Get-AuthenticodeSignature",
   "NotSigned",

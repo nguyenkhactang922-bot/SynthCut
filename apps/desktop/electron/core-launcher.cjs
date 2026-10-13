@@ -12,6 +12,7 @@ const http = require("node:http");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 
 const require_ = createRequire(__filename);
 
@@ -56,7 +57,16 @@ function startCore(dir, execPath, options = {}) {
     const cliPath = options.cliPath || coreCliPath();
     const readyTimeoutMs = options.readyTimeoutMs || 20000;
     const pollIntervalMs = options.pollIntervalMs || 100;
-    const child = spawn(execPath || process.execPath, [cliPath], {
+    // On Windows, invoking the packaged/product-renamed Electron executable
+    // with a script path as argv[1] can enter Electron app startup instead of
+    // Node mode. A -e bootstrap with a file URL is reliable for both Electron
+    // and system Node, and safely handles spaces in the packaged install path.
+    const cliUrl = pathToFileURL(cliPath).href;
+    const bootstrap = `import(${JSON.stringify(cliUrl)}).catch((err) => {
+      console.error("[aive-core] fatal:", err && err.stack ? err.stack : err);
+      process.exitCode = 1;
+    });`;
+    const child = spawn(execPath || process.execPath, ["-e", bootstrap], {
       env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", AIVE_DATA_DIR: dir },
       stdio: ["ignore", "pipe", "pipe"],
     });
