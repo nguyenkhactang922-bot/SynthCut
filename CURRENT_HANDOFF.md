@@ -4,14 +4,14 @@
 - PROJECT_ROOT: `E:\SynthCut`
 - ACTIVE_TASK: `TVE-REL-009 — Installed updater E2E + stable verification`
 - STATUS: `ACTIVE / fresh v1.1.4 local package and packaged desktop core readiness PASS; installed updater E2E + shared-core defer proof NOT PASS`
-- CURRENT_STAGE: `PASS: v1.1.4 local fresh --dir package, afterPack nested execa@5.1.1, source/package launcher hash parity, packaged branded-core smoke /health=200, and full packaged desktop smoke /health=200. Overall REL-009 remains ACTIVE: no v1.1.4 release yet; post-update license/feed checks and shared-core defer proof remain NOT PASS.``
+- CURRENT_STAGE: `PASS: v1.1.4 local fresh --dir package, afterPack nested execa@5.1.1, source/package launcher hash parity, packaged branded-core smoke /health=200, and full packaged desktop smoke /health=200. Overall REL-009 remains ACTIVE: no v1.1.4 release yet; post-update license/feed checks and shared-core defer proof remain NOT PASS.`
 - BRANCH: `chatgpt/phase7-commercial-release`
-- HEAD: resolve current Git HEAD on resume; previous durable state checkpoint `ed1f3f8` (diagnostic sync commit follows)
+- HEAD: resolve with `git rev-parse HEAD` on resume; latest production candidate commit `a3826610e2e165006e73fb13e5ee28fa78096095` is PR #13 head before the state-only follow-up.
 - REVIEWED_MAIN: `e40af75653375317b2d154b4190fd3cb2a8c17bd`
 - LAST_VERIFIED_CHECKPOINT: `v1.1.3 RELEASE-FORWARD PASS` — Release run `38275741580` SUCCESS; tag peel/main/bundle source all `e40af756...`; bundle tracked clean; updater identity unique; public EXE hash and intentional NotSigned verified. Evidence: `docs/evidence/release/TVE-REL-009-V113-RELEASE-FORWARD.md`.
 - PROCESS_PID: `none` — build PID 144880 exited 0 at 2026-10-13T16:23:37+07; packaged smoke child PID 148880 cleaned; desktop app PID 141244 and core PID 146976 cleaned
 - PROCESS_COMMAND: `none running; last completed command was electron-builder --win --dir --config E:\\SynthCut\\.tmp\\rel009-afterpack-test-v2.config.cjs`
-- PTY_SESSION: `pty_e38df6f3a21835ed6039b651e3a496daa5df` UNKNOWN/EXPIRED (pty_list empty; pty_read returned Unknown or expired PTY session); durable markers: owned core started on port 48721 and update available v1.1.3; installer launch logged, final result absent. Unrelated project PTYs were not touched.
+- PTY_SESSION: `none active for current work`; historical updater PTY is expired and retained only as prior FAIL evidence; unrelated project PTYs were not touched.
 - LATEST_LOG: `.tmp/rel009-afterpack-build-v2.stdout.log`, `.tmp/rel009-afterpack-build-v2.stderr.log`, `.tmp/rel009-afterpack-build-v2.exit.txt`, and `.tmp/rel009-v114-packaged-desktop-runtime/logs/stderr.log`; durable proof: `docs/evidence/release/TVE-REL-009-V114-PACKAGED-RUNTIME.md`
 - LAST_EXIT_CODE: `Fresh v1.1.4 --dir package exit 0; packaged child smoke PASS; packaged desktop runtime PASS; updater E2E remains NOT RUN for v1.1.4`
 - ARTIFACTS:
@@ -25,9 +25,9 @@
   - current readiness-fixed source `apps/desktop/electron/core-launcher.cjs`
   - reusable encrypted-license/project-state fixture `.tmp/rel009-updater-user2/`
 - BLOCKERS:
-  - Current controlled lower app cannot start core through the actual desktop-main startup path; UI error explicitly reports core startup timeout. RunAsNode fuse is Enabled, and packaged core CLI/core-launcher pass when driven under system Node with the same Electron child and bundled assets. Root cause remains specific to actual main-process startup/environment and is unproven.
-  - REL-009 cannot PASS until the owned-core updater transition to public v1.1.3 and shared-core defer-without-mutation proof both PASS.
-- NEXT_EXACT_ACTION: review scoped REL-009 diff and release gates; verify remote branch/tag/release state on the configured `personal` remote; run final scoped checks and commit only REL-009 production files, version 1.1.4 manifests/lock, evidence and state. Follow PR/CI/review/merge before creating immutable v1.1.4. After release artifacts/provenance pass, run only the outstanding owned-core updater E2E + post-update license/feed validation and the separate shared-core defer-without-mutation proof. Never modify v1.1.0–v1.1.3.
+  - Packaged core readiness/dependency closure is now locally verified for candidate v1.1.4; the remaining blocker is the PR #13 CI/review/merge gate, followed by an authorized immutable v1.1.4 release and installed updater runtime acceptance.
+  - REL-009 cannot PASS until owned-core updater E2E with post-update same-device encrypted-license/feed verification and the separate shared-core defer-without-mutation proof both PASS.
+- NEXT_EXACT_ACTION: monitor existing GitHub Actions CI run `38376963425` for PR #13 (do not restart/re-run it), inspect final job logs/checks and review the exact PR diff. If all required checks pass and no blocking review/merge conflict exists, merge PR #13 per repository policy, verify merged main SHA/tree and update state. Then prepare immutable v1.1.4 only after checking tag/release absence and all release authorization gates; verify artifacts/provenance before the outstanding owned-core updater E2E + license/feed revalidation and separate shared-core defer-without-mutation proof.
 - DO_NOT_REPEAT:
   - REL-001..008 substantive work;
   - v1.1.0/v1.1.1/v1.1.2/v1.1.3 publication or release workflows;
@@ -92,3 +92,11 @@
 - Release validator PASS for local candidate 1.1.4; launcher syntax, dependency closure smoke, ready-fallback smoke PASS. Evidence: `docs/evidence/release/TVE-REL-009-V114-PACKAGED-RUNTIME.md`.
 - Overall TVE-REL-009 remains ACTIVE/NOT DONE. No v1.1.4 tag/release, commit, push, PR, merge, install/updater transition occurred. v1.1.0–v1.1.3 remain immutable. Post-update license/feed revalidation and shared-core defer-without-mutation remain NOT PASS.
 - NEXT_EXACT_ACTION: review the scoped REL-009 diff and release gates, verify configured `personal` remote and tag/release absence, run final scoped checks, and commit only REL-009 source, version manifests/lock, focused tests, evidence and state files. Follow PR/CI/review/merge before creating immutable v1.1.4; then verify release provenance/artifacts before running only the remaining updater and shared-core runtime gates.
+
+
+### REL-009 PR/CI checkpoint — 2026-10-13 16:31 +07
+- Scoped production candidate commit: `a3826610e2e165006e73fb13e5ee28fa78096095` (`fix: stabilize packaged core launch and Remotion dependencies`), pushed fast-forward to `personal/chatgpt/phase7-commercial-release`; remote SHA was verified equal to the commit before PR creation.
+- PR #13 is open against `main@e40af75653375317b2d154b4190fd3cb2a8c17bd`: https://github.com/nguyenkhactang922-bot/SynthCut/pull/13. GitHub reports mergeable=true and not merged. v1.1.4 local/remote tag absent and release lookup 404; v1.1.0–v1.1.3 unchanged.
+- Existing CI run `38376963425` for PR #13 was queued when checked. This run has not been restarted. A state-only checkpoint will advance the PR head and may trigger its own new CI run; monitor returned run evidence rather than retrying manually.
+- Overall REL-009 remains ACTIVE/NOT DONE: fresh local v1.1.4 package + packaged desktop health PASS; installed updater transition, post-update same-device license/feed revalidation, and shared-core defer-without-mutation remain NOT PASS.
+- NEXT_EXACT_ACTION: commit/push the state-only PR checkpoint, then query GitHub for the exact CI run(s) tied to the new PR head, inspect their jobs/logs and PR diff/reviews, and merge only when required checks/review pass. Verify merged main SHA/tree before any v1.1.4 release action.

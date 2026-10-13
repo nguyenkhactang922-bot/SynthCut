@@ -541,3 +541,11 @@ NEXT_EXACT_ACTION: instrument the actual desktop main at module load and immedia
 - Release validator PASS for local candidate 1.1.4; launcher syntax, dependency closure smoke, ready-fallback smoke PASS. Evidence: `docs/evidence/release/TVE-REL-009-V114-PACKAGED-RUNTIME.md`.
 - Overall TVE-REL-009 remains ACTIVE/NOT DONE. No v1.1.4 tag/release, commit, push, PR, merge, install/updater transition occurred. v1.1.0–v1.1.3 remain immutable. Post-update license/feed revalidation and shared-core defer-without-mutation remain NOT PASS.
 - NEXT_EXACT_ACTION: review the scoped REL-009 diff and release gates, verify configured `personal` remote and tag/release absence, run final scoped checks, and commit only REL-009 source, version manifests/lock, focused tests, evidence and state files. Follow PR/CI/review/merge before creating immutable v1.1.4; then verify release provenance/artifacts before running only the remaining updater and shared-core runtime gates.
+
+
+### REL-009 PR/CI checkpoint — 2026-10-13 16:31 +07
+- Scoped production candidate commit: `a3826610e2e165006e73fb13e5ee28fa78096095` (`fix: stabilize packaged core launch and Remotion dependencies`), pushed fast-forward to `personal/chatgpt/phase7-commercial-release`; remote SHA was verified equal to the commit before PR creation.
+- PR #13 is open against `main@e40af75653375317b2d154b4190fd3cb2a8c17bd`: https://github.com/nguyenkhactang922-bot/SynthCut/pull/13. GitHub reports mergeable=true and not merged. v1.1.4 local/remote tag absent and release lookup 404; v1.1.0–v1.1.3 unchanged.
+- Existing CI run `38376963425` for PR #13 was queued when checked. This run has not been restarted. A state-only checkpoint will advance the PR head and may trigger its own new CI run; monitor returned run evidence rather than retrying manually.
+- Overall REL-009 remains ACTIVE/NOT DONE: fresh local v1.1.4 package + packaged desktop health PASS; installed updater transition, post-update same-device license/feed revalidation, and shared-core defer-without-mutation remain NOT PASS.
+- NEXT_EXACT_ACTION: commit/push the state-only PR checkpoint, then query GitHub for the exact CI run(s) tied to the new PR head, inspect their jobs/logs and PR diff/reviews, and merge only when required checks/review pass. Verify merged main SHA/tree before any v1.1.4 release action.
