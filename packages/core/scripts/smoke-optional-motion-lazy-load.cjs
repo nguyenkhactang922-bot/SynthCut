@@ -66,6 +66,8 @@ try {
   const eagerOptionalModules = resolved.filter((specifier) =>
     specifier === "./motion/render.js" ||
     specifier === "remotion" ||
+    specifier === "@remotion/bundler" ||
+    specifier === "@remotion/renderer" ||
     specifier.startsWith("@remotion/")
   );
   assert.deepEqual(eagerOptionalModules, [], "optional motion provider was eagerly resolved:\n" + eagerOptionalModules.join("\n"));
