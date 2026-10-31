@@ -41,6 +41,9 @@ jobs:
       - name: Build core + MCP + renderer
         run: npm run build
 
+      - name: Verify optional motion provider is lazy-loaded
+        run: node packages/core/scripts/smoke-optional-motion-lazy-load.cjs
+
       - name: Install pinned FFmpeg staging source
         shell: pwsh
         run: |

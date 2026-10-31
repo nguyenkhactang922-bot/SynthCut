@@ -36,7 +36,7 @@ import {
   type TangMetadataStatus,
 } from "./tang/metadata.js";
 import { trackSubject, buildCropPlan, cropPlanToSendcmd } from "./reframe/reframe.js";
-import { renderGraphic } from "./motion/render.js";
+
 import {
   sortKeyframes,
   type Keyframe,
@@ -3460,6 +3460,8 @@ export class EditorEngine extends EventEmitter {
     const outPath = join(bakedDir, `${id}-graphic.${asNewClip ? "mp4" : "mov"}`);
     const workDir = join(this.dataDir, "motion", id);
 
+    // Motion graphics are an optional provider; keep Remotion out of the core startup graph.
+    const { renderGraphic } = await import("./motion/render.js");
     await renderGraphic({
       code: opts.code,
       props: opts.props,
