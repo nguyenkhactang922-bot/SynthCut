@@ -101,7 +101,15 @@ if (requireClean) {
 
 const workflow = readFileSync(resolve(ROOT, ".github/workflows/release.yml"), "utf8");
 const packagedCoreSmoke = readFileSync(resolve(ROOT, "scripts/release/smoke-packaged-core-launcher.cjs"), "utf8");
-for (const token of ["startCore", "readServerInfo", "healthCheck", "REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS"]) {
+const optionalMotionSmoke = readFileSync(resolve(ROOT, "packages/core/scripts/smoke-optional-motion-lazy-load.cjs"), "utf8");
+for (const token of ["--experimental-loader", "./motion/render.js", "@remotion/bundler", "@remotion/renderer", "CORE_OPTIONAL_MOTION_LAZY_LOAD_SMOKE=PASS"]) {
+  if (!optionalMotionSmoke.includes(token)) fail(`optional motion lazy-load smoke is missing required token: ${token}`);
+}
+const ciWorkflow = readFileSync(resolve(ROOT, ".github/workflows/ci.yml"), "utf8");
+const optionalMotionSmokeCommand = "node packages/core/scripts/smoke-optional-motion-lazy-load.cjs";
+if (!workflow.includes(optionalMotionSmokeCommand)) fail("release workflow must run the optional motion lazy-load smoke after core build");
+if (!ciWorkflow.includes(optionalMotionSmokeCommand)) fail("CI workflow must run the optional motion lazy-load smoke after build");
+for (const token of ["startCore", "readServerInfo", "healthCheck", "readyTimeoutMs: 20000", "REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS"]) {
   if (!packagedCoreSmoke.includes(token)) fail(`packaged core-launch smoke is missing required token: ${token}`);
 }
 const commercialConfig = readFileSync(resolve(ROOT, "apps/desktop/electron-builder.commercial.cjs"), "utf8");
@@ -120,6 +128,7 @@ const requiredWorkflowTokens = [
   "npm run prepare:bundle --workspace apps/desktop",
   "node scripts/release/smoke-remotion-dependency-packaging.cjs",
   "node scripts/release/smoke-packaged-core-launcher.cjs apps/desktop/build/dist/win-unpacked",
+  "node packages/core/scripts/smoke-optional-motion-lazy-load.cjs",
   "npm run dist --workspace apps/desktop",
   "Get-AuthenticodeSignature",
   "NotSigned",

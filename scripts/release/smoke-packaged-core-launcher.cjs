@@ -58,14 +58,17 @@ async function main() {
 
   let child = null;
   try {
-    const result = await startCore(dataDir, appExe, { cliPath, readyTimeoutMs: 30000, pollIntervalMs: 100 });
+    const startupStartedAt = Date.now();
+    const result = await startCore(dataDir, appExe, { cliPath, readyTimeoutMs: 20000, pollIntervalMs: 100 });
+    const startupMs = Date.now() - startupStartedAt;
+    assert.ok(startupMs < 20000, `packaged core readiness exceeded 20,000 ms: ${startupMs}`);
     child = result.child;
     const info = readServerInfo(dataDir);
     assert.ok(info, "packaged core must publish server.json");
     assert.equal(Number(info.pid), child.pid, "server.json PID must match the spawned packaged Electron child");
     assert.equal(Number(info.port), result.port, "launcher port must match server.json");
     assert.equal(await healthCheck(result.port), true, "packaged core /health must return HTTP 200");
-    console.log(`REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS pid=${child.pid} port=${result.port}`);
+    console.log(`REL009_PACKAGED_CORE_LAUNCH_SMOKE=PASS pid=${child.pid} port=${result.port} startupMs=${startupMs}`);
   } finally {
     if (child && child.exitCode === null && child.signalCode === null) {
       try { child.kill(); } catch {}

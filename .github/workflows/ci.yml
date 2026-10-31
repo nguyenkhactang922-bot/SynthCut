@@ -35,6 +35,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Smoke — optional motion provider lazy load
+        run: node packages/core/scripts/smoke-optional-motion-lazy-load.cjs
+
       - name: Smoke — updater core coordination
         run: node scripts/release/smoke-updater-coordination.cjs
 
